@@ -4,7 +4,67 @@ var show_zero_price = "";
 var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = "22EP8BJUJKCW2YGUN8RS", hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
 var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 0});
 
+function loadScript(url, callback)
+{
+    // Adding the script tag to the head as suggested before
+    var head = document.head;
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = url;
+
+    // Then bind the event to the callback function.
+    // There are several events for cross browser compatibility.
+    script.onreadystatechange = callback;
+    script.onload = callback;
+
+    // Fire the loading
+    head.appendChild(script);
+}
+
+const redirectToStripe = function() {
+    //var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
+    var stripe = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); //TODO: change to Dwellito
+
+    //const priceID = 'price_1IiUe4Hy8pZ91dsyzSVEk4at'; // TODO: get dynamically from Webflow OR get hard coded from Anil/Caleb PROD
+    const priceID = 'price_1IjTR7Hy8pZ91dsytU0x1YAD'; // TODO: get dynamically from Webflow OR get hard coded from Anil/Caleb
+
+    var data = $("form").serialize();
+    data = window.btoa(data);
+    var sTags = JSON.stringify(this.studioItems), t = window.btoa(sTags);
+
+    var successURL = "https://" + window.location.hostname + "/thank-you?s=" + data + "&t=" + t;
+    var cancelURL = "https://" + window.location.hostname; //TODO: Finish
+
+    var checkoutButton = document.getElementById('checkout-button-price');
+    checkoutButton.addEventListener('click', function () {
+        stripe.redirectToCheckout({
+            lineItems: [{price: priceID, quantity: 1}],
+            mode: 'payment',
+            /*
+             * Do not rely on the redirect to the successUrl for fulfilling
+             * purchases, customers may not always reach the success_url after
+             * a successful payment.
+             * Instead use one of the strategies described in
+             * https://stripe.com/docs/payments/checkout/fulfill-orders
+             */
+            successUrl: successURL,
+            cancelUrl: cancelURL,
+        })
+            .then(function (result) {
+                if (result.error) {
+                    /*
+                     * If `redirectToCheckout` fails due to a browser or network
+                     * error, display the localized error message to your customer.
+                     */
+                    var displayError = document.getElementById('error-message');
+                    displayError.textContent = result.error.message;
+                }
+            });
+    });
+};
+
 $(() => {
+    loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => { $(".modal-pop-up._3d-model").removeClass("no-visible")})
@@ -60,14 +120,14 @@ function init(){
                     subtypes.push({value : tag.subtype, title : tag.namesubtype, items })
                 }
             })
-    
+
             subtypes.map(function(st){
 
                 var $parentHTML = $(parentHTML)
                 $parentHTML.find('.title-subsection').text(st.title)
 
                 var parentClass = $parentHTML.find('.items-section').attr("class")
-                var htmlItems = '<div role="list" class="'+parentClass+'">'  
+                var htmlItems = '<div role="list" class="'+parentClass+'">'
                 st.items.map(function(it){
 
                     var $item = (it.selection == "simple") ? $(item) : $(itemM)
@@ -78,7 +138,7 @@ function init(){
                     $item.find('.text-block').text(it.name)
                     $item.find('.long_description').html(it.description)
                     $item.find('.btn-details').attr('x-on:click', `showPop('${s}', ${j})`)
-                    $item.find('.details').attr('x-bind:class' , '{"show" : studio.'+s+'.selected['+j+'].show}').attr('x-on:click', `hidePop('${s}', ${j})`) 
+                    $item.find('.details').attr('x-bind:class' , '{"show" : studio.'+s+'.selected['+j+'].show}').attr('x-on:click', `hidePop('${s}', ${j})`)
                     j++
                     var $p = $item.find('.text-price')
 
@@ -94,7 +154,7 @@ function init(){
                     if(it.description == ""){
                         $item.find('.btn-details').css({'display' : 'none'})
                     }
-                    
+
                     if(it.active){
                         $item.addClass("selected")
                     }
@@ -108,13 +168,13 @@ function init(){
                 $parentHTML.find(".w-dyn-list").html(htmlItems)
                 $('.'+s+' '+ccM).parent().append($parentHTML)
             })
-        }  
+        }
     }
 
     $("input:required").attr("x-on:input", "validate()")
     $('form').attr("x-on:keydown.enter.prevent", "")
     $('#next-button').attr("href", "javascript:void(0)")
-    $('form').attr("x-on:submit", "submit(event)")
+//  $('form').attr("x-on:submit", "submit(event)")
     $(".currency-link").each(function(){
         var dataC = $(this).parent().find('.currency').data()
         $(this).attr("x-on:click", `changeCurrency('${dataC.currency}')`)
@@ -160,10 +220,10 @@ function init(){
     }
     for(sec in sections){
         if(sec != 'm'){
-        studio[sec] = {
-            active: (sections[sec].length > 0) ? sections[sec][0] : {image : null, price: 0},
-            selected: sections[sec]
-        }}
+            studio[sec] = {
+                active: (sections[sec].length > 0) ? sections[sec][0] : {image : null, price: 0},
+                selected: sections[sec]
+            }}
     }
     return {
         sections : sections, studio : studio, studioItems : [], active : true,  shipping : 0, customer : customer, upgradesV : "", servicesV : "", interiorV : "", layoutV : "", exteriorV : "", valid : true, currency : "USD", slideActive : 0, summarySlide : slidesT.length - 1, installationSlide : slidesT.length - 2,
@@ -179,7 +239,7 @@ function init(){
                 uri = uri.split("#")[0]
                 _this.slideActive = nS
                 history.pushState({}, null, uri + "#"+ slidesT[nS]);
-        
+
             });
         },
         setStudio : function(event){
@@ -236,12 +296,12 @@ function init(){
                 var item = this.studio[i]
                 if(i != "model"){
                     if(item.price != undefined){
-                        total = parseFloat(total) + parseFloat(item.price) 
+                        total = parseFloat(total) + parseFloat(item.price)
                     }else{
                         for (const j in this.studio[i].selected) {
                             var itemJ = this.studio[i].selected[j]
                             if(itemJ.active)
-                                total = parseFloat(total) + parseFloat(itemJ.price) 
+                                total = parseFloat(total) + parseFloat(itemJ.price)
                         }
                     }
                 }
@@ -253,7 +313,7 @@ function init(){
         setLoan : function(total){
             var tax = (parseFloat(8) + parseFloat(2.9) + parseFloat(2)) / 100;
             var interest_rate = 6.89 / 100
-            var total_porcentage = Math.pow(1+(interest_rate/12), -60) 
+            var total_porcentage = Math.pow(1+(interest_rate/12), -60)
             total_porcentage = (total * (interest_rate/12))/(1-(total_porcentage))
             total_porcentage = parseFloat(total_porcentage) + parseFloat((total*tax) / 60)
             total_porcentage = this.setCurrencyPrice(total_porcentage)
@@ -264,8 +324,8 @@ function init(){
             this.valid = true
             var inputs = $("input:required").filter(function(i, elem){
                 return $(elem).val() == ""
-            })        
-            if(slide == this.summarySlide){ 
+            })
+            if(slide == this.summarySlide){
                 if(inputs.length > 0){ this.valid = false }
                 else{ this.valid = true }
             }
@@ -289,32 +349,32 @@ function init(){
                         }
                         this[i+"V"] = value.join(", ")
                     }
-                } 
-            } 
-            this.studioItems.push({type : "shipping", name : "Estimated shipping", price : this.shipping,  image : "", thumbnail : imgshipping})  
-            this.studioItems.push(modelSelected)  
+                }
+            }
+            this.studioItems.push({type : "shipping", name : "Estimated shipping", price : this.shipping,  image : "", thumbnail : imgshipping})
+            this.studioItems.push(modelSelected)
         },
         formatMoney : function(price, show = true){
             if(show) return formatter.format(price)
             else return (price == 0) ? show_zero_price : formatter.format(price)
-        }, 
+        },
         changeZip : function(event){
             var zip_init = $("#zip-init").text();
-            var zip_price = $("#zip-price").text();            
+            var zip_price = $("#zip-price").text();
             var zip = event.target.value
             var _this = this
             if(zip != ""){
                 $.get("https://api.zip-codes.com/ZipCodesAPI.svc/1.0/CalculateDistance/ByZip?fromzipcode="+zip_init+"&tozipcode="+zip+"&key="+zz)
-                .done(function(res){
-                    if(res.DistanceInMiles || res.DistanceInMiles == 0.0){
-                        _this.shipping = parseFloat(res.DistanceInMiles) * parseFloat(zip_price)
-                        _this.setPrice()
-                        _this.renderSelection()
-                    }else{
-                        _this.shipping = 0
-                        _this.renderSelection()
-                    }
-                })    
+                    .done(function(res){
+                        if(res.DistanceInMiles || res.DistanceInMiles == 0.0){
+                            _this.shipping = parseFloat(res.DistanceInMiles) * parseFloat(zip_price)
+                            _this.setPrice()
+                            _this.renderSelection()
+                        }else{
+                            _this.shipping = 0
+                            _this.renderSelection()
+                        }
+                    })
             }else{
                 _this.shipping = 0
                 _this.renderSelection()
@@ -324,7 +384,7 @@ function init(){
             var inputs = $("input:required").filter(function(i, elem){ return $(elem).val() == "" })
             if(inputs.length == 0) this.valid = true
             else this.valid = false
-        }, 
+        },
         validateForm : function(){
             var slideActive = $(".w-slider-dot.w-active")
             var i = slideActive.index()
@@ -335,14 +395,14 @@ function init(){
                 if(inputs.length == 0){ this.goSlide(i)}
             }
         },
-        submit : function(event){
-            var data = $('form').serialize()
-            data = window.btoa(data)
-            var sTags = JSON.stringify(this.studioItems)
-            var t = window.btoa(sTags)
-            $( document ).ajaxComplete(function() { window.location.href = "/thank-you?s="+data+"&t="+t });
-            return false
-        },
+//        submit : function(event){
+//            var data = $('form').serialize()
+//            data = window.btoa(data)
+//            var sTags = JSON.stringify(this.studioItems)
+//            var t = window.btoa(sTags)
+//            $( document ).ajaxComplete(function() { window.location.href = "/thank-you?s="+data+"&t="+t });
+//            return false
+//       },
         changeCurrency : function(c){
             this.currency = c
             this.setPrice()
@@ -353,5 +413,5 @@ function init(){
         setCurrencyPrice: function(p, symbol = ""){ return symbol + " " + (p / currencys[this.currency]).toFixed(0) },
         showPop: function(s, i){ this.studio[s].selected[i].show = true },
         hidePop: function(s, i){ this.studio[s].selected[i].show = false }
-     }
+    }
 }
