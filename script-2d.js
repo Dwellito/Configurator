@@ -136,7 +136,7 @@ function init(){
     $("input:required").attr("x-on:input", "validate()")
     $('form').attr("x-on:keydown.enter.prevent", "")
     $('#next-button').attr("href", "javascript:void(0)")
-//  $('form').attr("x-on:submit", "submit(event)")
+    $('form').attr("x-on:submit", "submit(event)")
     $(".currency-link").each(function(){
         var dataC = $(this).parent().find('.currency').data()
         $(this).attr("x-on:click", `changeCurrency('${dataC.currency}')`)
