@@ -58,6 +58,7 @@ const redirectToStripe = function() {
                      */
                     var displayError = document.getElementById('error-message');
                     displayError.textContent = result.error.message;
+                    console.log(result.error.message)
                 }
             });
     });
