@@ -62,6 +62,7 @@ const redirectToStripe = function() {
                 }
             });
     });
+	console.log("rTS Done")
 };
 
 $(() => {
