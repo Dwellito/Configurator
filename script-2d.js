@@ -22,41 +22,7 @@ function loadScript(url, callback)
 }
 
 const redirectToStripe = function() {
-    //var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
-    var stripe = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); //TODO: change to Dwellito
 
-    //const priceID = 'price_1IiUe4Hy8pZ91dsyzSVEk4at'; // TODO: get dynamically from Webflow OR get hard coded from Anil/Caleb PROD
-    const priceID = 'price_1IjTR7Hy8pZ91dsytU0x1YAD'; // TODO: get dynamically from Webflow OR get hard coded from Anil/Caleb
-
-    var cancelURL = "https://" + window.location.hostname; //TODO: Finish
-
-    var checkoutButton = document.getElementById('checkout-button-price');
-    checkoutButton.addEventListener('click', function () {
-        stripe.redirectToCheckout({
-            lineItems: [{price: priceID, quantity: 1}],
-            mode: 'payment',
-            /*
-             * Do not rely on the redirect to the successUrl for fulfilling
-             * purchases, customers may not always reach the success_url after
-             * a successful payment.
-             * Instead use one of the strategies described in
-             * https://stripe.com/docs/payments/checkout/fulfill-orders
-             */
-            successUrl: "https://" + window.location.hostname + "/thank-you?s=" + window.btoa($("form").serialize()) + "&t=" + window.btoa(JSON.stringify(this.studioItems)),
-            cancelUrl: cancelURL,
-        })
-            .then(function (result) {
-                if (result.error) {
-                    /*
-                     * If `redirectToCheckout` fails due to a browser or network
-                     * error, display the localized error message to your customer.
-                     */
-                    var displayError = document.getElementById('error-message');
-                    displayError.textContent = result.error.message;
-                    console.log(result.error.message)
-                }
-            });
-    });
 };
 
 $(() => {
@@ -399,6 +365,46 @@ function init(){
 //            $( document ).ajaxComplete(function() { window.location.href = "/thank-you?s="+data+"&t="+t });
 //            return false
 //       },
+        submit : function(event){
+            var data = $('form').serialize()
+            data = window.btoa(data)
+            var sTags = JSON.stringify(this.studioItems)
+            var t = window.btoa(sTags)
+			
+			//var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
+			var stripe = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); //TODO: change to Dwellito
+
+			//const priceID = 'price_1IiUe4Hy8pZ91dsyzSVEk4at'; // TODO: get dynamically from Webflow OR get hard coded from Anil/Caleb PROD
+			const priceID = 'price_1IjTR7Hy8pZ91dsytU0x1YAD'; // TODO: get dynamically from Webflow OR get hard coded from Anil/Caleb
+		
+			var successURL = "https://" + window.location.hostname + "/thank-you?s=" + data + "&t=" + t
+			var cancelURL = "https://" + window.location.hostname; //TODO: Finish
+
+			stripe.redirectToCheckout({
+				lineItems: [{price: priceID, quantity: 1}],
+				mode: 'payment',
+				/*
+				 * Do not rely on the redirect to the successUrl for fulfilling
+				 * purchases, customers may not always reach the success_url after
+				 * a successful payment.
+				 * Instead use one of the strategies described in
+				 * https://stripe.com/docs/payments/checkout/fulfill-orders
+				 */
+				successUrl: successURL,
+				cancelUrl: cancelURL,
+			})
+            .then(function (result) {
+                if (result.error) {
+                    /*
+                     * If `redirectToCheckout` fails due to a browser or network
+                     * error, display the localized error message to your customer.
+                     */
+                    var displayError = document.getElementById('error-message');
+                    displayError.textContent = result.error.message;
+                    console.log(result.error.message)
+                }
+            });
+       },
         changeCurrency : function(c){
             this.currency = c
             this.setPrice()
