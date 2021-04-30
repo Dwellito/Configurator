@@ -366,6 +366,7 @@ function init(){
 //            return false
 //       },
         submit : function(event){
+		    console.log($('form'))
             var data = $('form').serialize()
 			console.log(data)
             data = window.btoa(data)
