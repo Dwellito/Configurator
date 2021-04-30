@@ -28,13 +28,6 @@ const redirectToStripe = function() {
     //const priceID = 'price_1IiUe4Hy8pZ91dsyzSVEk4at'; // TODO: get dynamically from Webflow OR get hard coded from Anil/Caleb PROD
     const priceID = 'price_1IjTR7Hy8pZ91dsytU0x1YAD'; // TODO: get dynamically from Webflow OR get hard coded from Anil/Caleb
 
-    var data = $("form").serialize();
-    console.log(data)
-    data = window.btoa(data);
-    var sTags = JSON.stringify(this.studioItems), t = window.btoa(sTags);
-    console.log(this.studioItems)
-
-    var successURL = "https://" + window.location.hostname + "/thank-you?s=" + data + "&t=" + t;
     var cancelURL = "https://" + window.location.hostname; //TODO: Finish
 
     var checkoutButton = document.getElementById('checkout-button-price');
@@ -49,7 +42,7 @@ const redirectToStripe = function() {
              * Instead use one of the strategies described in
              * https://stripe.com/docs/payments/checkout/fulfill-orders
              */
-            successUrl: successURL,
+            successUrl: "https://" + window.location.hostname + "/thank-you?s=" + window.btoa($("form").serialize()) + "&t=" + window.btoa(JSON.stringify(this.studioItems));,
             cancelUrl: cancelURL,
         })
             .then(function (result) {
