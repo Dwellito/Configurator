@@ -42,7 +42,7 @@ const redirectToStripe = function() {
              * Instead use one of the strategies described in
              * https://stripe.com/docs/payments/checkout/fulfill-orders
              */
-            successUrl: "https://" + window.location.hostname + "/thank-you?s=" + window.btoa($("form").serialize()) + "&t=" + window.btoa(JSON.stringify(this.studioItems));,
+            successUrl: "https://" + window.location.hostname + "/thank-you?s=" + window.btoa($("form").serialize()) + "&t=" + window.btoa(JSON.stringify(this.studioItems)),
             cancelUrl: cancelURL,
         })
             .then(function (result) {
