@@ -365,10 +365,10 @@ function init(){
 //       },
         submit : function(event){
             var data = $('form').serialize()
-			console.log(data)
+			//console.log(data)
             data = window.btoa(data)
             var sTags = JSON.stringify(this.studioItems)
-			console.log(sTags)
+			//console.log(sTags)
             var t = window.btoa(sTags)
 			
 			//var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
@@ -379,8 +379,8 @@ function init(){
 		
 			var successURL = "https://" + window.location.hostname + "/thank-you?s=" + data + "&t=" + t
 			var cancelURL = "https://" + window.location.hostname; //TODO: Finish
-            console.log(successURL)
-			stripe.redirectToCheckout({
+            //console.log(successURL)
+			return stripe.redirectToCheckout({
 				lineItems: [{price: priceID, quantity: 1}],
 				mode: 'payment',
 				/*
