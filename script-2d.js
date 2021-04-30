@@ -21,9 +21,7 @@ function loadScript(url, callback)
     head.appendChild(script);
 }
 
-const redirectToStripe = function() {
-
-};
+const redirectToStripe = function() {};
 
 $(() => {
     loadScript("https://js.stripe.com/v3", redirectToStripe)
@@ -366,7 +364,6 @@ function init(){
 //            return false
 //       },
         submit : function(event){
-		    console.log($('form'))
             var data = $('form').serialize()
 			console.log(data)
             data = window.btoa(data)
@@ -382,7 +379,7 @@ function init(){
 		
 			var successURL = "https://" + window.location.hostname + "/thank-you?s=" + data + "&t=" + t
 			var cancelURL = "https://" + window.location.hostname; //TODO: Finish
-            console.log("trigger")
+            console.log(successURL)
 			stripe.redirectToCheckout({
 				lineItems: [{price: priceID, quantity: 1}],
 				mode: 'payment',
