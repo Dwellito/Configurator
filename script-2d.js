@@ -363,7 +363,7 @@ function init(){
 //            $( document ).ajaxComplete(function() { window.location.href = "/thank-you?s="+data+"&t="+t });
 //            return false
 //       },
-        submit : function(event){
+        submit : async function(event){
 		    //var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
 	        var stripe = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); //TODO: change to Dwellito
 
@@ -377,7 +377,7 @@ function init(){
 		
 			var successURL = "https://" + window.location.hostname + "/thank-you?s=" + data + "&t=" + t
 			var cancelURL = "https://" + window.location.hostname; //TODO: Finish
-			stripe.redirectToCheckout({
+			await stripe.redirectToCheckout({
 				lineItems: [{price: priceID, quantity: 1}],
 				mode: 'payment',
 				/*
