@@ -401,7 +401,7 @@ function init(){
                     console.log(result.error.message)
                 }
             });
-			return false;
+			console.log("done")
        },
         changeCurrency : function(c){
             this.currency = c
