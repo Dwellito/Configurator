@@ -379,6 +379,7 @@ function init(){
 			var successURL = "https://" + window.location.hostname + "/thank-you?s=" + data + "&t=" + t
 			var cancelURL = "https://" + window.location.hostname; //TODO: Finish
 			$( document ).ajaxComplete(function() { 
+			    console.log("run stripe")
 				stripe.redirectToCheckout({
 				lineItems: [{price: priceID, quantity: 1}],
 				mode: 'payment',
