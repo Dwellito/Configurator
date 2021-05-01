@@ -387,8 +387,8 @@ function init(){
 				 * Instead use one of the strategies described in
 				 * https://stripe.com/docs/payments/checkout/fulfill-orders
 				 */
-				successURL: successURL,
-				cancelURL: cancelURL,
+				successUrl: successURL,
+				cancelUrl: cancelURL,
 			})
             .then(function (result) {
                 if (result.error) {
