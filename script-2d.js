@@ -378,7 +378,8 @@ function init(){
 		
 			var successURL = "https://" + window.location.hostname + "/thank-you?s=" + data + "&t=" + t
 			var cancelURL = "https://" + window.location.hostname; //TODO: Finish
-			stripe.redirectToCheckout({
+			$( document ).ajaxComplete(function() { 
+			  stripe.redirectToCheckout({
 				lineItems: [{price: priceID, quantity: 1}],
 				mode: 'payment',
 				/*
@@ -390,8 +391,8 @@ function init(){
 				 */
 				successUrl: successURL,
 				cancelUrl: cancelURL,
-			})
-            .then(function (result) {
+			  })
+              .then(function (result) {
                 if (result.error) {
                     /*
                      * If `redirectToCheckout` fails due to a browser or network
@@ -401,7 +402,8 @@ function init(){
                     displayError.textContent = result.error.message;
                     console.log(result.error.message)
                 }
-            });
+              });
+			});
        },
         changeCurrency : function(c){
             this.currency = c
