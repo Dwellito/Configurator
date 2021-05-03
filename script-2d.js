@@ -397,7 +397,7 @@ function init(){
 				 */
 				successUrl: successURL,
 				cancelUrl: cancelURL,
-				customerEmail: document.getElementById("email-input").value,
+				customerEmail: email,
 			})
             .then(function (result) {
                 if (result.error) {
