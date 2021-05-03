@@ -311,7 +311,7 @@ function init(){
                     }
                 }
             }
-            this.studioItems.push({type : "shipping", name : "Estimated shipping", price : this.shipping,  image : "", thumbnail : imgshipping})
+            this.studioItems.push({type : "shipping", name : "Shipping and Installation TBD", price : this.shipping,  image : "", thumbnail : imgshipping})
             this.studioItems.push(modelSelected)
         },
         formatMoney : function(price, show = true){
