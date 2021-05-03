@@ -376,14 +376,8 @@ function init(){
             //var t = window.btoa(sTags)
 		
 			var successURL = "https://" + window.location.hostname + "/thank-you"
-			var cancelURL = "https://" + window.location.hostname + "/payment-failure"; //TODO: Finish
-			var emailElement = document.getElementById("email-input");
-		        
-		        var email = "";
-		
-		        if (emailElement) {
-		          email = emailElement.value
-			}
+			var cancelURL = "https://" + window.location.hostname + "/payment-failure";
+			var email = document.getElementById("Email").value;
 	
 			stripe.redirectToCheckout({
 				lineItems: [{price: priceID, quantity: 1}],
