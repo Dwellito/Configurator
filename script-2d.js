@@ -379,7 +379,7 @@ function init(){
 			var cancelURL = "https://" + window.location.hostname + "/payment-failure"; //TODO: Finish
 			var emailElement = document.getElementById("email-input");
 		        
-		        var email = null;
+		        var email = "";
 		
 		        if (emailElement) {
 		          email = emailElement.value
