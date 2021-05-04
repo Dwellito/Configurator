@@ -311,7 +311,7 @@ function init(){
                     }
                 }
             }
-            this.studioItems.push({type : "shipping", name : "Shipping and Installation TBD", price : this.shipping,  image : "", thumbnail : imgshipping})
+            this.studioItems.push({type : "shipping", name : "Shipping is $3/mile from Marysville, WA or Mount Pleasant, MI. Installation is $1,500-$3,000 depending on the accessibility to your backyard.", price : this.shipping,  image : "", thumbnail : imgshipping})
             this.studioItems.push(modelSelected)
         },
         formatMoney : function(price, show = true){
