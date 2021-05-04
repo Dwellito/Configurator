@@ -377,9 +377,10 @@ function init(){
 		
 			var successURL = "https://" + window.location.hostname + "/thank-you"
 			var cancelURL = "https://" + window.location.hostname + "/payment-failure";
-			var email = document.getElementById("Email").value;
-	
-			stripe.redirectToCheckout({
+			var emailElement = document.getElementById("Email");
+		        var email = emailElement.value;
+		
+		        var stripeArgs = {
 				lineItems: [{price: priceID, quantity: 1}],
 				mode: 'payment',
 				/*
@@ -391,8 +392,12 @@ function init(){
 				 */
 				successUrl: successURL,
 				cancelUrl: cancelURL,
-				customerEmail: email,
-			})
+			}
+			if (email) {
+			  stripeArgs.customerEmail = email
+			}
+	
+			stripe.redirectToCheckout(stripeArgs)
             .then(function (result) {
                 if (result.error) {
                     /*
