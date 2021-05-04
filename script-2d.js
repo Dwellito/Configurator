@@ -23,6 +23,11 @@ function loadScript(url, callback)
 
 const redirectToStripe = function() {};
 
+function validEmail(email) {
+  const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
+
 $(() => {
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
@@ -393,7 +398,7 @@ function init(){
 				successUrl: successURL,
 				cancelUrl: cancelURL,
 			}
-			if (email) {
+			if (email && validEmail(email)) {
 			  stripeArgs.customerEmail = email
 			}
 	
