@@ -4,6 +4,10 @@ var show_zero_price = "";
 var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = "22EP8BJUJKCW2YGUN8RS", hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
 var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 0});
 
+const lookup = { "the-twelve": {"price-per-mile": 3.50},
+                 "the-sixteen": {"price-per-mile": 4.00}
+               }
+
 function loadScript(url, callback)
 {
     // Adding the script tag to the head as suggested before
@@ -21,6 +25,8 @@ function loadScript(url, callback)
     head.appendChild(script);
 }
 
+var shippingCost = null;
+
 const redirectToStripe = function() {};
 
 function validEmail(email) {
@@ -28,8 +34,17 @@ function validEmail(email) {
   return re.test(email);
 }
 
+const getModelName = thePath => thePath.substring(thePath.lastIndexOf('/') + 1)
+
+function parseMiles (str) {
+  var regex = new RegExp('mi|,', 'igm')
+  var txt = str.replace(regex, '').trim()
+  return parseInt(txt)
+}
+
 $(() => {
     document.title = "Configurator"
+    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
@@ -273,7 +288,47 @@ function init(){
                     }
                 }
             }
-            total = parseFloat(total) + parseFloat(this.shipping)
+	    try {
+	      const service = new google.maps.DistanceMatrixService();
+              var address = document.getElementById('Address').value.trim();
+              var city = document.getElementById('City').value.trim();
+              var state = document.getElementById('State').value.trim();
+		    
+	      if (address !== "" && city !== "" && state !== "") {
+	          var dest = "";
+                  dest += address + "," + city + "," + state
+		      
+	          service.getDistanceMatrix({
+                    origins: ["9424 W Walton, Blanchard, MI", "5617 104th Pl NE, Marysville, WA"],
+                    destinations: [dest],
+                    unitSystem: google.maps.UnitSystem.IMPERIAL,
+                    travelMode: google.maps.TravelMode.DRIVING,
+                    avoidHighways: false,
+                    avoidTolls: false,
+                  }, (response, status) => {
+                    if (status == "OK") {
+
+                      const michiganResult = lookup[getModelName()]["price-per-mile"] * parseMiles(response.rows[0].elements[0].distance.text)
+                      const washingtonResult = lookup[getModelName()]["price-per-mile"] * parseMiles(response.rows[1].elements[0].distance.text)
+      
+                      var price = michiganResult < washingtonResult ? michiganResult : washingtonResult;
+      
+                      if (price >= 3000) {
+                        price -= 1000
+                      } 
+                      else if (price >= 2500 && price <= 2999) {
+                        price -= 500
+                      }
+		      shippingCost = price
+                    }
+                  })
+	      }
+	    } catch (error) {
+	    
+	    }
+
+            //total = parseFloat(total) + parseFloat(this.shipping)
+	    total = parseFloat(total) + (shippingCost || 0)
             this.studio.price = formatter.format(this.setCurrencyPrice(total))
             this.setLoan(total)
         },
@@ -294,7 +349,11 @@ function init(){
             })        
             if(slide == this.summarySlide){ 
                 if(inputs.length > 0){ this.valid = false }
-                else{ this.valid = true }
+                else{ 
+			this.valid = true
+			this.setPrice()
+			this.renderSelection()
+		}
             }
             if(this.valid){ $("#slick-slide-control0"+slide).click() }
             if(slide == this.installationSlide  && inputs.length > 0) this.valid = false
@@ -318,35 +377,36 @@ function init(){
                     }
                 } 
             } 
-            this.studioItems.push({type : "shipping", name : "Estimated shipping", price : this.shipping,  image : "", thumbnail : imgshipping})  
+	    var shipText = shippingCost ? "Shipping cost: " + formatter.format(shippingCost) : "Estimated shipping"
+            this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})  
             this.studioItems.push(modelSelected)  
         },
         formatMoney : function(price, show = true){
             if(show) return formatter.format(price)
             else return (price == 0) ? show_zero_price : formatter.format(price)
         }, 
-        changeZip : function(event){
-            var zip_init = $("#zip-init").text();
-            var zip_price = $("#zip-price").text();            
-            var zip = event.target.value
-            var _this = this
-            if(zip != ""){
-                $.get("https://api.zip-codes.com/ZipCodesAPI.svc/1.0/CalculateDistance/ByZip?fromzipcode="+zip_init+"&tozipcode="+zip+"&key="+zz)
-                .done(function(res){
-                    if(res.DistanceInMiles || res.DistanceInMiles == 0.0){
-                        _this.shipping = parseFloat(res.DistanceInMiles) * parseFloat(zip_price)
-                        _this.setPrice()
-                        _this.renderSelection()
-                    }else{
-                        _this.shipping = 0
-                        _this.renderSelection()
-                    }
-                })    
-            }else{
-                _this.shipping = 0
-                _this.renderSelection()
-            }
-        },
+        //changeZip : function(event){
+        //    var zip_init = $("#zip-init").text();
+        //    var zip_price = $("#zip-price").text();            
+        //    var zip = event.target.value
+        //    var _this = this
+        //    if(zip != ""){
+        //        $.get("https://api.zip-codes.com/ZipCodesAPI.svc/1.0/CalculateDistance/ByZip?fromzipcode="+zip_init+"&tozipcode="+zip+"&key="+zz)
+        //        .done(function(res){
+        //            if(res.DistanceInMiles || res.DistanceInMiles == 0.0){
+        //                _this.shipping = parseFloat(res.DistanceInMiles) * parseFloat(zip_price)
+        //                _this.setPrice()
+        //                _this.renderSelection()
+        //            }else{
+        //                _this.shipping = 0
+        //                _this.renderSelection()
+        //            }
+        //        })    
+        //    }else{
+        //        _this.shipping = 0
+        //        _this.renderSelection()
+        //    }
+        //},
         validate : function(){
             var inputs = $("input:required").filter(function(i, elem){ return $(elem).val() == "" })
             if(inputs.length == 0) this.valid = true
