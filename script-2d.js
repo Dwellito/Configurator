@@ -321,18 +321,18 @@ function init(){
                       }
 		      shippingCost = price
 		      console.log("CALC: " + price)
+		      total = parseFloat(total) + price
+		      console.log()
+                      this.studio.price = formatter.format(this.setCurrencyPrice(total))
+                      this.setLoan(total)
                     }
                   })
 	      }
 	    } catch (error) {
-	    
+	      total = parseFloat(total) + parseFloat(this.shipping)
+              this.studio.price = formatter.format(this.setCurrencyPrice(total))
+              this.setLoan(total)
 	    }
-
-            //total = parseFloat(total) + parseFloat(this.shipping)
-            console.log("Total: " + shippingCost)
-	    total = parseFloat(total) + (shippingCost || 0)
-            this.studio.price = formatter.format(this.setCurrencyPrice(total))
-            this.setLoan(total)
         },
         setLoan : function(total){
             var tax = (parseFloat(8) + parseFloat(2.9) + parseFloat(2)) / 100;
@@ -361,6 +361,7 @@ function init(){
             if(slide == this.installationSlide  && inputs.length > 0) this.valid = false
         },
         renderSelection(){
+	    console.log("render selection")
             this.studioItems = []
             var b = sB
             var c = sC
@@ -380,6 +381,7 @@ function init(){
                 } 
             } 
 	    var shipText = shippingCost ? "Shipping cost: " + formatter.format(shippingCost) : "Estimated shipping"
+	    console.log("render selection " + shippingCost)
             this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})  
             this.studioItems.push(modelSelected)  
         },
