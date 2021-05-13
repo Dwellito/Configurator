@@ -328,6 +328,10 @@ function init(){
 	              this.renderSelection()
                     }
                   })
+	      } else {
+	        total = parseFloat(total) + parseFloat(this.shipping)
+                this.studio.price = formatter.format(this.setCurrencyPrice(total))
+                this.setLoan(total)
 	      }
 	    } catch (error) {
 	      total = parseFloat(total) + parseFloat(this.shipping)
