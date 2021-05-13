@@ -325,6 +325,7 @@ function init(){
 		      console.log()
                       this.studio.price = formatter.format(this.setCurrencyPrice(total))
                       this.setLoan(total)
+	              this.renderSelection()
                     }
                   })
 	      }
@@ -354,7 +355,6 @@ function init(){
                 else{ 
 			this.valid = true
 			this.setPrice()
-			this.renderSelection()
 		}
             }
             if(this.valid){ $("#slick-slide-control0"+slide).click() }
