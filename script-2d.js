@@ -308,8 +308,8 @@ function init(){
                   }, (response, status) => {
                     if (status == "OK") {
 
-                      const michiganResult = lookup[getModelName()]["price-per-mile"] * parseMiles(response.rows[0].elements[0].distance.text)
-                      const washingtonResult = lookup[getModelName()]["price-per-mile"] * parseMiles(response.rows[1].elements[0].distance.text)
+                      const michiganResult = lookup[getModelName(window.location.pathname)]["price-per-mile"] * parseMiles(response.rows[0].elements[0].distance.text)
+                      const washingtonResult = lookup[getModelName(window.location.pathname)]["price-per-mile"] * parseMiles(response.rows[1].elements[0].distance.text)
       
                       var price = michiganResult < washingtonResult ? michiganResult : washingtonResult;
       
