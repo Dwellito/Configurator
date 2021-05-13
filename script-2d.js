@@ -320,6 +320,7 @@ function init(){
                         price -= 500
                       }
 		      shippingCost = price
+		      console.log("CALC: " + price)
                     }
                   })
 	      }
@@ -328,6 +329,7 @@ function init(){
 	    }
 
             //total = parseFloat(total) + parseFloat(this.shipping)
+            console.log("Total: " + shippingCost)
 	    total = parseFloat(total) + (shippingCost || 0)
             this.studio.price = formatter.format(this.setCurrencyPrice(total))
             this.setLoan(total)
