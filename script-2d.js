@@ -385,28 +385,28 @@ function init(){
             if(show) return formatter.format(price)
             else return (price == 0) ? show_zero_price : formatter.format(price)
         }, 
-        //changeZip : function(event){
-        //    var zip_init = $("#zip-init").text();
-        //    var zip_price = $("#zip-price").text();            
-        //    var zip = event.target.value
-        //    var _this = this
-        //    if(zip != ""){
-        //        $.get("https://api.zip-codes.com/ZipCodesAPI.svc/1.0/CalculateDistance/ByZip?fromzipcode="+zip_init+"&tozipcode="+zip+"&key="+zz)
-        //        .done(function(res){
-        //            if(res.DistanceInMiles || res.DistanceInMiles == 0.0){
-        //                _this.shipping = parseFloat(res.DistanceInMiles) * parseFloat(zip_price)
-        //                _this.setPrice()
-        //                _this.renderSelection()
-        //            }else{
-        //                _this.shipping = 0
-        //                _this.renderSelection()
-        //            }
-        //        })    
-        //    }else{
-        //        _this.shipping = 0
-        //        _this.renderSelection()
-        //    }
-        //},
+        changeZip : function(event){
+            var zip_init = $("#zip-init").text();
+            var zip_price = $("#zip-price").text();            
+            var zip = event.target.value
+            var _this = this
+            if(zip != ""){
+                $.get("https://api.zip-codes.com/ZipCodesAPI.svc/1.0/CalculateDistance/ByZip?fromzipcode="+zip_init+"&tozipcode="+zip+"&key="+zz)
+                .done(function(res){
+                    if(res.DistanceInMiles || res.DistanceInMiles == 0.0){
+                        _this.shipping = parseFloat(res.DistanceInMiles) * parseFloat(zip_price)
+                        _this.setPrice()
+                        _this.renderSelection()
+                    }else{
+                        _this.shipping = 0
+                        _this.renderSelection()
+                    }
+                })    
+            }else{
+                _this.shipping = 0
+                _this.renderSelection()
+            }
+        },
         validate : function(){
             var inputs = $("input:required").filter(function(i, elem){ return $(elem).val() == "" })
             if(inputs.length == 0) this.valid = true
