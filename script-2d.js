@@ -319,6 +319,8 @@ function init(){
                       else if (price >= 2500 && price <= 2999) {
                         price -= 500
                       }
+		      console.log(this.currency)    
+			    
 		      shippingCost = price
 		      total = parseFloat(total) + price
                       this.studio.price = formatter.format(this.setCurrencyPrice(total))
