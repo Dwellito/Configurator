@@ -320,9 +320,7 @@ function init(){
                         price -= 500
                       }
 		      shippingCost = price
-		      console.log("CALC: " + price)
 		      total = parseFloat(total) + price
-		      console.log()
                       this.studio.price = formatter.format(this.setCurrencyPrice(total))
                       this.setLoan(total)
 	              this.renderSelection()
@@ -365,7 +363,6 @@ function init(){
             if(slide == this.installationSlide  && inputs.length > 0) this.valid = false
         },
         renderSelection(){
-	    console.log("render selection")
             this.studioItems = []
             var b = sB
             var c = sC
@@ -385,7 +382,6 @@ function init(){
                 } 
             } 
 	    var shipText = shippingCost ? "Shipping cost: " + formatter.format(shippingCost) : "Estimated shipping"
-	    console.log("render selection " + shippingCost)
             this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})  
             this.studioItems.push(modelSelected)  
         },
