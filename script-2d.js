@@ -319,7 +319,10 @@ function init(){
                       else if (price >= 2500 && price <= 2999) {
                         price -= 500
                       }
-		      console.log(this.currency)    
+		      
+		      if (this.currency === "CAD") {
+		        price += 250
+		      }
 			    
 		      shippingCost = price
 		      total = parseFloat(total) + price
