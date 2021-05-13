@@ -385,8 +385,9 @@ function init(){
                         this[i+"V"] = value.join(", ")
                     }
                 } 
-            } 
-	    var shipText = shippingCost ? "Shipping cost: " + formatter.format(shippingCost) : "Estimated shipping"
+            }
+	    var localizedCost = this.currency === "CAD" ? shippingCost / 0.78 : shippingCost 
+	    var shipText = shippingCost ? "Shipping cost: " + formatter.format(localizedCost) : "Estimated shipping"
             this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})  
             this.studioItems.push(modelSelected)  
         },
