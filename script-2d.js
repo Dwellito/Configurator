@@ -160,6 +160,8 @@ function init(){
         var dataC = $(this).parent().find('.currency').data()
         $(this).attr("x-on:click", `changeCurrency('${dataC.currency}')`)
         currencys[dataC.currency] = dataC.value
+	console.log(currencys)
+	console.log(dataC)
     })
 
     $(".p-currency").each(function(){
