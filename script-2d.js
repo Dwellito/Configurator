@@ -160,8 +160,8 @@ function init(){
         var dataC = $(this).parent().find('.currency').data()
         $(this).attr("x-on:click", `changeCurrency('${dataC.currency}')`)
         currencys[dataC.currency] = dataC.value
-	console.log(currencys)
-	console.log(dataC)
+	//console.log(currencys)
+	//console.log(dataC)
     })
 
     $(".p-currency").each(function(){
@@ -388,7 +388,7 @@ function init(){
                     }
                 } 
             }
-	    var localizedCost = this.currency === "CAD" ? shippingCost / 0.78 : shippingCost 
+	    var localizedCost = this.currency === "CAD" ? shippingCost / currencys["CAD"] : shippingCost 
 	    var shipText = shippingCost ? "Shipping cost: " + formatter.format(localizedCost) : "Estimated shipping"
             this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})  
             this.studioItems.push(modelSelected)  
