@@ -56,7 +56,7 @@ function init(){
     })
 
     $('.button-wrapper').find('a').attr('x-bind:class', '{"invalid" : !valid}')
-console.log(sections)
+
     for(var s in sections){
         if(s != "m" && s != 'services'){
             var section = sections[s]
