@@ -310,11 +310,11 @@ function init(){
                             return i
                         })
                     }
-                    if(item.childs.length > 0 && !item.active){
-                        item.childs.map(function(c){
-                            return c.active = false
-                        })
-                    }
+                    // if(item.childs.length > 0 && !item.active){
+                    //     item.childs.map(function(c){
+                    //         return c.active = false
+                    //     })
+                    // }
 
                 }else if(item.selection == "simple"){
                     $target.closest(".collection-list").find(".collection-item").removeClass("selected")
@@ -339,7 +339,7 @@ function init(){
                     levels : []
                 }
 
-                if(item.childs.length > 0 ){
+                if(item.childs.length > 0 && item.active){
                     this.activeOptionLevel = {
                         slug : item.slug,
                         levels : [levels[item.selection ][0]]
