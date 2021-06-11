@@ -309,7 +309,7 @@ function init(){
                             if(i.slug == slug) i.active = !i.active
                             return i
                         })
-                        if(item.childs.length > 0){
+                        if(item.childs.length > 0 && !item.active){
                             item.childs.map(function(c){
                                 return c.active = false
                             })
