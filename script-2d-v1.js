@@ -309,11 +309,11 @@ function init(){
                             if(i.slug == slug) i.active = !i.active
                             return i
                         })
-                        console.log(item)
-                        if(item.childs.length > 0 && !item.active){
-                            // item.childs.map(function(c){
-                            //     return c.active = false
-                            // })
+                        console.log(item.childs.length, item.active)
+                        if(item.childs.length > 0 && item.active === false){
+                            item.childs.map(function(c){
+                                return c.active = false
+                            })
                         }
                     }
 
