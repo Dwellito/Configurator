@@ -288,6 +288,7 @@ function init(){
         },
         setStudio : function(event){
             if(!this.runScript){
+                console.log("run")
                 this.runScript = true
             var target = event.target
             var $target = $(target).closest(".parent")
@@ -408,7 +409,11 @@ function init(){
                 
 
             }
-            this.runScript = false
+            var _this = this
+            setTimeout(function(){
+                _this.runScript = false
+            }, 120)
+            
         }
         },
         setParent(p, type){
