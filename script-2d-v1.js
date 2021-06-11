@@ -247,6 +247,7 @@ function init(){
         sections : sections, studio : studio, studioItems : [], active : true,  shipping : 0, customer : customer, upgradesV : "", servicesV : "", interiorV : "", layoutV : "", exteriorV : "", valid : true, currency : "USD", slideActive : 0, summarySlide : slidesT.length - 1, installationSlide : slidesT.length - 2, show_furniture : true,
         await : true,
         activeLevel : [],
+        runScript : false,
         activeOptionLevel : {
             slug : "",
             levels : [],
@@ -286,6 +287,8 @@ function init(){
             }
         },
         setStudio : function(event){
+            if(!this.runScript){
+                this.runScript = true
             var target = event.target
             var $target = $(target).closest(".parent")
             var $child = null
@@ -309,7 +312,7 @@ function init(){
                             if(i.slug == slug) i.active = !i.active
                             return i
                         })
-                        console.log(item.childs.length, item.active)
+
                         if(item.childs.length > 0 && item.active === false){
                             item.childs.map(function(c){
                                 return c.active = false
@@ -405,6 +408,8 @@ function init(){
                 
 
             }
+            this.runScript = false
+        }
         },
         setParent(p, type){
             var _this = this
