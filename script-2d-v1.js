@@ -4,7 +4,10 @@
 var show_zero_price = "";
 var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = "22EP8BJUJKCW2YGUN8RS", hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
 var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 0});
-var levels = []
+var levels = {
+    "multiple" : [],
+    "simple" : []
+}
 $(() => {
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
@@ -34,23 +37,36 @@ function init(){
         sections[type].push({type : $(this).data("type"), subtype : $(this).data("subtype"), namesubtype : $(this).data("namesubtype"), name : $(this).data("name"), slug : $(this).data("slug"), price : $(this).data("price"),  image : $(this).data("image"), thumbnail : $(this).data("thumbnail"), description, active, show : false, order : $(this).data('order'), selection : selection, object : $(this).data('object'), group : $(this).data('group'), material : $(this).data('material'), function : $(this).data('function'), parent : $(this).data('parent'), childs : [], activeLevel : [] })
     })
 
-    var childHtml = []
-    $('*[class^="box-level"]').each(function(i){
-        var classLevel = $(this).attr("class").split(" ")[0]
-        var level = classLevel.replace("box-level-", "")
-        levels.push(level)
-        var htmlParentLevel = $("."+classLevel)[0].outerHTML
-        var $htmlParentLevel = $(htmlParentLevel)
-        var childLevel = $htmlParentLevel.find(".level-"+level)[0].outerHTML
+    var childHtml = {
+        "multiple" : [],
+        "simple" : []
+    }
 
-        $htmlParentLevel.find('*[class^="box-level"]').each(function(){
-            $(this).remove()
+    var typeItem = ["simple", "multiple"]
+    for(var i in typeItem){
+        var type = typeItem[i]
+        console.log(type)
+        $('.'+type+' [class^="box-level"]').each(function(i){
+            var classLevel = $(this).attr("class").split(" ")[0]
+            var level = classLevel.replace("box-level-", "")
+            levels[type].push(level)
+            var htmlParentLevel = $("."+classLevel)[0].outerHTML
+            var $htmlParentLevel = $(htmlParentLevel)
+            var childLevel = $htmlParentLevel.find(".level-"+level)[0].outerHTML
+
+            $htmlParentLevel.find('*[class^="box-level"]').each(function(){
+                $(this).remove()
+            })
+            $htmlParentLevel.find(".level-"+level).remove()
+
+            var htmlParentLevel = $htmlParentLevel[0].outerHTML //'<div role="list" class="'+parentClass+'"></div>'  
+
+            childHtml[type].push({level : level, html : htmlParentLevel, htmlchild : childLevel })
         })
-        $htmlParentLevel.find(".level-"+level).remove()
+                
+    }
 
-        var htmlParentLevel = $htmlParentLevel[0].outerHTML //'<div role="list" class="'+parentClass+'"></div>'  
-        childHtml.push({level : level, html : htmlParentLevel, htmlchild : childLevel })
-    })
+   
 
     var parentHTML = ""
     if($(ccM).parent().find(ccW).length > 0){
@@ -104,10 +120,10 @@ function init(){
 
                     var $item = (it.selection == "simple") ? $(item) : $(itemM)
                     $item.removeAttr("id")
-                    $item.find('.div-block-352').attr("id", it.slug)
-                    $item.find('.div-block-352').attr("data-type", it.type)
+                    $item.find('.parent').attr("id", it.slug)
+                    $item.find('.parent').attr("data-type", it.type)
                     var vectary_function = it.function.toLowerCase().replace(" ", "-")
-                    $item.find('.div-block-352').attr("data-object", it.object).attr("data-group", it.group).attr("data-material", it.material).attr("data-function", it.function).addClass(vectary_function)
+                    $item.find('.parent').attr("data-object", it.object).attr("data-group", it.group).attr("data-material", it.material).attr("data-function", it.function).addClass(vectary_function)
                     $item.find('img.image').attr('src', it.thumbnail).attr('srcset', it.thumbnail)
                     $item.find('.text-block').text(it.name)
                     $item.find('.long_description').html(it.description)
@@ -132,11 +148,11 @@ function init(){
                     if(it.active){
                         $item.addClass("selected")
                     }
-                    $item.find('.div-block-352').attr("data-selection", it.selection)
+                    $item.find('.parent').attr("data-selection", it.selection)
                     $item.find(".w-embed span").attr("data-name", it.name).attr("data-type", it.type)
 
-                    for(var m = 0; m < childHtml.length; m++){
-                        var el = childHtml[m]
+                    for(var m = 0; m < childHtml[it.selection].length; m++){
+                        var el = childHtml[it.selection][m]
                         // console.log(el.htmlchild)
                         var classList = $(el.html).find(".list").attr("class")
                         $(el.html).find(".list").remove()
@@ -145,6 +161,7 @@ function init(){
                         $itemChild.attr("x-bind:id", "option.slug")
                         $itemChild.attr("x-bind:data-type", "option.type")
                         $itemChild.attr("x-bind:data-level", "'"+el.level+"'")
+                        $itemChild.attr("x-bind:class", "{'selected' : option.active}")
                         var childTemplate = `<template x-if="getShowLevel('${it.slug}', '${el.level}', '${it.type}') == true">
                         <div class="${classList}"><template role="listitem" x-for="option in activeLevel['${it.subtype}'][${m}].items" :key="option">
                         ${$itemChild[0].outerHTML}
@@ -221,10 +238,11 @@ function init(){
     }
     for(sec in sections){
         if(sec != 'm'){
-        studio[sec] = {
-            active: (sections[sec].length > 0) ? sections[sec][0] : {image : null, price: 0},
-            selected: sections[sec]
-        }}
+            studio[sec] = {
+                active: (sections[sec].length > 0) ? sections[sec][0] : {image : null, price: 0},
+                selected: sections[sec]
+            }
+        }
     }
     return {
         sections : sections, studio : studio, studioItems : [], active : true,  shipping : 0, customer : customer, upgradesV : "", servicesV : "", interiorV : "", layoutV : "", exteriorV : "", valid : true, currency : "USD", slideActive : 0, summarySlide : slidesT.length - 1, installationSlide : slidesT.length - 2, show_furniture : true,
@@ -251,15 +269,17 @@ function init(){
             for(var section in sections){
                 if(section != "m"){
                     var subtypes = []
+                    var type = ""
                     for(i in sections[section]){
                         var item = sections[section][i]
+                        type = item.selection
                         if(!subtypes.includes(item.subtype)){
                             subtypes.push(item.subtype)
                         }
                     }
                     for(i in subtypes){
                         this.activeLevel[subtypes[i]] = []
-                        for(var l in levels){
+                        for(var l in levels[type]){
                             this.activeLevel[subtypes[i]].push({level : l, items : []})
                         }
                     }
@@ -268,7 +288,7 @@ function init(){
         },
         setStudio : function(event){
             var target = event.target
-            var $target = $(target).closest(".div-block-352")
+            var $target = $(target).closest(".parent")
             var $child = null
 
             if($target.length == 0){
@@ -276,11 +296,6 @@ function init(){
             }
 
             if($target.length > 0 && !$(event.target).hasClass("text-details")){
-                this.activeOptionLevel = {
-                    slug : "mio",
-                    levels : []
-                }
-
                 var slug = $target.attr("id")
                 var type = $target.data("type").toLowerCase()
                 var tag = sections[type]
@@ -289,11 +304,18 @@ function init(){
                 $target.find(".section-3d").addClass("active")
 
                 if(item.selection == "multiple"){
-                    $target.toggleClass("selected")
-                    this.studio[type].selected.map(function(i){
-                        if(i.slug == slug) i.active = !i.active
-                        return i
-                    })
+                    if(item.active && this.activeOptionLevel.slug == item.slug || !item.active || item.childs.length == 0){
+                        $target.toggleClass("selected")
+                        this.studio[type].selected.map(function(i){
+                            if(i.slug == slug) i.active = !i.active
+                            return i
+                        })
+                    }
+                    if(item.childs.length > 0 && !item.active){
+                        item.childs.map(function(c){
+                            return c.active = false
+                        })
+                    }
 
                 }else if(item.selection == "simple"){
                     $target.closest(".collection-list").find(".collection-item").removeClass("selected")
@@ -307,18 +329,21 @@ function init(){
                     })
                 }
                 
-                
-                
-                for(var l = 0; l < levels.length; l++){
+                for(var l = 0; l < levels[item.selection ].length; l++){
                     this.activeLevel[item.subtype][l].items = []
                 }
 
                 this.activeLevel[item.subtype][0].items = item.childs
 
-                if(item.childs.length > 0){
+                this.activeOptionLevel = {
+                    slug : "",
+                    levels : []
+                }
+
+                if(item.childs.length > 0 && item.active){
                     this.activeOptionLevel = {
                         slug : item.slug,
-                        levels : [levels[0]]
+                        levels : [levels[item.selection ][0]]
                     }
                 }
 
@@ -338,7 +363,6 @@ function init(){
                 }else if(item.selection == "simple"){
                     $child.parent().find(".collection-item").removeClass("selected")
                     $child.addClass("selected")
-
                 }
 
                 var subtype = item.subtype
@@ -354,15 +378,15 @@ function init(){
                     return i
                 })
 
-                var l_index = levels.findIndex(function(l){
+                var l_index = levels[item.selection ].findIndex(function(l){
                     return l == level
                 })
 
                 l_index++
-                var next_level = levels[l_index]
+                var next_level = levels[item.selection ][l_index]
                 this.activeOptionLevel.levels.splice(l_index);
                 
-                for(var l = l_index; l < levels.length; l++){
+                for(var l = l_index; l < levels[item.selection ].length; l++){
                     this.activeLevel[item.subtype][l].items = []
                     
                 }
@@ -409,7 +433,8 @@ function init(){
                 return i.slug == slug
             })
 
-            var show = (this.activeOptionLevel.slug == slug && this.activeOptionLevel.levels.includes(level)) || item.active
+            var show = (this.activeOptionLevel.slug == slug && this.activeOptionLevel.levels.includes(level)) || (item.active && item.selection == "simple")
+
             return show
         },
         setPrice : function(){
