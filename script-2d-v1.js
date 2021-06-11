@@ -311,9 +311,9 @@ function init(){
                         })
                         console.log(item)
                         if(item.childs.length > 0 && !item.active){
-                            item.childs.map(function(c){
-                                return c.active = false
-                            })
+                            // item.childs.map(function(c){
+                            //     return c.active = false
+                            // })
                         }
                     }
 
