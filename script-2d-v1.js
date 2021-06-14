@@ -18,6 +18,7 @@ $(() => {
 function init(){
     var sections = { m : [], exterior : [], interior : [], layout : [], upgrades : [], services : [] }
     var currencys = []
+    var activeLevel = []
 
     setTimeout(() => { $(".div-block-257").removeClass("hidden") }, 300)
     $(".models").each(function(){
@@ -45,7 +46,7 @@ function init(){
     var typeItem = ["simple", "multiple"]
     for(var i in typeItem){
         var type = typeItem[i]
-        console.log(type)
+
         $('.'+type+' [class^="box-level"]').each(function(i){
             var classLevel = $(this).attr("class").split(" ")[0]
             var level = classLevel.replace("box-level-", "")
@@ -101,7 +102,11 @@ function init(){
             var j = 0
             section.map(function(it){
                 it.childs = section.filter(st => st.parent === it.slug)
+                if(it.childs.length > 0 && it.active){
+                    it.childs[0].active = true
+                }
             })
+
             section.map(function(tag){
                 if(!subtypes.find(st => st.value === tag.subtype)){
                     var items = section.filter(st => st.subtype === tag.subtype && st.parent == "")
@@ -110,14 +115,18 @@ function init(){
             })
     
             subtypes.map(function(st){
+                activeLevel[st.value] = []
 
+                for(var l in levels[st.items[0].selection]){
+                    var itemsChilds = (l == 0 && st.items[0].active == true) ? st.items[0].childs : []
+                    activeLevel[st.value].push({level : l, items : itemsChilds})
+                }
                 var $parentHTML = $(parentHTML)
                 $parentHTML.find('.title-subsection').text(st.title)
 
                 var parentClass = $parentHTML.find('.items-section').attr("class")
                 var htmlItems = '<div role="list" class="'+parentClass+'">'  
                 st.items.map(function(it){
-
                     var $item = (it.selection == "simple") ? $(item) : $(itemM)
                     $item.removeAttr("id")
                     $item.find('.parent').attr("id", it.slug)
@@ -181,8 +190,6 @@ function init(){
                 $parentHTML.find(".w-dyn-list").html(htmlItems)
                 $('.'+s+' '+ccM).parent().append($parentHTML)
             })
-
-            // console.log(subtypes)
         }  
     }
 
@@ -246,7 +253,7 @@ function init(){
     return {
         sections : sections, studio : studio, studioItems : [], active : true,  shipping : 0, customer : customer, upgradesV : "", servicesV : "", interiorV : "", layoutV : "", exteriorV : "", valid : true, currency : "USD", slideActive : 0, summarySlide : slidesT.length - 1, installationSlide : slidesT.length - 2, show_furniture : true,
         await : true,
-        activeLevel : [],
+        activeLevel : activeLevel,
         runScript : false,
         activeOptionLevel : {
             slug : "",
@@ -266,30 +273,11 @@ function init(){
                 history.pushState({}, null, uri + "#"+ slidesT[nS]);
         
             });
-            for(var section in sections){
-                if(section != "m"){
-                    var subtypes = []
-                    var type = ""
-                    for(i in sections[section]){
-                        var item = sections[section][i]
-                        type = item.selection
-                        if(!subtypes.includes(item.subtype)){
-                            subtypes.push(item.subtype)
-                        }
-                    }
-                    for(i in subtypes){
-                        this.activeLevel[subtypes[i]] = []
-                        for(var l in levels[type]){
-                            this.activeLevel[subtypes[i]].push({level : l, items : []})
-                        }
-                    }
-                }
-            }
+            
         },
         setStudio : function(event){
             if(!this.runScript){
-                console.log("run")
-                this.runScript = true
+            this.runScript = true
             var target = event.target
             var $target = $(target).closest(".parent")
             var $child = null
@@ -338,6 +326,10 @@ function init(){
                     this.activeLevel[item.subtype][l].items = []
                 }
 
+                if(item.childs.length > 0){
+                    item.childs[0].active = true
+                } 
+
                 this.activeLevel[item.subtype][0].items = item.childs
 
                 this.activeOptionLevel = {
@@ -372,6 +364,11 @@ function init(){
 
                 var subtype = item.subtype
                 var _this = this
+                this.studio[type].selected.map(function(i){
+                    if(i.subtype == item.subtype && item.selection == "simple")
+                        i.active = false
+                    return i
+                })
                 this.studio[type].selected.map(function(i){
                     if(i.slug == slug) {
                         i.active = !i.active
