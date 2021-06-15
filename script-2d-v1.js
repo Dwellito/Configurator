@@ -4,17 +4,48 @@
 var show_zero_price = "";
 var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = "22EP8BJUJKCW2YGUN8RS", hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
 var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 0});
+const lookup = { "the-twelve": {"price-per-mile": 3.50},
+                 "the-sixteen": {"price-per-mile": 4.00}
+               }
 var levels = {
     "multiple" : [],
     "simple" : []
 }
+function loadScript(url, callback)
+{
+    // Adding the script tag to the head as suggested before
+    var head = document.head;
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = url;
+    // Then bind the event to the callback function.
+    // There are several events for cross browser compatibility.
+    script.onreadystatechange = callback;
+    script.onload = callback;
+    // Fire the loading
+    head.appendChild(script);
+}
+var shippingCost = null;
+const redirectToStripe = function() {};
+function validEmail(email) {
+  const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
+const getModelName = thePath => thePath.substring(thePath.lastIndexOf('/') + 1)
+function parseMiles (str) {
+  var regex = new RegExp('mi|,', 'igm')
+  var txt = str.replace(regex, '').trim()
+  return parseInt(txt)
+}
 $(() => {
+    document.title = "Configurator"
+    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
+    loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => { $(".modal-pop-up._3d-model").removeClass("no-visible")})
     $("#close-3d-modal").click(() => {$(".modal-pop-up._3d-model").addClass("no-visible") })
 })
-
 function init(){
     var sections = { m : [], exterior : [], interior : [], layout : [], upgrades : [], services : [] }
     var currencys = []
@@ -24,7 +55,6 @@ function init(){
     $(".models").each(function(){
         sections.m.push({type : $(this).data("type"), name : $(this).data("name"), slug : $(this).data("slug"), price : $(this).data("price"), image : $(this).data("image")})
     })
-
     $('.rendered-sections').each(function(){
         var type = $(this).data("type").toLowerCase()
         var description = $(this).closest(".w-dyn-item").find('.longer-description-html').html()
@@ -37,9 +67,20 @@ function init(){
         var active = !exist_subtype && selection == "simple" && $(this).data('parent') == ""
         var itt = {type : $(this).data("type"), subtype : $(this).data("subtype"), namesubtype : $(this).data("namesubtype"), name : $(this).data("name"), slug : $(this).data("slug"), price : $(this).data("price"),  image : $(this).data("image"), thumbnail : $(this).data("thumbnail"), description, active, show : false, order : $(this).data('order'), selection : selection, object : $(this).data('object'), group : $(this).data('group'), material : $(this).data('material'), function : $(this).data('function'), parent : $(this).data('parent'), childs : [], activeLevel : [] }
         sections[type].push(itt)
-       
     })
- console.log(sections)
+
+    var parentHTML = ($(ccM).parent().find(ccW).length > 0) ? $(ccM).parent().find(ccW)[0].outerHTML : wrapperDefault
+    var item = ($(ccF).length > 0) ? $(ccF)[0].outerHTML : itemDefault
+    $(ccM).parent().find(ccW).remove()
+    $(ccF).remove()
+    var itemM = ($(ccFM).length > 0) ? $(ccFM)[0].outerHTML : itemDefault
+    $(ccFM).remove()
+    $(".btn-slides").each(function(i){
+        $(this).find(".nav-bar-click-link").each(function(j){
+            $(this).attr('x-bind:class', "{'selected' : slideActive == '"+j+"', 'not-selective-link' : slideActive < '"+j+"'}")
+        })
+    })
+
     var childHtml = {
         "multiple" : [],
         "simple" : []
@@ -69,8 +110,6 @@ function init(){
                 
     }
 
-   console.log(sections)
-
     var parentHTML = ""
     if($(ccM).parent().find(ccW).length > 0){
         $(ccM).parent().find(ccW).each(function(){
@@ -94,7 +133,6 @@ function init(){
     })
 
     $('.button-wrapper').find('a').attr('x-bind:class', '{"invalid" : !valid}')
-
 
 
     for(var s in sections){
@@ -123,9 +161,10 @@ function init(){
                     var itemsChilds = (l == 0 && st.items[0].active == true) ? st.items[0].childs : []
                     activeLevel[st.value].push({level : l, items : itemsChilds})
                 }
+
                 var $parentHTML = $(parentHTML)
                 $parentHTML.find('.title-subsection').text(st.title)
-
+                
                 var parentClass = $parentHTML.find('.items-section').attr("class")
                 var htmlItems = '<div role="list" class="'+parentClass+'">'  
                 st.items.map(function(it){
@@ -142,14 +181,12 @@ function init(){
                     $item.find('.details').attr('x-bind:class' , '{"show" : studio.'+s+'.selected['+j+'].show}').attr('x-on:click', `hidePop('${s}', ${j})`) 
                     j++
                     var $p = $item.find('.text-price')
-
                     var h_price = $p.html()
                     if(h_price){
                         h_price = h_price.replace("{price}", it.price)
                         $p.html(h_price)
                         $item.find('.text-price span').attr("x-text", "setCurrencyPrice("+it.price+", '+ $')")
                     }
-
                     if(it.price === 0)
                         $p.addClass(hc)
                     if(it.description == ""){
@@ -164,40 +201,26 @@ function init(){
 
                     for(var m = 0; m < childHtml[it.selection].length; m++){
                         var el = childHtml[it.selection][m]
-                        // console.log(el.htmlchild)
                         var classList = $(el.html).find(".list").attr("class")
                         $(el.html).find(".list").remove()
                         var $itemChild = $(el.htmlchild)
                         $itemChild.find('.image').attr('x-bind:src', "option.thumbnail").attr("x-bind:srcset", "option.thumbnail")
-                        $itemChild.attr("x-bind:id", "option.slug")
-                        $itemChild.attr("x-bind:data-type", "option.type")
-                        $itemChild.attr("x-bind:data-level", "'"+el.level+"'")
-                        $itemChild.attr("x-bind:class", "{'selected' : option.active}")
+                        $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
                         var childTemplate = `<template x-if="getShowLevel('${it.slug}', '${el.level}', '${it.type}') == true">
                         <div class="${classList}"><template role="listitem" x-for="option in activeLevel['${it.subtype}'][${m}].items" :key="option">
                         ${$itemChild[0].outerHTML}
                         </template></div></template>`
-                        //x-data="getDataChilds('${it.slug}', '${it.type}')
-                        //activeLevel[${m}].items
-                        //getDataChilds('${it.slug}', '${el.level}', '${it.type}')
-                        console.log(childTemplate)
                         $item.find(".box-level-"+el.level).html(childTemplate)
                     }
 
                     htmlItems += $item[0].outerHTML
                 })
                 htmlItems += '</div>'
-
-
                 $parentHTML.find(".w-dyn-list").html(htmlItems)
                 $('.'+s+' '+ccM).parent().append($parentHTML)
             })
         }  
     }
-
-//    console.log(sections)
-//    console.log(childHtml)
-
     $("input:required").attr("x-on:input", "validate()")
     $('form').attr("x-on:keydown.enter.prevent", "")
     $('#next-button').attr("href", "javascript:void(0)")
@@ -212,7 +235,6 @@ function init(){
         var text = $(this).text()
         $(this).attr('x-text', `setCurrencyPrice('${text}')`)
     })
-
     var imgshipping = $("#shipping-img").attr("src")
     var iSlide = 0
     $(".div-block-257 a").each(function(){
@@ -221,7 +243,6 @@ function init(){
         $(this).attr("x-on:click", "goSlide("+iSlide+")")
         iSlide++
     })
-
     var classitemOrder = ($(ccS).length > 0) ? $(ccS).children(':first-child').attr("class") : 'summary-studio w-dyn-items'
     var itemOrder = ($(ccS).children().length > 0) ? $(ccS).children(':first-child')[0].outerHTML : $(itemSummaryDefault)[0].outerHTML
     var $itemOrder = $(itemOrder)
@@ -235,7 +256,7 @@ function init(){
     templateCustomOrder += $itemOrder.html() + "</template>"
 
     $(".custom-items").html(templateCustomOrder)
-
+    
     let model = window.location.pathname
     model = model.split("/").pop()
 
@@ -267,7 +288,6 @@ function init(){
             this.studio.price = formatter.format(this.setCurrencyPrice(modelSelected.price))
             this.setPrice()
             var _this = this
-
             $slide.on('beforeChange', function(e, s, c, nS){
                 var uri = window.location.href
                 uri = uri.split("#")[0]
@@ -275,145 +295,143 @@ function init(){
                 history.pushState({}, null, uri + "#"+ slidesT[nS]);
         
             });
-            
         },
         setStudio : function(event){
             if(!this.runScript){
-            this.runScript = true
-            var target = event.target
-            var $target = $(target).closest(".parent")
-            var $child = null
-
-            if($target.length == 0){
-                $child = $(event.target).closest(".collection-item-5")
-            }
-
-            if($target.length > 0 && !$(event.target).hasClass("text-details")){
-                var slug = $target.attr("id")
-                var type = $target.data("type").toLowerCase()
-                var tag = sections[type]
-                var item = tag.find(function(i){ return i.slug == slug })
-
-                $target.find(".section-3d").addClass("active")
-
-                if(item.selection == "multiple"){
-                    if(item.active && this.activeOptionLevel.slug == item.slug || !item.active || item.childs.length == 0){
-                        $target.toggleClass("selected")
+                this.runScript = true
+                var target = event.target
+                var $target = $(target).closest(".parent")
+                var $child = null
+    
+                if($target.length == 0){
+                    $child = $(event.target).closest(".collection-item-5")
+                }
+    
+                if($target.length > 0 && !$(event.target).hasClass("text-details")){
+                    var slug = $target.attr("id")
+                    var type = $target.data("type").toLowerCase()
+                    var tag = sections[type]
+                    var item = tag.find(function(i){ return i.slug == slug })
+    
+                    $target.find(".section-3d").addClass("active")
+    
+                    if(item.selection == "multiple"){
+                        if(item.active && this.activeOptionLevel.slug == item.slug || !item.active || item.childs.length == 0){
+                            $target.toggleClass("selected")
+                            this.studio[type].selected.map(function(i){
+                                if(i.slug == slug) i.active = !i.active
+                                return i
+                            })
+    
+                            if(item.childs.length > 0 && item.active === false){
+                                item.childs.map(function(c){
+                                    return c.active = false
+                                })
+                            }
+                        }
+    
+                    }else if(item.selection == "simple"){
+                        $target.closest(".collection-list").find(".collection-item").removeClass("selected")
+                        $target.parent().addClass("selected")
+                        var subtype = item.subtype
                         this.studio[type].selected.map(function(i){
+                            if(i.subtype == subtype) i.active = false
                             if(i.slug == slug) i.active = !i.active
+    
                             return i
                         })
-
-                        if(item.childs.length > 0 && item.active === false){
-                            item.childs.map(function(c){
-                                return c.active = false
-                            })
+                    }
+                    
+                    for(var l = 0; l < levels[item.selection ].length; l++){
+                        this.activeLevel[item.subtype][l].items = []
+                    }
+    
+                    if(item.childs.length > 0){
+                        item.childs[0].active = true
+                    } 
+    
+                    this.activeLevel[item.subtype][0].items = item.childs
+    
+                    this.activeOptionLevel = {
+                        slug : "",
+                        levels : []
+                    }
+    
+                    if(item.childs.length > 0 && item.active){
+                        this.activeOptionLevel = {
+                            slug : item.slug,
+                            levels : [levels[item.selection ][0]]
                         }
                     }
-
-                }else if(item.selection == "simple"){
-                    $target.closest(".collection-list").find(".collection-item").removeClass("selected")
-                    $target.parent().addClass("selected")
+    
+                    this.studio[type].active = item
+                    this.setPrice()
+                    this.renderSelection()
+    
+                }else if($child.length > 0){
+                    var slug = $child.attr("id")
+                    var type = $child.data("type").toLowerCase()
+                    var level = $child.data("level").toLowerCase()
+                    var tag = sections[type]
+                    var item = tag.find(function(i){ return i.slug == slug })
+    
+                    // if(item.selection == "multiple"){
+                    //     $child.toggleClass("selected")
+    
+                    // }else if(item.selection == "simple")
+                    $child.parent().find(".collection-item-5").removeClass("selected")
+                    $child.addClass("selected")
+                 //   }
+    
                     var subtype = item.subtype
+                    var _this = this
                     this.studio[type].selected.map(function(i){
-                        if(i.subtype == subtype) i.active = false
-                        if(i.slug == slug) i.active = !i.active
-
+                        if(i.subtype == item.subtype )//&& item.selection == "simple"
+                            i.active = false
                         return i
                     })
-                }
-                
-                for(var l = 0; l < levels[item.selection ].length; l++){
-                    this.activeLevel[item.subtype][l].items = []
-                }
-
-                if(item.childs.length > 0){
-                    item.childs[0].active = true
-                } 
-
-                this.activeLevel[item.subtype][0].items = item.childs
-
-                this.activeOptionLevel = {
-                    slug : "",
-                    levels : []
-                }
-
-                if(item.childs.length > 0 && item.active){
-                    this.activeOptionLevel = {
-                        slug : item.slug,
-                        levels : [levels[item.selection ][0]]
-                    }
-                }
-
-                this.studio[type].active = item
-                this.setPrice()
-                this.renderSelection()
-
-            }else if($child.length > 0){
-                var slug = $child.attr("id")
-                var type = $child.data("type").toLowerCase()
-                var level = $child.data("level").toLowerCase()
-                var tag = sections[type]
-                var item = tag.find(function(i){ return i.slug == slug })
-
-                // if(item.selection == "multiple"){
-                //     $child.toggleClass("selected")
-
-                // }else if(item.selection == "simple")
-                $child.parent().find(".collection-item-5").removeClass("selected")
-                $child.addClass("selected")
-             //   }
-
-                var subtype = item.subtype
-                var _this = this
-                this.studio[type].selected.map(function(i){
-                    if(i.subtype == item.subtype )//&& item.selection == "simple"
-                        i.active = false
-                    return i
-                })
-                this.studio[type].selected.map(function(i){
-                    if(i.slug == slug) {
-                        i.active = !i.active
-
-                        var parent = i.parent
-                        if(parent != "")
-                            _this.setParent(parent, type)
-                    }
-                    return i
-                })
-
-                var l_index = levels[item.selection ].findIndex(function(l){
-                    return l == level
-                })
-
-                l_index++
-                var next_level = levels[item.selection ][l_index]
-                this.activeOptionLevel.levels.splice(l_index);
-                
-                for(var l = l_index; l < levels[item.selection ].length; l++){
-                    this.activeLevel[item.subtype][l].items = []
+                    this.studio[type].selected.map(function(i){
+                        if(i.slug == slug) {
+                            i.active = !i.active
+    
+                            var parent = i.parent
+                            if(parent != "")
+                                _this.setParent(parent, type)
+                        }
+                        return i
+                    })
+    
+                    var l_index = levels[item.selection ].findIndex(function(l){
+                        return l == level
+                    })
+    
+                    l_index++
+                    var next_level = levels[item.selection ][l_index]
+                    this.activeOptionLevel.levels.splice(l_index);
                     
+                    for(var l = l_index; l < levels[item.selection ].length; l++){
+                        this.activeLevel[item.subtype][l].items = []
+                        
+                    }
+    
+                    if(item.childs.length > 0){
+                        this.activeLevel[item.subtype][l_index].items = item.childs
+                        this.activeOptionLevel.levels.push(next_level)
+                    }
+    
+                    setTimeout(function(){
+                        _this.renderSelection()
+                        _this.setPrice()
+                    }, 200)
+                    
+    
                 }
-
-                if(item.childs.length > 0){
-                    this.activeLevel[item.subtype][l_index].items = item.childs
-                    this.activeOptionLevel.levels.push(next_level)
-                }
-
+                var _this = this
                 setTimeout(function(){
-                    _this.renderSelection()
-                    _this.setPrice()
-                    // console.log({..._this.studio})
-                }, 200)
+                    _this.runScript = false
+                }, 120)
                 
-
             }
-            var _this = this
-            setTimeout(function(){
-                _this.runScript = false
-            }, 120)
-            
-        }
         },
         setParent(p, type){
             var _this = this
@@ -428,15 +446,6 @@ function init(){
                 return j
             })
         },
-        // getDataChilds(slug, level, type){
-        //     type = type.toLowerCase()
-        //     var item = sections[type].find(function(i){ return i.slug == slug })
-
-        //     var l_index = levels.findIndex(function(l){
-        //         return l == level
-        //     })
-        //     return item.activeLevel[l_index].items
-        // },
         getShowLevel(slug, level, type){
             type = type.toLowerCase()
             var item = this.studio[type].selected.find(function(i){
@@ -463,9 +472,58 @@ function init(){
                     }
                 }
             }
-            total = parseFloat(total) + parseFloat(this.shipping)
-            this.studio.price = formatter.format(this.setCurrencyPrice(total))
-            this.setLoan(total)
+	    try {
+	      const service = new google.maps.DistanceMatrixService();
+              var address = document.getElementById('Address').value.trim();
+              var city = document.getElementById('City').value.trim();
+              var state = document.getElementById('State').value.trim();
+		    
+	      if (address !== "" && city !== "" && state !== "") {
+	          var dest = "";
+                  dest += address + "," + city + "," + state
+		      
+	          service.getDistanceMatrix({
+                    origins: ["9424 W Walton, Blanchard, MI", "5617 104th Pl NE, Marysville, WA"],
+                    destinations: [dest],
+                    unitSystem: google.maps.UnitSystem.IMPERIAL,
+                    travelMode: google.maps.TravelMode.DRIVING,
+                    avoidHighways: false,
+                    avoidTolls: false,
+                  }, (response, status) => {
+                    if (status == "OK") {
+                      const michiganResult = lookup[getModelName(window.location.pathname)]["price-per-mile"] * parseMiles(response.rows[0].elements[0].distance.text)
+                      const washingtonResult = lookup[getModelName(window.location.pathname)]["price-per-mile"] * parseMiles(response.rows[1].elements[0].distance.text)
+      
+                      var price = michiganResult < washingtonResult ? michiganResult : washingtonResult;
+      
+                      if (price >= 3000) {
+                        price -= 1000
+                      } 
+                      else if (price >= 2500 && price <= 2999) {
+                        price -= 500
+                      }
+		      
+		      if (this.currency === "CAD") {
+		        price += 250
+		      }
+			    
+		      shippingCost = price
+		      total = parseFloat(total) + price
+                      this.studio.price = formatter.format(this.setCurrencyPrice(total))
+                      this.setLoan(total)
+	              this.renderSelection()
+                    }
+                  })
+	      } else {
+	        total = parseFloat(total) + parseFloat(this.shipping)
+                this.studio.price = formatter.format(this.setCurrencyPrice(total))
+                this.setLoan(total)
+	      }
+	    } catch (error) {
+	      total = parseFloat(total) + parseFloat(this.shipping)
+              this.studio.price = formatter.format(this.setCurrencyPrice(total))
+              this.setLoan(total)
+	    }
         },
         setLoan : function(total){
             var tax = (parseFloat(8) + parseFloat(2.9) + parseFloat(2)) / 100;
@@ -484,7 +542,10 @@ function init(){
             })        
             if(slide == this.summarySlide){ 
                 if(inputs.length > 0){ this.valid = false }
-                else{ this.valid = true }
+                else{ 
+			this.valid = true
+			this.setPrice()
+		}
             }
             if(this.valid){ $("#slick-slide-control0"+slide).click() }
             if(slide == this.installationSlide  && inputs.length > 0) this.valid = false
@@ -498,7 +559,7 @@ function init(){
                 var value = []
                 if( !c.includes(i) && item != undefined){
                     if(b.includes(i) ){
-                        var items = item.selected.filter(function(iJ){ return iJ.active})
+                        var items = item.selected.filter(function(iJ){ return iJ.active })
                         for (const j in items) {
                             value.push(items[j].name)
                             let renderitem = { type: items[j].type, name : items[j].name, slug : items[j].slug, price : items[j].price, image : (items[j].image) ? items[j].image : null, thumbnail : (items[j].thumbnail) ? items[j].thumbnail : null}
@@ -507,8 +568,11 @@ function init(){
                         this[i+"V"] = value.join(", ")
                     }
                 } 
-            } 
-            this.studioItems.push({type : "shipping", name : "Estimated shipping", price : this.shipping,  image : "", thumbnail : imgshipping})  
+            }
+
+	    var localizedCost = this.currency === "CAD" ? shippingCost / currencys["CAD"] : shippingCost 
+	    var shipText = shippingCost ? "Shipping cost: " + formatter.format(localizedCost) : "Estimated shipping"
+            this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})  
             this.studioItems.push(modelSelected)  
         },
         formatMoney : function(price, show = true){
@@ -552,14 +616,56 @@ function init(){
                 if(inputs.length == 0){ this.goSlide(i)}
             }
         },
+        //submit : function(event){
+        //    var data = $('form').serialize()
+        //    data = window.btoa(data)
+        //    var sTags = JSON.stringify(this.studioItems)
+        //    var t = window.btoa(sTags)
+        //    $( document ).ajaxComplete(function() { window.location.href = "/thank-you?s="+data+"&t="+t });
+        //    return false
+        //},
         submit : function(event){
-            var data = $('form').serialize()
-            data = window.btoa(data)
-            var sTags = JSON.stringify(this.studioItems)
-            var t = window.btoa(sTags)
-            $( document ).ajaxComplete(function() { window.location.href = "/thank-you?s="+data+"&t="+t });
-            return false
-        },
+            var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
+	        //var stripe = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); // Test
+	        var priceID = 'price_1IiUe4Hy8pZ91dsyzSVEk4at'; // TODO: get dynamically from Webflow PROD
+            //var priceID = 'price_1IjTR7Hy8pZ91dsytU0x1YAD'; // TODO: get dynamically from Webflow TEST
+            //var data = $('form').serialize()
+            //data = window.btoa(data)
+            //var sTags = JSON.stringify(this.studioItems)
+            //var t = window.btoa(sTags)
+			var successURL = "https://" + window.location.hostname + "/thank-you"
+			var cancelURL = "https://" + window.location.hostname + "/payment-failure";
+			var emailElement = document.getElementById("Email");
+		        var email = emailElement.value;
+		        var stripeArgs = {
+				lineItems: [{price: priceID, quantity: 1}],
+				mode: 'payment',
+				/*
+				 * Do not rely on the redirect to the successUrl for fulfilling
+				 * purchases, customers may not always reach the success_url after
+				 * a successful payment.
+				 * Instead use one of the strategies described in
+				 * https://stripe.com/docs/payments/checkout/fulfill-orders
+				 */
+				successUrl: successURL,
+				cancelUrl: cancelURL,
+			}
+			if (email && validEmail(email)) {
+			  stripeArgs.customerEmail = email
+			}
+			stripe.redirectToCheckout(stripeArgs)
+            .then(function (result) {
+                if (result.error) {
+                    /*
+                     * If `redirectToCheckout` fails due to a browser or network
+                     * error, display the localized error message to your customer.
+                     */
+                    var displayError = document.getElementById('error-message');
+                    displayError.textContent = result.error.message;
+                    console.log(result.error.message)
+                }
+            });
+       },
         changeCurrency : function(c){
             this.currency = c
             this.setPrice()
@@ -579,8 +685,6 @@ function init(){
                     _this.await = true
                 }, 120)
             }
-
-
         }
      }
 }
