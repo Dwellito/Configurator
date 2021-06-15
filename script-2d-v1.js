@@ -180,8 +180,8 @@ function init(){
                         //x-data="getDataChilds('${it.slug}', '${it.type}')
                         //activeLevel[${m}].items
                         //getDataChilds('${it.slug}', '${el.level}', '${it.type}')
-                        $item.find(".box-level-"+el.level +" .list").html(childTemplate)
-                        $item.find(".box-level-"+el.level).attr("x-if",)
+                        console.log(childTemplate)
+                        $item.find(".box-level-"+el.level).html(childTemplate)
                     }
 
                     htmlItems += $item[0].outerHTML
