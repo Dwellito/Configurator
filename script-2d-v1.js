@@ -309,7 +309,6 @@ function init(){
                         }
                     }
 
-
                 }else if(item.selection == "simple"){
                     $target.closest(".collection-list").find(".collection-item").removeClass("selected")
                     $target.parent().addClass("selected")
@@ -355,17 +354,18 @@ function init(){
                 var tag = sections[type]
                 var item = tag.find(function(i){ return i.slug == slug })
 
-                if(item.selection == "multiple"){
-                    $child.toggleClass("selected")
-                }else if(item.selection == "simple"){
-                    $child.parent().find(".collection-item").removeClass("selected")
-                    $child.addClass("selected")
-                }
+                // if(item.selection == "multiple"){
+                //     $child.toggleClass("selected")
+
+                // }else if(item.selection == "simple")
+                $child.parent().find(".collection-item").removeClass("selected")
+                $child.addClass("selected")
+             //   }
 
                 var subtype = item.subtype
                 var _this = this
                 this.studio[type].selected.map(function(i){
-                    if(i.subtype == item.subtype && item.selection == "simple")
+                    if(i.subtype == item.subtype )//&& item.selection == "simple"
                         i.active = false
                     return i
                 })
