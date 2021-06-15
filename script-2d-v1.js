@@ -69,18 +69,7 @@ function init(){
         sections[type].push(itt)
     })
 
-    var parentHTML = ($(ccM).parent().find(ccW).length > 0) ? $(ccM).parent().find(ccW)[0].outerHTML : wrapperDefault
-    var item = ($(ccF).length > 0) ? $(ccF)[0].outerHTML : itemDefault
-    $(ccM).parent().find(ccW).remove()
-    $(ccF).remove()
-    var itemM = ($(ccFM).length > 0) ? $(ccFM)[0].outerHTML : itemDefault
-    $(ccFM).remove()
-    $(".btn-slides").each(function(i){
-        $(this).find(".nav-bar-click-link").each(function(j){
-            $(this).attr('x-bind:class', "{'selected' : slideActive == '"+j+"', 'not-selective-link' : slideActive < '"+j+"'}")
-        })
-    })
-
+    
     var childHtml = {
         "multiple" : [],
         "simple" : []
