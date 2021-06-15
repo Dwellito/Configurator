@@ -30,14 +30,16 @@ function init(){
         var description = $(this).closest(".w-dyn-item").find('.longer-description-html').html()
         var st = $(this).data("subtype")
         var exist_subtype = sections[type].find(function(item){
-            return item.subtype == st
+            return item.subtype == st && item.active == true
         })
         var selection = $(this).data('selection').toLowerCase()
         selection = (selection.includes("simple") ? "simple" : "multiple")
-        var active = !exist_subtype && selection == "simple"
-        sections[type].push({type : $(this).data("type"), subtype : $(this).data("subtype"), namesubtype : $(this).data("namesubtype"), name : $(this).data("name"), slug : $(this).data("slug"), price : $(this).data("price"),  image : $(this).data("image"), thumbnail : $(this).data("thumbnail"), description, active, show : false, order : $(this).data('order'), selection : selection, object : $(this).data('object'), group : $(this).data('group'), material : $(this).data('material'), function : $(this).data('function'), parent : $(this).data('parent'), childs : [], activeLevel : [] })
+        var active = !exist_subtype && selection == "simple" && $(this).data('parent') == ""
+        var itt = {type : $(this).data("type"), subtype : $(this).data("subtype"), namesubtype : $(this).data("namesubtype"), name : $(this).data("name"), slug : $(this).data("slug"), price : $(this).data("price"),  image : $(this).data("image"), thumbnail : $(this).data("thumbnail"), description, active, show : false, order : $(this).data('order'), selection : selection, object : $(this).data('object'), group : $(this).data('group'), material : $(this).data('material'), function : $(this).data('function'), parent : $(this).data('parent'), childs : [], activeLevel : [] }
+        sections[type].push(itt)
+       
     })
-
+ console.log(sections)
     var childHtml = {
         "multiple" : [],
         "simple" : []
@@ -67,7 +69,7 @@ function init(){
                 
     }
 
-   
+   console.log(sections)
 
     var parentHTML = ""
     if($(ccM).parent().find(ccW).length > 0){
@@ -283,7 +285,7 @@ function init(){
             var $child = null
 
             if($target.length == 0){
-                $child = $(event.target).closest(".collection-item")
+                $child = $(event.target).closest(".collection-item-5")
             }
 
             if($target.length > 0 && !$(event.target).hasClass("text-details")){
@@ -358,7 +360,7 @@ function init(){
                 //     $child.toggleClass("selected")
 
                 // }else if(item.selection == "simple")
-                $child.parent().find(".collection-item").removeClass("selected")
+                $child.parent().find(".collection-item-5").removeClass("selected")
                 $child.addClass("selected")
              //   }
 
