@@ -310,11 +310,12 @@ function init(){
                                 if(i.slug == slug) i.active = !i.active
                                 return i
                             })
-    
                             if(item.childs.length > 0 && item.active === false){
-                                item.childs.map(function(c){
-                                    return c.active = false
-                                })
+                                if(item.childs.length > 0){
+                                    for(c in item.childs){
+                                        item.childs[c].active = false
+                                    }
+                                } 
                             }
                         }
     
@@ -334,7 +335,7 @@ function init(){
                         this.activeLevel[item.subtype][l].items = []
                     }
     
-                    if(item.childs.length > 0){
+                    if(item.childs.length > 0 && item.active == true){
                         item.childs[0].active = true
                     } 
     
@@ -353,8 +354,10 @@ function init(){
                     }
     
                     this.studio[type].active = item
-                    this.setPrice()
-                    this.renderSelection()
+                    setTimeout(function(){
+                        _this.renderSelection()
+                        _this.setPrice()
+                    }, 300)
     
                 }else if($child.length > 0){
                     var slug = $child.attr("id")
@@ -414,6 +417,8 @@ function init(){
                     
     
                 }
+
+                
                 var _this = this
                 setTimeout(function(){
                     _this.runScript = false
@@ -454,7 +459,7 @@ function init(){
                     }else{
                         for (const j in this.studio[i].selected) {
                             var itemJ = this.studio[i].selected[j]
-                            if(itemJ.active)
+                            if(itemJ.active === true)
                                 total = parseFloat(total) + parseFloat(itemJ.price) 
                         }
                     }
