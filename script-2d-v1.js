@@ -565,7 +565,9 @@ function init(){
 
 	    var localizedCost = this.currency === "CAD" ? shippingCost / currencys["CAD"] : shippingCost 
 	    var shipText = shippingCost ? "Shipping cost: " + formatter.format(localizedCost) : "Estimated shipping"
-            this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})  
+	    if (shipText !== "Estimated Shipping") {
+	      this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})  
+	    }
             this.studioItems.push(modelSelected)  
         },
         formatMoney : function(price, show = true){
