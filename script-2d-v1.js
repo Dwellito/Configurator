@@ -563,9 +563,10 @@ function init(){
                 } 
             }
 
-	    var localizedCost = this.currency === "CAD" ? shippingCost / currencys["CAD"] : shippingCost 
-	    var shipText = shippingCost ? "Shipping cost: " + formatter.format(localizedCost) : "Estimated shipping"
-	    if (shipText !== "Estimated Shipping") {
+	    var localizedCost = this.currency === "CAD" ? shippingCost / currencys["CAD"] : shippingCost
+	    const defaultShipText = "Estimated shipping"
+	    var shipText = shippingCost ? "Shipping cost: " + formatter.format(localizedCost) : defaultShipText
+	    if (shipText !== defaultShipText) {
 	      this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})  
 	    }
             this.studioItems.push(modelSelected)  
