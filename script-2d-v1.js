@@ -471,6 +471,9 @@ function init(){
               var city = document.getElementById('City').value.trim();
               var state = document.getElementById('State').value.trim();
 		    
+	      const modelName = getModelName(window.location.pathname)
+              const pricePerMile = lookup[modelName]["price-per-mile"] 
+		    
 	      if (address !== "" && city !== "" && state !== "") {
 	          var dest = "";
                   dest += address + "," + city + "," + state
@@ -484,17 +487,29 @@ function init(){
                     avoidTolls: false,
                   }, (response, status) => {
                     if (status == "OK") {
-                      const michiganResult = lookup[getModelName(window.location.pathname)]["price-per-mile"] * parseMiles(response.rows[0].elements[0].distance.text)
-                      const washingtonResult = lookup[getModelName(window.location.pathname)]["price-per-mile"] * parseMiles(response.rows[1].elements[0].distance.text)
+
+                      const michiganResult = pricePerMile * parseMiles(response.rows[0].elements[0].distance.text)
+                      const washingtonResult = pricePerMile * parseMiles(response.rows[1].elements[0].distance.text)
       
                       var price = michiganResult < washingtonResult ? michiganResult : washingtonResult;
-      
-                      if (price >= 3000) {
-                        price -= 1000
-                      } 
-                      else if (price >= 2500 && price <= 2999) {
-                        price -= 500
-                      }
+      	    
+		      if (modelName === "the-twelve") {
+		        if (price < 600) {
+			  price = 600
+			} 
+			else if (price > 3600) {
+			  price = 3600
+			}
+		      
+		      } 
+		      else if (modelName === "the-sixteen") {
+		        if (price < 800) {
+			  price = 800
+			} 
+			else if (price > 4250) {
+			  price = 4250
+			}
+		      }
 		      
 		      if (this.currency === "CAD") {
 		        price += 250
