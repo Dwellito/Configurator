@@ -550,6 +550,7 @@ function init(){
             this.studio.load = formatter.format(total_porcentage)+"/mo"
         },
         goSlide : function(slide) {
+            console.log("go slide top")
             if (slide == 'next'){ slide = (this.valid) ? parseInt(this.slideActive) + 1 : this.slideActive }
             this.valid = true
             var inputs = $("input:required").filter(function(i, elem){
