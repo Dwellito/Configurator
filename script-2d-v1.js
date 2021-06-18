@@ -578,7 +578,7 @@ function init(){
                             mode: "cors",
                             redirect: "error",
                             body: JSON.stringify({
-                                amount: amount * 100,
+                                amount: Math.floor((amount * 100) * 0.015),
                                 email: email,
                                 model: getModelName(window.location.pathname)
                             })
