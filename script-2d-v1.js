@@ -555,14 +555,17 @@ function init(){
             var inputs = $("input:required").filter(function(i, elem){
                 return $(elem).val() == ""
             })
+            console.log("go slide before if")
             if (slide == this.summarySlide){
                 if (inputs.length > 0){
                     this.valid = false
+                    console.log("if")
                 }
                 else {
                     this.valid = true
                     const emailElement = document.getElementById("Email");
                     const email = emailElement.value;
+                    console.log("else")
                     console.log(email)
                     console.log(getModelName(window.location.pathname))
                     this.setPrice()
