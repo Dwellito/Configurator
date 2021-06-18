@@ -562,14 +562,28 @@ function init(){
                 else {
                     this.valid = true
                     this.setPrice()
-                    var response = fetch('https://cede9a7b9b21.ngrok.io/api/stripe/secret').then(function(response) {
-                        return response.json();
-                    }).then(function(responseJson) {
-                        console.log(responseJson)
-                        stripePaymentIntentSecret = responseJson.secret;
-                        // Render the form to collect payment details, then
-                        // call stripe.confirmCardPayment() with the client secret.
-                    });
+                    if (stripePaymentIntentSecret === null) {
+                        const emailElement = document.getElementById("Email");
+                        const email = emailElement.value;
+                        var response = fetch('https://cede9a7b9b21.ngrok.io/api/stripe/secret', {
+                            method : "POST",
+                            mode: "cors",
+                            redirect: "error",
+                            body: JSON.stringify({
+                                amount: 30000,
+                                email: email,
+                                model: getModelName(window.location.pathname)
+                            })
+
+                        }).then(function(response) {
+                            return response.json();
+                        }).then(function(responseJson) {
+                            console.log(responseJson)
+                            stripePaymentIntentSecret = responseJson.secret;
+                            // Render the form to collect payment details, then
+                            // call stripe.confirmCardPayment() with the client secret.
+                        });
+                    }
                 }
             }
             if (this.valid) { $("#slick-slide-control0"+slide).click() }
