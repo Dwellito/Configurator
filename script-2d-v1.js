@@ -7,10 +7,12 @@ var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'U
 const lookup = { "the-twelve": {"price-per-mile": 3.50},
                  "the-sixteen": {"price-per-mile": 4.00}
                }
+
 var levels = {
     "multiple" : [],
     "simple" : []
 }
+
 function loadScript(url, callback)
 {
     // Adding the script tag to the head as suggested before
@@ -25,27 +27,34 @@ function loadScript(url, callback)
     // Fire the loading
     head.appendChild(script);
 }
+
 var shippingCost = null;
+
 const redirectToStripe = function() {};
+
 function validEmail(email) {
   const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(email);
 }
+
 const getModelName = thePath => thePath.substring(thePath.lastIndexOf('/') + 1)
+
 function parseMiles (str) {
   var regex = new RegExp('mi|,', 'igm')
   var txt = str.replace(regex, '').trim()
   return parseInt(txt)
 }
+
 $(() => {
-    document.title = "Configurator"
     loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => { $(".modal-pop-up._3d-model").removeClass("no-visible")})
     $("#close-3d-modal").click(() => {$(".modal-pop-up._3d-model").addClass("no-visible") })
+    document.title = "Configurator"
 })
+
 function init(){
     var sections = { m : [], exterior : [], interior : [], layout : [], upgrades : [], services : [] }
     var currencys = []
@@ -121,7 +130,6 @@ function init(){
     })
 
     $('.button-wrapper').find('a').attr('x-bind:class', '{"invalid" : !valid}')
-
 
     for(var s in sections){
         if(s != "m" && s != 'services'){
