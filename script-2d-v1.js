@@ -570,6 +570,8 @@ function init(){
                     this.setPrice()
                     const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
                     const depositAmount = Math.floor((amount * 100) * 0.015)
+                    console.log(depositAmount)
+                    console.log(formatter.format(depositAmount))
                     document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
                     if (stripePaymentIntentSecret === null) {
                         var response = fetch('https://cede9a7b9b21.ngrok.io/api/stripe/secret', {
