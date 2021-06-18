@@ -230,10 +230,10 @@ function init(){
         currencys[dataC.currency] = dataC.value
     })
 
-    $(".p-currency").each(function(){
-        var text = $(this).text()
-        $(this).attr('x-text', `setCurrencyPrice('${text}')`)
-    })
+    // $(".p-currency").each(function(){
+    //     var text = $(this).text()
+    //     $(this).attr('x-text', `setCurrencyPrice('${text}')`)
+    // })
     var imgshipping = $("#shipping-img").attr("src")
     var iSlide = 0
     $(".div-block-257 a").each(function(){
