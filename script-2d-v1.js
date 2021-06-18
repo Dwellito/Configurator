@@ -30,6 +30,7 @@ function loadScript(url, callback)
 }
 
 var shippingCost = null;
+var totalPrice = null;
 var stripePaymentIntentSecret = null;
 
 const redirectToStripe = function() {};
@@ -526,6 +527,7 @@ function init(){
                             total = parseFloat(total) + price
                             this.studio.price = formatter.format(this.setCurrencyPrice(total))
                             this.setLoan(total)
+                            totalPrice = total;
                             this.renderSelection()
                         }
                     })
@@ -533,11 +535,13 @@ function init(){
                     total = parseFloat(total) + parseFloat(this.shipping)
                     this.studio.price = formatter.format(this.setCurrencyPrice(total))
                     this.setLoan(total)
+                    totalPrice = total
                 }
             } catch (error) {
                 total = parseFloat(total) + parseFloat(this.shipping)
                 this.studio.price = formatter.format(this.setCurrencyPrice(total))
                 this.setLoan(total)
+                totalPrice = total
             }
         },
         setLoan : function(total){
@@ -563,9 +567,8 @@ function init(){
                     this.valid = true
                     const emailElement = document.getElementById("Email");
                     const email = emailElement.value;
-                    console.log(email)
-                    console.log(getModelName(window.location.pathname))
                     this.setPrice()
+                    const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
                     if (stripePaymentIntentSecret === null) {
                         var response = fetch('https://cede9a7b9b21.ngrok.io/api/stripe/secret', {
                             method : "POST",
@@ -575,18 +578,19 @@ function init(){
                             mode: "cors",
                             redirect: "error",
                             body: JSON.stringify({
-                                amount: 30000,
+                                amount: amount * 100,
                                 email: email,
                                 model: getModelName(window.location.pathname)
                             })
                         }).then(function(response) {
                             return response.json();
                         }).then(function(responseJson) {
-                            console.log(responseJson)
+                            console.log(responseJson.secret)
                             stripePaymentIntentSecret = responseJson.secret;
                             // Render the form to collect payment details, then
                             // call stripe.confirmCardPayment() with the client secret.
                         });
+                        console.log(stripePaymentIntentSecret)
                     }
                 }
             }
