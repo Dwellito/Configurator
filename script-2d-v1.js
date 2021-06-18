@@ -233,7 +233,6 @@ function init(){
     $(".p-currency").each(function(){
         var text = $(this).text()
         $(this).attr('x-text', `setCurrencyPrice('${text}')`)
-        console.log("p-currency")
     })
     var imgshipping = $("#shipping-img").attr("src")
     var iSlide = 0
@@ -571,8 +570,6 @@ function init(){
                     this.setPrice()
                     const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
                     const depositAmount = Math.floor((amount * 100) * 0.015)
-                    console.log(depositAmount)
-                    console.log(formatter.format(depositAmount))
                     document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
                     if (stripePaymentIntentSecret === null) {
                         var response = fetch('https://cede9a7b9b21.ngrok.io/api/stripe/secret', {
@@ -727,7 +724,9 @@ function init(){
                 $(el).triggerHandler('w-close.w-dropdown');
             });
         },
-        setCurrencyPrice: function(p, symbol = ""){ return symbol + " " + (p / currencys[this.currency]).toFixed(0) },
+        setCurrencyPrice: function(p, symbol = ""){
+            console.log(p)
+            return symbol + " " + (p / currencys[this.currency]).toFixed(0) },
         showPop: function(s, i){ this.studio[s].selected[i].show = true },
         hidePop: function(s, i){ this.studio[s].selected[i].show = false },
         showFurniture : function(){
