@@ -573,6 +573,7 @@ function init(){
                                 amount: 30000,
                                 email: email,
                                 model: getModelName(window.location.pathname)
+                                
                             })
 
                         }).then(function(response) {
