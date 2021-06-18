@@ -565,6 +565,8 @@ function init(){
                     if (stripePaymentIntentSecret === null) {
                         const emailElement = document.getElementById("Email");
                         const email = emailElement.value;
+                        console.log(email)
+                        console.log(getModelName(window.location.pathname))
                         var response = fetch('https://cede9a7b9b21.ngrok.io/api/stripe/secret', {
                             method : "POST",
                             mode: "cors",
@@ -573,9 +575,7 @@ function init(){
                                 amount: 30000,
                                 email: email,
                                 model: getModelName(window.location.pathname)
-                                
                             })
-
                         }).then(function(response) {
                             return response.json();
                         }).then(function(responseJson) {
