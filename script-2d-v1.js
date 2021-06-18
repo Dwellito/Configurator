@@ -561,12 +561,12 @@ function init(){
                 }
                 else {
                     this.valid = true
+                    const emailElement = document.getElementById("Email");
+                    const email = emailElement.value;
+                    console.log(email)
+                    console.log(getModelName(window.location.pathname))
                     this.setPrice()
                     if (stripePaymentIntentSecret === null) {
-                        const emailElement = document.getElementById("Email");
-                        const email = emailElement.value;
-                        console.log(email)
-                        console.log(getModelName(window.location.pathname))
                         var response = fetch('https://cede9a7b9b21.ngrok.io/api/stripe/secret', {
                             method : "POST",
                             mode: "cors",
