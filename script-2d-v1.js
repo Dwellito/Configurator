@@ -569,7 +569,7 @@ function init(){
                     const email = emailElement.value;
                     this.setPrice()
                     const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
-                    const depositAmount = Math.floor((amount * 100) * 0.015)
+                    const depositAmount = Math.floor(amount * 0.015)
                     document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
                     if (stripePaymentIntentSecret === null) {
                         var response = fetch('https://cede9a7b9b21.ngrok.io/api/stripe/secret', {
@@ -580,7 +580,7 @@ function init(){
                             mode: "cors",
                             redirect: "error",
                             body: JSON.stringify({
-                                amount: depositAmount,
+                                amount: depositAmount * 100,
                                 email: email,
                                 model: getModelName(window.location.pathname)
                             })
