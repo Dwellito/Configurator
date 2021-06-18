@@ -233,6 +233,7 @@ function init(){
     $(".p-currency").each(function(){
         var text = $(this).text()
         $(this).attr('x-text', `setCurrencyPrice('${text}')`)
+        console.log("p-currency")
     })
     var imgshipping = $("#shipping-img").attr("src")
     var iSlide = 0
