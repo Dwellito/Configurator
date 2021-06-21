@@ -117,42 +117,43 @@ function stripeMakePayment (card, secret) {
     //form.addEventListener('submit', function(ev) {
         //ev.preventDefault();
 
-        //TODO: disable form
+    //TODO: disable form
+    var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
 
-        stripe.confirmCardPayment(secret, {
-            payment_method: {
-                card: card,
-                billing_details: {
-                    address: {
-                        line1: address,
-                        city: city,
-                        state: state,
-                        postal_code: zip
-                    },
-                    name: name,
-                    email: email,
-                    phone: phone
-                }
+    stripe.confirmCardPayment(secret, {
+        payment_method: {
+            card: card,
+            billing_details: {
+                address: {
+                    line1: address,
+                    city: city,
+                    state: state,
+                    postal_code: zip
+                },
+                name: name,
+                email: email,
+                phone: phone
             }
-        }).then(function(result) {
-            if (result.error) {
-                // Show error to your customer (e.g., insufficient funds)
-                console.log(result.error.message);
-                // TODO: enable form
-                //TODO: surface error, maybe as a js alert for quickness?
-            } else {
-                // The payment has been processed!
-                if (result.paymentIntent.status === 'succeeded') {
-                    // Show a success message to your customer
-                    // There's a risk of the customer closing the window before callback
-                    // execution. Set up a webhook or plugin to listen for the
-                    // payment_intent.succeeded event that handles any business critical
-                    // post-payment actions.
-                    console.log("SUCCESS")
-                    //TODO: Redirect to success page
-                }
+        }
+    }).then(function(result) {
+        if (result.error) {
+            // Show error to your customer (e.g., insufficient funds)
+            console.log(result.error.message);
+            // TODO: enable form
+            //TODO: surface error, maybe as a js alert for quickness?
+        } else {
+            // The payment has been processed!
+            if (result.paymentIntent.status === 'succeeded') {
+                // Show a success message to your customer
+                // There's a risk of the customer closing the window before callback
+                // execution. Set up a webhook or plugin to listen for the
+                // payment_intent.succeeded event that handles any business critical
+                // post-payment actions.
+                console.log("SUCCESS")
+                //TODO: Redirect to success page
             }
-        });
+        }
+    });
     //});
 }
 
