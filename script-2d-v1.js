@@ -33,6 +33,7 @@ var shippingCost = null;
 var totalPrice = null;
 var stripePaymentIntentSecret = null;
 var stripePaymentIntentID = null;
+var stripeCard = null;
 
 const redirectToStripe = function() {};
 
@@ -86,10 +87,10 @@ function createOrUpdatePaymentIntent () {
             }
         };
 
-        var card = elements.create("card", { style: style });
-        card.mount("#card-element");
+        stripeCard = elements.create("card", { style: style });
+        stripeCard.mount("#card-element");
 
-        card.on('change', ({error}) => {
+        stripeCard.on('change', ({error}) => {
             let displayError = document.getElementById('card-errors');
             if (error) {
                 displayError.textContent = error.message;
@@ -98,12 +99,12 @@ function createOrUpdatePaymentIntent () {
             }
         });
 
-        attachStripeEventHandler(card, responseJson.secret)
+        //attachStripeEventHandler(card, responseJson.secret)
     });
 }
 
-function attachStripeEventHandler (card, secret) {
-    var form = document.getElementById('payment-form');
+function stripeMakePayment (card, secret) {
+    //var form = document.getElementById('payment-form');
 
     var address = document.getElementById('Address').value.trim();
     var city = document.getElementById('City').value.trim();
@@ -113,8 +114,8 @@ function attachStripeEventHandler (card, secret) {
     var email = document.getElementById('Email').value.trim();
     var phone = document.getElementById('Phone-Number').value.trim();
 
-    form.addEventListener('submit', function(ev) {
-        ev.preventDefault();
+    //form.addEventListener('submit', function(ev) {
+        //ev.preventDefault();
 
         //TODO: disable form
 
@@ -152,7 +153,7 @@ function attachStripeEventHandler (card, secret) {
                 }
             }
         });
-    });
+    //});
 }
 
 $(() => {
@@ -758,6 +759,7 @@ function init(){
         //    return false
         //},
         submit : function(event){
+            stripeMakePayment(stripeCard, stripePaymentIntentSecret)
             // var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
             // //var stripe = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); // Test
             // var priceID = 'price_1IiUe4Hy8pZ91dsyzSVEk4at'; // TODO: get dynamically from Webflow PROD
