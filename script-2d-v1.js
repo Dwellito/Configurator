@@ -3,7 +3,7 @@
 
 var show_zero_price = "";
 var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = "22EP8BJUJKCW2YGUN8RS", hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
-var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 0});
+var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 2});
 const lookup = {
     "the-twelve": {"price-per-mile": 3.50},
     "the-sixteen": {"price-per-mile": 4.00}
@@ -59,6 +59,8 @@ function createOrUpdatePaymentIntent () {
     document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
     document.getElementById("checkout-button-price").disabled = true;
 
+    document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
+
     var response = fetch('https://test.dwellito.co/api/stripe/secret', {
         method : "POST",
         headers: {
@@ -75,7 +77,6 @@ function createOrUpdatePaymentIntent () {
     }).then(function(response) {
         return response.json();
     }).then(function(responseJson) {
-        document.getElementById("checkout-button-price").disabled = false;
         stripePaymentIntentSecret = responseJson.secret;
         stripePaymentIntentID = responseJson.id;
 
@@ -99,6 +100,10 @@ function createOrUpdatePaymentIntent () {
                 displayError.textContent = '';
             }
         });
+
+        document.getElementById("checkout-button-price").disabled = false;
+        document.getElementById("checkout-button-price").removeAttribute("style")
+
         document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 10px")
     });
 }
