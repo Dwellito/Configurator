@@ -58,7 +58,7 @@ function createOrUpdatePaymentIntent () {
     const depositAmount = Math.floor(amount * 0.015)
     document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
 
-    var response = fetch('https://cede9a7b9b21.ngrok.io/api/stripe/secret', {
+    var response = fetch('https://test.dwellito.co/api/stripe/secret', {
         method : "POST",
         headers: {
             'Content-Type': 'application/json'
