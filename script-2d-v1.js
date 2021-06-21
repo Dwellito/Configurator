@@ -34,6 +34,7 @@ var totalPrice = null;
 var stripePaymentIntentSecret = null;
 var stripePaymentIntentID = null;
 var stripeCard = null;
+var stripeObj = null;
 
 const redirectToStripe = function() {};
 
@@ -76,11 +77,9 @@ function createOrUpdatePaymentIntent () {
         stripePaymentIntentSecret = responseJson.secret;
         stripePaymentIntentID = responseJson.id;
 
-        // Render the form to collect payment details, then
-        // call stripe.confirmCardPayment() with the client secret.
-        var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
-
-        var elements = stripe.elements();
+        //stripeObj = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
+        stripeObj = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); // Test
+        var elements = stripeObj.elements();
         var style = {
             base: {
                 color: "#32325d",
@@ -98,13 +97,11 @@ function createOrUpdatePaymentIntent () {
                 displayError.textContent = '';
             }
         });
-
-        //attachStripeEventHandler(card, responseJson.secret)
+        document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 10px")
     });
 }
 
 function stripeMakePayment (card, secret) {
-    //var form = document.getElementById('payment-form');
 
     var address = document.getElementById('Address').value.trim();
     var city = document.getElementById('City').value.trim();
@@ -114,46 +111,39 @@ function stripeMakePayment (card, secret) {
     var email = document.getElementById('Email').value.trim();
     var phone = document.getElementById('Phone-Number').value.trim();
 
-    //form.addEventListener('submit', function(ev) {
-        //ev.preventDefault();
-
-        //TODO: disable form
-
-        stripe.confirmCardPayment(secret, {
-            payment_method: {
-                card: card,
-                billing_details: {
-                    address: {
-                        line1: address,
-                        city: city,
-                        state: state,
-                        postal_code: zip
-                    },
-                    name: name,
-                    email: email,
-                    phone: phone
-                }
+    stripeObj.confirmCardPayment(secret, {
+        payment_method: {
+            card: card,
+            billing_details: {
+                address: {
+                    line1: address,
+                    city: city,
+                    state: state,
+                    postal_code: zip
+                },
+                name: name,
+                email: email,
+                phone: phone
             }
-        }).then(function(result) {
-            if (result.error) {
-                // Show error to your customer (e.g., insufficient funds)
-                console.log(result.error.message);
-                // TODO: enable form
-                //TODO: surface error, maybe as a js alert for quickness?
-            } else {
-                // The payment has been processed!
-                if (result.paymentIntent.status === 'succeeded') {
-                    // Show a success message to your customer
-                    // There's a risk of the customer closing the window before callback
-                    // execution. Set up a webhook or plugin to listen for the
-                    // payment_intent.succeeded event that handles any business critical
-                    // post-payment actions.
-                    console.log("SUCCESS")
-                    //TODO: Redirect to success page
-                }
+        }
+    }).then(function(result) {
+        if (result.error) {
+            // Show error to your customer (e.g., insufficient funds)
+            console.log(result.error.message);
+            window.location.href = "https://" + window.location.hostname + "/payment-failure";
+        } else {
+            // The payment has been processed!
+            if (result.paymentIntent.status === 'succeeded') {
+                // Show a success message to your customer
+                // There's a risk of the customer closing the window before callback
+                // execution. Set up a webhook or plugin to listen for the
+                // payment_intent.succeeded event that handles any business critical
+                // post-payment actions.
+                console.log("SUCCESS")
+                window.location.href = "https://" + window.location.hostname + "/thank-you"
             }
-        });
-    //});
+        }
+    });
 }
 
 $(() => {
@@ -760,46 +750,6 @@ function init(){
         //},
         submit : function(event){
             stripeMakePayment(stripeCard, stripePaymentIntentSecret)
-            // var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
-            // //var stripe = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); // Test
-            // var priceID = 'price_1IiUe4Hy8pZ91dsyzSVEk4at'; // TODO: get dynamically from Webflow PROD
-            // //var priceID = 'price_1IjTR7Hy8pZ91dsytU0x1YAD'; // TODO: get dynamically from Webflow TEST
-            // //var data = $('form').serialize()
-            // //data = window.btoa(data)
-            // //var sTags = JSON.stringify(this.studioItems)
-            // //var t = window.btoa(sTags)
-            // var successURL = "https://" + window.location.hostname + "/thank-you"
-            // var cancelURL = "https://" + window.location.hostname + "/payment-failure";
-            // var emailElement = document.getElementById("Email");
-            // var email = emailElement.value;
-            // var stripeArgs = {
-            //     lineItems: [{price: priceID, quantity: 1}],
-            //     mode: 'payment',
-            //     /*
-            //      * Do not rely on the redirect to the successUrl for fulfilling
-            //      * purchases, customers may not always reach the success_url after
-            //      * a successful payment.
-            //      * Instead use one of the strategies described in
-            //      * https://stripe.com/docs/payments/checkout/fulfill-orders
-            //      */
-            //     successUrl: successURL,
-            //     cancelUrl: cancelURL,
-            // }
-            // if (email && validEmail(email)) {
-            //     stripeArgs.customerEmail = email
-            // }
-            // stripe.redirectToCheckout(stripeArgs)
-            //     .then(function (result) {
-            //         if (result.error) {
-            //             /*
-            //              * If `redirectToCheckout` fails due to a browser or network
-            //              * error, display the localized error message to your customer.
-            //              */
-            //             var displayError = document.getElementById('error-message');
-            //             displayError.textContent = result.error.message;
-            //             console.log(result.error.message)
-            //         }
-            //     });
         },
         changeCurrency : function(c){
             this.currency = c
