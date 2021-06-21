@@ -103,8 +103,11 @@ function createOrUpdatePaymentIntent () {
             }
         });
 
-        document.getElementById("checkout-button-price").disabled = false;
-        document.getElementById("checkout-button-price").removeAttribute("style")
+        setTimeout(function(){
+                document.getElementById("checkout-button-price").disabled = false;
+                document.getElementById("checkout-button-price").removeAttribute("style")
+            },
+            1000);
     });
 }
 
