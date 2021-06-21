@@ -32,6 +32,7 @@ function loadScript(url, callback)
 var shippingCost = null;
 var totalPrice = null;
 var stripePaymentIntentSecret = null;
+var stripePaymentIntentID = null;
 
 const redirectToStripe = function() {};
 
@@ -46,6 +47,110 @@ function parseMiles (str) {
     var regex = new RegExp('mi|,', 'igm')
     var txt = str.replace(regex, '').trim()
     return parseInt(txt)
+}
+
+function createOrUpdatePaymentIntent () {
+    const emailElement = document.getElementById("Email");
+    const email = emailElement.value;
+    const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
+    const depositAmount = Math.floor(amount * 0.015)
+    document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
+
+    var response = fetch('https://cede9a7b9b21.ngrok.io/api/stripe/secret', {
+        method : "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        mode: "cors",
+        redirect: "error",
+        body: JSON.stringify({
+            amount: depositAmount * 100,
+            email: email,
+            model: getModelName(window.location.pathname),
+            id: stripePaymentIntentID
+        })
+    }).then(function(response) {
+        return response.json();
+    }).then(function(responseJson) {
+        stripePaymentIntentSecret = responseJson.secret;
+        stripePaymentIntentID = responseJson.id;
+
+        // Render the form to collect payment details, then
+        // call stripe.confirmCardPayment() with the client secret.
+        var elements = stripe.elements();
+        var style = {
+            base: {
+                color: "#32325d",
+            }
+        };
+
+        var card = elements.create("card", { style: style });
+        card.mount("#card-element");
+
+        card.on('change', ({error}) => {
+            let displayError = document.getElementById('card-errors');
+            if (error) {
+                displayError.textContent = error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        attachStripeEventHandler(card, responseJson.secret)
+    });
+}
+
+function attachStripeEventHandler (card, secret) {
+    var form = document.getElementById('payment-form');
+
+    var address = document.getElementById('Address').value.trim();
+    var city = document.getElementById('City').value.trim();
+    var state = document.getElementById('State').value.trim();
+    var zip = document.getElementById('Zip-Code').value.trim();
+    var name = document.getElementById('Name').value.trim();
+    var email = document.getElementById('Email').value.trim();
+    var phone = document.getElementById('Phone-Number').value.trim();
+
+    form.addEventListener('submit', function(ev) {
+        ev.preventDefault();
+
+        //TODO: disable form
+
+        stripe.confirmCardPayment(secret, {
+            payment_method: {
+                card: card,
+                billing_details: {
+                    address: {
+                        line1: address,
+                        city: city,
+                        state: state,
+                        postal_code: zip
+                    },
+                    name: name,
+                    email: email,
+                    phone: phone
+                }
+            }
+        }).then(function(result) {
+            if (result.error) {
+                // Show error to your customer (e.g., insufficient funds)
+                console.log(result.error.message);
+                // TODO: enable form
+                //TODO: surface error, maybe as a js alert for quickness?
+            } else {
+                // The payment has been processed!
+                if (result.paymentIntent.status === 'succeeded') {
+                    // Show a success message to your customer
+                    // There's a risk of the customer closing the window before callback
+                    // execution. Set up a webhook or plugin to listen for the
+                    // payment_intent.succeeded event that handles any business critical
+                    // post-payment actions.
+                    console.log("SUCCESS")
+                    //TODO: Redirect to success page
+                }
+            }
+        });
+    });
 }
 
 $(() => {
@@ -565,34 +670,9 @@ function init(){
                 }
                 else {
                     this.valid = true
-                    const emailElement = document.getElementById("Email");
-                    const email = emailElement.value;
                     this.setPrice()
-                    const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
-                    const depositAmount = Math.floor(amount * 0.015)
-                    document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
-                    if (stripePaymentIntentSecret === null) {
-                        var response = fetch('https://cede9a7b9b21.ngrok.io/api/stripe/secret', {
-                            method : "POST",
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            mode: "cors",
-                            redirect: "error",
-                            body: JSON.stringify({
-                                amount: depositAmount * 100,
-                                email: email,
-                                model: getModelName(window.location.pathname)
-                            })
-                        }).then(function(response) {
-                            return response.json();
-                        }).then(function(responseJson) {
-                            stripePaymentIntentSecret = responseJson.secret;
 
-                            // Render the form to collect payment details, then
-                            // call stripe.confirmCardPayment() with the client secret.
-                        });
-                    }
+                    createOrUpdatePaymentIntent()
                 }
             }
             if (this.valid) { $("#slick-slide-control0"+slide).click() }
