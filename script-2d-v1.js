@@ -57,6 +57,7 @@ function createOrUpdatePaymentIntent () {
     const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
     const depositAmount = Math.floor(amount * 0.015)
     document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
+    document.getElementById("checkout-button-price").disabled = true;
 
     var response = fetch('https://test.dwellito.co/api/stripe/secret', {
         method : "POST",
@@ -74,6 +75,7 @@ function createOrUpdatePaymentIntent () {
     }).then(function(response) {
         return response.json();
     }).then(function(responseJson) {
+        document.getElementById("checkout-button-price").disabled = false;
         stripePaymentIntentSecret = responseJson.secret;
         stripePaymentIntentID = responseJson.id;
 
