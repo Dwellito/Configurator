@@ -77,6 +77,8 @@ function createOrUpdatePaymentIntent () {
 
         // Render the form to collect payment details, then
         // call stripe.confirmCardPayment() with the client secret.
+        var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
+
         var elements = stripe.elements();
         var style = {
             base: {
