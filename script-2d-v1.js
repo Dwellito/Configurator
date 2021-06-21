@@ -77,6 +77,8 @@ function createOrUpdatePaymentIntent () {
     }).then(function(response) {
         return response.json();
     }).then(function(responseJson) {
+        document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 10px")
+
         stripePaymentIntentSecret = responseJson.secret;
         stripePaymentIntentID = responseJson.id;
 
@@ -103,8 +105,6 @@ function createOrUpdatePaymentIntent () {
 
         document.getElementById("checkout-button-price").disabled = false;
         document.getElementById("checkout-button-price").removeAttribute("style")
-
-        document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 10px")
     });
 }
 
