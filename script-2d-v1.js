@@ -97,15 +97,11 @@ function createOrUpdatePaymentIntent () {
                 displayError.textContent = '';
             }
         });
-
         document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 10px")
-
-        //attachStripeEventHandler(card, responseJson.secret)
     });
 }
 
 function stripeMakePayment (card, secret) {
-    //var form = document.getElementById('payment-form');
 
     var address = document.getElementById('Address').value.trim();
     var city = document.getElementById('City').value.trim();
@@ -114,11 +110,6 @@ function stripeMakePayment (card, secret) {
     var name = document.getElementById('Name').value.trim();
     var email = document.getElementById('Email').value.trim();
     var phone = document.getElementById('Phone-Number').value.trim();
-
-    //form.addEventListener('submit', function(ev) {
-        //ev.preventDefault();
-
-    //TODO: disable form
 
     stripeObj.confirmCardPayment(secret, {
         payment_method: {
@@ -139,8 +130,6 @@ function stripeMakePayment (card, secret) {
         if (result.error) {
             // Show error to your customer (e.g., insufficient funds)
             console.log(result.error.message);
-            // TODO: enable form
-            //TODO: surface error, maybe as a js alert for quickness?
             window.location.href = "https://" + window.location.hostname + "/payment-failure";
         } else {
             // The payment has been processed!
@@ -151,13 +140,10 @@ function stripeMakePayment (card, secret) {
                 // payment_intent.succeeded event that handles any business critical
                 // post-payment actions.
                 console.log("SUCCESS")
-                //TODO: Redirect to success page
                 window.location.href = "https://" + window.location.hostname + "/thank-you"
-
             }
         }
     });
-    //});
 }
 
 $(() => {
@@ -764,46 +750,6 @@ function init(){
         //},
         submit : function(event){
             stripeMakePayment(stripeCard, stripePaymentIntentSecret)
-            // var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
-            // //var stripe = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); // Test
-            // var priceID = 'price_1IiUe4Hy8pZ91dsyzSVEk4at'; // TODO: get dynamically from Webflow PROD
-            // //var priceID = 'price_1IjTR7Hy8pZ91dsytU0x1YAD'; // TODO: get dynamically from Webflow TEST
-            // //var data = $('form').serialize()
-            // //data = window.btoa(data)
-            // //var sTags = JSON.stringify(this.studioItems)
-            // //var t = window.btoa(sTags)
-            // var successURL = "https://" + window.location.hostname + "/thank-you"
-            // var cancelURL = "https://" + window.location.hostname + "/payment-failure";
-            // var emailElement = document.getElementById("Email");
-            // var email = emailElement.value;
-            // var stripeArgs = {
-            //     lineItems: [{price: priceID, quantity: 1}],
-            //     mode: 'payment',
-            //     /*
-            //      * Do not rely on the redirect to the successUrl for fulfilling
-            //      * purchases, customers may not always reach the success_url after
-            //      * a successful payment.
-            //      * Instead use one of the strategies described in
-            //      * https://stripe.com/docs/payments/checkout/fulfill-orders
-            //      */
-            //     successUrl: successURL,
-            //     cancelUrl: cancelURL,
-            // }
-            // if (email && validEmail(email)) {
-            //     stripeArgs.customerEmail = email
-            // }
-            // stripe.redirectToCheckout(stripeArgs)
-            //     .then(function (result) {
-            //         if (result.error) {
-            //             /*
-            //              * If `redirectToCheckout` fails due to a browser or network
-            //              * error, display the localized error message to your customer.
-            //              */
-            //             var displayError = document.getElementById('error-message');
-            //             displayError.textContent = result.error.message;
-            //             console.log(result.error.message)
-            //         }
-            //     });
         },
         changeCurrency : function(c){
             this.currency = c
