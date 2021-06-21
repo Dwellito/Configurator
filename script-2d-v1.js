@@ -99,7 +99,7 @@ function createOrUpdatePaymentIntent () {
             }
         });
 
-        document.getElementById("stripe-embed").setAttribute("style", "width: inherit; height: margin: 10px")
+        document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 10px")
 
         //attachStripeEventHandler(card, responseJson.secret)
     });
