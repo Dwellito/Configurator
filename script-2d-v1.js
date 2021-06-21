@@ -141,6 +141,7 @@ function stripeMakePayment (card, secret) {
             console.log(result.error.message);
             // TODO: enable form
             //TODO: surface error, maybe as a js alert for quickness?
+            window.location.href = "https://" + window.location.hostname + "/payment-failure";
         } else {
             // The payment has been processed!
             if (result.paymentIntent.status === 'succeeded') {
@@ -151,6 +152,8 @@ function stripeMakePayment (card, secret) {
                 // post-payment actions.
                 console.log("SUCCESS")
                 //TODO: Redirect to success page
+                window.location.href = "https://" + window.location.hostname + "/thank-you"
+
             }
         }
     });
