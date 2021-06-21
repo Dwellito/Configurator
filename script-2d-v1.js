@@ -34,6 +34,7 @@ var totalPrice = null;
 var stripePaymentIntentSecret = null;
 var stripePaymentIntentID = null;
 var stripeCard = null;
+var stripeObj = null;
 
 const redirectToStripe = function() {};
 
@@ -78,9 +79,9 @@ function createOrUpdatePaymentIntent () {
 
         // Render the form to collect payment details, then
         // call stripe.confirmCardPayment() with the client secret.
-        var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
+        stripeObj = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
 
-        var elements = stripe.elements();
+        var elements = stripeObj.elements();
         var style = {
             base: {
                 color: "#32325d",
@@ -120,9 +121,8 @@ function stripeMakePayment (card, secret) {
         //ev.preventDefault();
 
     //TODO: disable form
-    var stripe = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
 
-    stripe.confirmCardPayment(secret, {
+    stripeObj.confirmCardPayment(secret, {
         payment_method: {
             card: card,
             billing_details: {
