@@ -77,10 +77,8 @@ function createOrUpdatePaymentIntent () {
         stripePaymentIntentSecret = responseJson.secret;
         stripePaymentIntentID = responseJson.id;
 
-        // Render the form to collect payment details, then
-        // call stripe.confirmCardPayment() with the client secret.
-        stripeObj = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
-
+        //stripeObj = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
+        stripeObj = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); // Test
         var elements = stripeObj.elements();
         var style = {
             base: {
