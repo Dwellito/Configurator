@@ -88,7 +88,6 @@ function createOrUpdatePaymentIntent () {
         var style = {
             base: {
                 color: "#32325d",
-                margin: "8px",
             }
         };
 
@@ -98,10 +97,12 @@ function createOrUpdatePaymentIntent () {
         stripeCard.on('change', ({error}) => {
             let displayError = document.getElementById('card-errors');
             if (error) {
+                displayError.setAttribute("style", "margin: 8px")
                 displayError.textContent = error.message;
                 document.getElementById("checkout-button-price").disabled = true;
                 document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
             } else {
+                displayError.removeAttribute("style")
                 displayError.textContent = '';
                 document.getElementById("checkout-button-price").disabled = false;
                 document.getElementById("checkout-button-price").removeAttribute("style")
