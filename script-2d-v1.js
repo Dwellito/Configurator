@@ -108,12 +108,6 @@ function createOrUpdatePaymentIntent () {
                 document.getElementById("checkout-button-price").removeAttribute("style")
             }
         });
-
-        // setTimeout(function(){
-        //         document.getElementById("checkout-button-price").disabled = false;
-        //         document.getElementById("checkout-button-price").removeAttribute("style")
-        //     },
-        //     2000);
     });
 }
 
@@ -588,13 +582,14 @@ function init(){
                 }
             }
             try {
-                const service = new google.maps.DistanceMatrixService();
                 var address = document.getElementById('Address').value.trim();
                 var city = document.getElementById('City').value.trim();
                 var state = document.getElementById('State').value.trim();
 
                 const modelName = getModelName(window.location.pathname)
                 const pricePerMile = lookup[modelName]["price-per-mile"]
+
+                const service = new google.maps.DistanceMatrixService();
 
                 if (address !== "" && city !== "" && state !== "") {
                     var dest = "";
