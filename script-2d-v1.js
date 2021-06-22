@@ -312,6 +312,9 @@ function init(){
                         $(el.html).find(".list").remove()
                         var $itemChild = $(el.htmlchild)
                         $itemChild.find('.image').attr('x-bind:src', "option.thumbnail").attr("x-bind:srcset", "option.thumbnail")
+                        $itemChild.find('.text-name').attr('x-text', "option.name")
+                        $itemChild.find('.text-description').attr('x-text', "option.description")
+                        $itemChild.find('.text-price').attr('x-text', "setCurrencyPrice(option.price, '+ $')")
                         $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
                         var childTemplate = `<template x-if="getShowLevel('${it.slug}', '${el.level}', '${it.type}') == true">
                         <div class="${classList}"><template role="listitem" x-for="option in activeLevel['${it.subtype}'][${m}].items" :key="option">
