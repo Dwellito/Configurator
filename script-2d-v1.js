@@ -714,7 +714,7 @@ function init(){
                     } else {
                         // Right now this is only Drop Structure for Holo. 1k deposit.
                         document.getElementById("deposit-price").innerHTML = formatter.format(1000)
-                        document.getElementById("checkout-button-price").innerHTML = "Submit"
+                        document.getElementById("checkout-button-price").value = "Submit"
                     }
                 }
             }
