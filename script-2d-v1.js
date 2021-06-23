@@ -140,6 +140,10 @@ function stripeMakePayment (card, secret) {
         if (result.error) {
             // Show error to your customer (e.g., insufficient funds)
             console.log(result.error.message);
+
+            // gtag("event", "purchase_failed", {
+            //         model_name: getModelName(window.location.pathname)
+            // })
             window.location.href = "https://" + window.location.hostname + "/payment-failure";
         } else {
             // The payment has been processed!
@@ -149,6 +153,14 @@ function stripeMakePayment (card, secret) {
                 // execution. Set up a webhook or plugin to listen for the
                 // payment_intent.succeeded event that handles any business critical
                 // post-payment actions.
+                // gtag("event", "purchase", {
+                //     currency: "USD",
+                //     value: shippingCost ? totalPrice - shippingCost : totalPrice;
+                //     shipping: shippingCost || 0,
+                //     items: [
+                //         {item_name: getModelName(window.location.pathname)}
+                //     ]
+                // })
                 console.log("SUCCESS")
                 window.location.href = "https://" + window.location.hostname + "/thank-you"
             }
@@ -666,6 +678,8 @@ function init(){
             this.studio.load = formatter.format(total_porcentage)+"/mo"
         },
         goSlide : function(slide) {
+            console.log(slide)
+            console.log(this.slideActive)
             if (slide == 'next'){ slide = (this.valid) ? parseInt(this.slideActive) + 1 : this.slideActive }
             this.valid = true
             var inputs = $("input:required").filter(function(i, elem){
@@ -763,6 +777,9 @@ function init(){
         //    return false
         //},
         submit : function(event){
+            // gtag("event", "clicked_make_purchase", {
+            //     model_name: getModelName(window.location.pathname)
+            // })
             stripeMakePayment(stripeCard, stripePaymentIntentSecret)
         },
         changeCurrency : function(c){
