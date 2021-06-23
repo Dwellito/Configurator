@@ -822,6 +822,9 @@ function init(){
                 gtag("event", "clicked_submit_nontake", {
                     model_name: model
                 })
+                setTimeout(() => {
+                    window.location.href = "https://" + window.location.hostname + "/thank-you"
+                    }, 2000)
             }
         },
         changeCurrency : function(c){
