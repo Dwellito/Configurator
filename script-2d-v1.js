@@ -714,6 +714,7 @@ function init(){
                     } else {
                         // Right now this is only Drop Structure for Holo. 1k deposit.
                         document.getElementById("deposit-price").innerHTML = formatter.format(1000)
+                        document.getElementById("checkout-button-price").innerHTML = "Submit"
                     }
                 }
             }
@@ -808,7 +809,9 @@ function init(){
                 stripeMakePayment(stripeCard, stripePaymentIntentSecret)
 
             } else {
-                //TODO: maybe gtag event
+                gtag("event", "clicked_submit_nontake", {
+                    model_name: model
+                })
             }
         },
         changeCurrency : function(c){
