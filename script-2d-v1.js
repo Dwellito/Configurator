@@ -181,8 +181,18 @@ $(() => {
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
-    $("#open-3d-modal").click(() => { $(".modal-pop-up._3d-model").removeClass("no-visible")})
-    $("#close-3d-modal").click(() => {$(".modal-pop-up._3d-model").addClass("no-visible") })
+    $("#open-3d-modal").click(() => {
+        gtag("event", "3d_opened", {
+            model_name: getModelName(window.location.pathname)
+        })
+        $(".modal-pop-up._3d-model").removeClass("no-visible")
+    })
+    $("#close-3d-modal").click(() => {
+        gtag("event", "3d_closed", {
+            model_name: getModelName(window.location.pathname)
+        })
+        $(".modal-pop-up._3d-model").addClass("no-visible")
+    })
     document.title = "Configurator"
 })
 
