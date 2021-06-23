@@ -14,8 +14,15 @@ var levels = {
     "simple" : []
 }
 
-const backendUrl = document.location.host === "www.configure.so" ? "https://dwellito.co" : "https://test.dwellito.co"
-const stripeKey = document.location.host === "www.configure.so" ? 'pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb' : 'pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'
+const backendUrl = document.location.host === "configure.so" ? "https://dwellito.co" : "https://test.dwellito.co"
+const stripeKey = document.location.host === "configure.so" ? 'pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb' : 'pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'
+
+const getModelName = thePath => thePath.substring(thePath.lastIndexOf('/') + 1)
+
+function isTakeRateModel () {
+    const model = getModelName(window.location.pathname)
+    return model !== "holo" && model !== "holo-extended-4ft" && model !== "holo-extended-8ft"
+}
 
 function loadScript(url, callback)
 {
@@ -46,7 +53,6 @@ function validEmail(email) {
     return re.test(email);
 }
 
-const getModelName = thePath => thePath.substring(thePath.lastIndexOf('/') + 1)
 
 function parseMiles (str) {
     var regex = new RegExp('mi|,', 'igm')
@@ -703,7 +709,13 @@ function init(){
                     this.valid = true
                     this.setPrice()
 
-                    createOrUpdatePaymentIntent()
+                    if (isTakeRateModel()) {
+                        createOrUpdatePaymentIntent()
+                    } else {
+                        // Right now this is only Drop Structure for Holo. 1k deposit.
+                        document.getElementById("deposit-price").innerHTML = formatter.format(1000)
+                        document.getElementById("checkout-button-price").value = "Submit"
+                    }
                 }
             }
             if (this.valid) { $("#slick-slide-control0"+slide).click() }
@@ -787,10 +799,20 @@ function init(){
         //    return false
         //},
         submit : function(event){
-            gtag("event", "clicked_make_purchase", {
-                model_name: getModelName(window.location.pathname)
-            })
-            stripeMakePayment(stripeCard, stripePaymentIntentSecret)
+
+            const model = getModelName(window.location.pathname)
+
+            if (isTakeRateModel()) {
+                gtag("event", "clicked_make_purchase", {
+                    model_name: model
+                })
+                stripeMakePayment(stripeCard, stripePaymentIntentSecret)
+
+            } else {
+                gtag("event", "clicked_submit_nontake", {
+                    model_name: model
+                })
+            }
         },
         changeCurrency : function(c){
             this.currency = c
