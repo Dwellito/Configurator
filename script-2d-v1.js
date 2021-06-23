@@ -681,7 +681,7 @@ function init(){
             var slideName = slidesT[this.slideActive]
 
             if (slideName === "size") {
-                slideName == "model"
+                slideName = "model"
             }
 
             console.log(slideName)
