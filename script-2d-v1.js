@@ -85,7 +85,7 @@ function createOrUpdatePaymentIntent () {
         stripePaymentIntentSecret = responseJson.secret;
         stripePaymentIntentID = responseJson.id;
 
-        stripeObj = Stripe(stripeKey); 
+        stripeObj = Stripe(stripeKey);
         var elements = stripeObj.elements();
         var style = {
             base: {
