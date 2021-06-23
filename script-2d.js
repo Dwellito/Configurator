@@ -14,6 +14,9 @@ var levels = {
     "simple" : []
 }
 
+const backendUrl = document.location.host === "configure.so" ? "https://dwellito.co" : "https://test.dwellito.co"
+const stripeKey = document.location.host === "configure.so" ? 'pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb' : 'pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'
+
 function loadScript(url, callback)
 {
     // Adding the script tag to the head as suggested before
@@ -61,7 +64,7 @@ function createOrUpdatePaymentIntent () {
     document.getElementById("checkout-button-price").disabled = true;
     document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
 
-    var response = fetch('https://dwellito.co/api/stripe/secret', {
+    var response = fetch(backendUrl + '/api/stripe/secret', {
         method : "POST",
         headers: {
             'Content-Type': 'application/json'
@@ -82,8 +85,7 @@ function createOrUpdatePaymentIntent () {
         stripePaymentIntentSecret = responseJson.secret;
         stripePaymentIntentID = responseJson.id;
 
-        stripeObj = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
-        //stripeObj = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); // Test
+        stripeObj = Stripe(stripeKey);
         var elements = stripeObj.elements();
         var style = {
             base: {
@@ -140,6 +142,10 @@ function stripeMakePayment (card, secret) {
         if (result.error) {
             // Show error to your customer (e.g., insufficient funds)
             console.log(result.error.message);
+
+            gtag("event", "purchase_failed", {
+                model_name: getModelName(window.location.pathname)
+            })
             window.location.href = "https://" + window.location.hostname + "/payment-failure";
         } else {
             // The payment has been processed!
@@ -149,6 +155,14 @@ function stripeMakePayment (card, secret) {
                 // execution. Set up a webhook or plugin to listen for the
                 // payment_intent.succeeded event that handles any business critical
                 // post-payment actions.
+                gtag("event", "purchase", {
+                    currency: "USD",
+                    value: shippingCost ? totalPrice - shippingCost : totalPrice,
+                    shipping: shippingCost || 0,
+                    items: [
+                        {item_name: getModelName(window.location.pathname)}
+                    ]
+                })
                 console.log("SUCCESS")
                 window.location.href = "https://" + window.location.hostname + "/thank-you"
             }
@@ -666,6 +680,16 @@ function init(){
             this.studio.load = formatter.format(total_porcentage)+"/mo"
         },
         goSlide : function(slide) {
+            var slideName = slidesT[this.slideActive]
+
+            if (slideName === "size") {
+                slideName = "model"
+            }
+
+            gtag("event", slideName + "_next_clicked", {
+                model_name: getModelName(window.location.pathname)
+            })
+
             if (slide == 'next'){ slide = (this.valid) ? parseInt(this.slideActive) + 1 : this.slideActive }
             this.valid = true
             var inputs = $("input:required").filter(function(i, elem){
@@ -763,6 +787,9 @@ function init(){
         //    return false
         //},
         submit : function(event){
+            gtag("event", "clicked_make_purchase", {
+                model_name: getModelName(window.location.pathname)
+            })
             stripeMakePayment(stripeCard, stripePaymentIntentSecret)
         },
         changeCurrency : function(c){
@@ -772,7 +799,7 @@ function init(){
                 $(el).triggerHandler('w-close.w-dropdown');
             });
         },
-        setCurrencyPrice: function(p, symbol = ""){ return symbol + " " + (p / currencys[this.currency]).toFixed(0) },
+        setCurrencyPrice: function(p, symbol = ""){return symbol + " " + (p / currencys[this.currency]).toFixed(0) },
         showPop: function(s, i){ this.studio[s].selected[i].show = true },
         hidePop: function(s, i){ this.studio[s].selected[i].show = false },
         showFurniture : function(){
