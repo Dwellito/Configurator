@@ -680,6 +680,7 @@ function init(){
         goSlide : function(slide) {
             console.log(slide)
             console.log(this.slideActive)
+            console.log(slidesT[this.slideActive])
             if (slide == 'next'){ slide = (this.valid) ? parseInt(this.slideActive) + 1 : this.slideActive }
             this.valid = true
             var inputs = $("input:required").filter(function(i, elem){
