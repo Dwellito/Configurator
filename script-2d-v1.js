@@ -14,6 +14,9 @@ var levels = {
     "simple" : []
 }
 
+const backendUrl = document.location.host === "configure.so" ? "https://dwellito.co" : "https://test.dwellito.co"
+const stripeKey = document.location.host === "configure.so" ? 'pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb' : 'pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'
+
 function loadScript(url, callback)
 {
     // Adding the script tag to the head as suggested before
@@ -61,7 +64,7 @@ function createOrUpdatePaymentIntent () {
     document.getElementById("checkout-button-price").disabled = true;
     document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
 
-    var response = fetch('https://dwellito.co/api/stripe/secret', {
+    var response = fetch(backendUrl + '/api/stripe/secret', {
         method : "POST",
         headers: {
             'Content-Type': 'application/json'
@@ -82,8 +85,7 @@ function createOrUpdatePaymentIntent () {
         stripePaymentIntentSecret = responseJson.secret;
         stripePaymentIntentID = responseJson.id;
 
-        stripeObj = Stripe('pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb'); // Prod
-        //stripeObj = Stripe('pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'); // Test
+        stripeObj = Stripe(stripeKey); 
         var elements = stripeObj.elements();
         var style = {
             base: {
