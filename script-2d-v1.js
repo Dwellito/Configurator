@@ -678,9 +678,14 @@ function init(){
             this.studio.load = formatter.format(total_porcentage)+"/mo"
         },
         goSlide : function(slide) {
-            console.log(slide)
-            console.log(this.slideActive)
-            console.log(slidesT[this.slideActive])
+            var slideName = slidesT[this.slideActive]
+            if (slideName === "size") {
+                slideName === "model"
+            }
+
+            console.log(slideName)
+            console.log(slideName + "_next_clicked")
+
             if (slide == 'next'){ slide = (this.valid) ? parseInt(this.slideActive) + 1 : this.slideActive }
             this.valid = true
             var inputs = $("input:required").filter(function(i, elem){
