@@ -191,15 +191,16 @@ $(() => {
         gtag("event", "3d_opened", {
             model_name: modelName
         })
-        $(".modal-pop-up._3d-model").removeClass("no-visible")
-        const modelID = lookup[modelName]["vectary-id"]
-        console.log(modelName)
-        console.log(lookup[modelName])
-        console.log()
-        var x = "<vctr-viewer id='test' model=" + modelID + " turntable='0' gesturehandling='superior' showinteractionprompt='0' enableapi='1' zoom='0'></vctr-viewer>"
-        console.log(x)
 
-        //TODO: inject vectary code if not already there
+        $(".modal-pop-up._3d-model").removeClass("no-visible")
+
+        const modelID = lookup[modelName]["vectary-id"]
+        var vectaryViewerHTML = "<vctr-viewer id='test' model='" + modelID + "' turntable='0' gesturehandling='superior' showinteractionprompt='0' enableapi='1' zoom='0'></vctr-viewer>"
+
+        if (document.getElementById("vectary-embed").children.length === 0) {
+            document.getElementById("vectary-embed").insertAdjacentHTML("afterbegin", vectaryViewerHTML)
+            loadScript("https://www.vectary.com/viewer/v1/scripts/vctr-viewer.js", redirectToStripe)
+        }
     })
     $("#close-3d-modal").click(() => {
         gtag("event", "3d_closed", {
