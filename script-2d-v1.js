@@ -5,8 +5,13 @@ var show_zero_price = "";
 var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = "22EP8BJUJKCW2YGUN8RS", hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
 var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 2});
 const lookup = {
-    "the-twelve": {"price-per-mile": 3.50},
-    "the-sixteen": {"price-per-mile": 4.00}
+    "the-twelve": {
+        "vectary-id": "54739396-1053-4f71-8096-44f4ce1a08bf",
+        "price-per-mile": 3.50
+    },
+    "the-sixteen": {
+        "price-per-mile": 4.00
+    }
 }
 
 var levels = {
@@ -182,10 +187,16 @@ $(() => {
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => {
+        const modelName = getModelName(window.location.pathname)
         gtag("event", "3d_opened", {
-            model_name: getModelName(window.location.pathname)
+            model_name: modelName
         })
         $(".modal-pop-up._3d-model").removeClass("no-visible")
+        const modelID = lookup[modelName]["vectary-id"]
+        var x = "<vctr-viewer id='test' model=" + modelID + " turntable='0' gesturehandling='superior' showinteractionprompt='0' enableapi='1' zoom='0'></vctr-viewer>"
+        console.log(x)
+
+        //TODO: inject vectary code if not already there
     })
     $("#close-3d-modal").click(() => {
         gtag("event", "3d_closed", {
