@@ -208,9 +208,9 @@ $(() => {
 
         const modelID = lookup[modelName]["vectary-id"]
         var vectaryViewerHTML = "<vctr-viewer id='test' model='" + modelID + "' turntable='0' gesturehandling='superior' showinteractionprompt='0' enableapi='1' zoom='0'></vctr-viewer>"
-
-        if (document.getElementById("vectary-embed").children.length === 0) {
-            document.getElementById("vectary-embed").insertAdjacentHTML("afterbegin", vectaryViewerHTML)
+        var vectaryEmbed = document.getElementById("vectary-embed")
+        if (vectaryEmbed.children.length === 0) {
+            vectaryEmbed.insertAdjacentHTML("afterbegin", vectaryViewerHTML)
             loadScript("https://www.vectary.com/viewer/v1/scripts/vctr-viewer.js", redirectToStripe)
         }
     })
