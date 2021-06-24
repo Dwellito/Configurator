@@ -25,7 +25,6 @@ const lookup = {
     "auxffice": {
         "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08"
     },
-
 }
 
 var levels = {
@@ -71,7 +70,6 @@ function validEmail(email) {
     const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(email);
 }
-
 
 function parseMiles (str) {
     var regex = new RegExp('mi|,', 'igm')
