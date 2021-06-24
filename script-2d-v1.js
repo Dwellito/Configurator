@@ -193,6 +193,9 @@ $(() => {
         })
         $(".modal-pop-up._3d-model").removeClass("no-visible")
         const modelID = lookup[modelName]["vectary-id"]
+        console.log(modelName)
+        console.log(lookup[modelName])
+        console.log()
         var x = "<vctr-viewer id='test' model=" + modelID + " turntable='0' gesturehandling='superior' showinteractionprompt='0' enableapi='1' zoom='0'></vctr-viewer>"
         console.log(x)
 
