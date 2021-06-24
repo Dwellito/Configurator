@@ -10,8 +10,22 @@ const lookup = {
         "price-per-mile": 3.50
     },
     "the-sixteen": {
-        "price-per-mile": 4.00
-    }
+        //"vectary-id": "",
+        "price-per-mile": 4.00,
+    },
+    "holo": {
+        "vectary-id": "202ef3f3-fc9c-4ba1-9913-fa7daedfc6f9"
+    },
+    "holo-extended-4ft": {
+        "vectary-id": "cfecc5ed-c8d8-4b85-bf75-88508e2bb40c"
+    },
+    "holo-extended-8ft": {
+        "vectary-id": "33d2bffa-d070-4254-92fb-6dfffacb9a5b"
+    },
+    "auxffice": {
+        "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08"
+    },
+
 }
 
 var levels = {
