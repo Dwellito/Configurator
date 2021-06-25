@@ -538,8 +538,6 @@ function init(){
                         this.activeLevel[item.subtype][l].items = itemsChilds
                     }
 
-
-
                     this.activeOptionLevel = {
                         slug : "",
                         levels : []
@@ -565,18 +563,11 @@ function init(){
                     var tag = sections[type]
                     var item = tag.find(function(i){ return i.slug == slug })
 
-                    // if(item.selection == "multiple"){
-                    //     $child.toggleClass("selected")
-
-                    // }else if(item.selection == "simple")
-                    $child.parent().find(".collection-item-5").removeClass("selected")
-                    $child.addClass("selected")
-                    //   }
-
                     var subtype = item.subtype
                     var _this = this
+
                     this.studio[type].selected.map(function(i){
-                        if(i.subtype == item.subtype )//&& item.selection == "simple"
+                        if(i.subtype == item.subtype && item["selectionlevel"+level].toLowerCase() == "simple") //
                             i.active = false
                         return i
                     })
@@ -585,7 +576,7 @@ function init(){
                             i.active = !i.active
 
                             var parent = i.parent
-                            if(parent != "")
+                            if(parent != "" && i.active)
                                 _this.setParent(parent, type)
                         }
                         return i
@@ -603,7 +594,11 @@ function init(){
                         this.activeLevel[item.subtype][l].items = []
                     }
 
-                    if(item.childs.length > 0){
+                    if(item.childs.length > 0 && item.active === false){
+                        for(c in item.childs){
+                            item.childs[c].active = false
+                        }
+                    }else if(item.childs.length > 0 && item.active === true && item["selectionlevel"+level].toLowerCase() == "simple"){
                         this.activeLevel[item.subtype][l_index].items = item.childs
                         this.activeOptionLevel.levels.push(next_level)
                         if(item.selection == "simple"){
