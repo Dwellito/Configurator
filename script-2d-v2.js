@@ -282,6 +282,19 @@ function init(){
     })
 
     $('.button-wrapper').find('a').attr('x-bind:class', '{"invalid" : !valid}')
+    var ll = ["selection", "selectionleveli", "selectionlevelii"]
+
+    function getLevel(element, level, s){
+        var sectionType = sections[s]
+        if(element.parent == ""){
+            return level
+        }else{
+            element = sectionType.find(st => st.slug === element.parent)
+            level++
+            level = getLevel(element, level, s)
+            return level
+        }
+    }
 
     for(var s in sections){
         if(s != "m" && s != 'services'){
@@ -289,10 +302,11 @@ function init(){
             var subtypes = [];
             var j = 0
 
-            section.map(function(it){
+            section.map(async function(it){
                 it.childs = section.filter(st => st.parent === it.slug)
                 if(it.childs.length > 0 && it.active && it.selection == "simple"){
-                    it.childs[0].active = true
+                    var l = getLevel(it.childs[0], 0, s)
+                    it.childs[0].active = (it[ll[l]].toLowerCase() == "simple")
                 }
             })
 
@@ -533,7 +547,8 @@ function init(){
                         }
                         
                         if(itemsChilds.length > 0 && item.selection == "simple"){
-                            itemsChilds[0].active = true
+                            var li = getLevel(itemsChilds[0], 0, type)
+                            itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
                         }
                         this.activeLevel[item.subtype][l].items = itemsChilds
                     }
@@ -601,8 +616,9 @@ function init(){
                     }else if(item.childs.length > 0 && item.active === true && item["selectionlevel"+level].toLowerCase() == "simple"){
                         this.activeLevel[item.subtype][l_index].items = item.childs
                         this.activeOptionLevel.levels.push(next_level)
+                        var li = getLevel(item.childs[0], 0, type)
                         if(item.selection == "simple"){
-                            item.childs[0].active = true
+                            item.childs[0].active = (item[ll[li]].toLowerCase() == "simple")//true
                         }
                     }
 
