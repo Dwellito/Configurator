@@ -10,7 +10,7 @@ const lookup = {
         "price-per-mile": 3.50
     },
     "the-sixteen": {
-        //"vectary-id": "",
+        "vectary-id": "bf024eb5-edca-47b0-bbd9-14bac4512ee1",
         "price-per-mile": 4.00,
     },
     "holo": {
