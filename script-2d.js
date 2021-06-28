@@ -770,7 +770,7 @@ function init(){
                         var items = item.selected.filter(function(iJ){ return iJ.active })
                         for (const j in items) {
                             value.push(items[j].name)
-                            let renderitem = { type: items[j].type, name : items[j].name, slug : items[j].slug, price : items[j].price, image : (items[j].image) ? items[j].image : null, thumbnail : (items[j].thumbnail) ? items[j].thumbnail : null}
+                            let renderitem = { type: items[j].type, name : items[j].namesubtype + " - " + items[j].name, slug : items[j].slug, price : items[j].price, image : (items[j].image) ? items[j].image : null, thumbnail : (items[j].thumbnail) ? items[j].thumbnail : null}
                             this.studioItems.push(renderitem)
                         }
                         this[i+"V"] = value.join(", ")

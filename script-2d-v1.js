@@ -778,7 +778,6 @@ function init(){
                 }
             }
 
-            
             var localizedCost = this.currency === "CAD" ? shippingCost / currencys["CAD"] : shippingCost
             const defaultShipText = "Estimated shipping"
             var shipText = shippingCost ? "Shipping cost: " + formatter.format(localizedCost) : defaultShipText
