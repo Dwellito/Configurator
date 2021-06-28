@@ -332,7 +332,6 @@ function init(){
                 var parentClass = $parentHTML.find('.items-section').attr("class")
                 var htmlItems = '<div role="list" class="'+parentClass+'">'
                 st.items.map(function(it){
-                    console.log(it)
                     var $item = (it.selection == "simple") ? $(item) : $(itemM)
                     $item.removeAttr("id")
                     $item.find('.parent').attr("id", it.slug)
@@ -770,6 +769,7 @@ function init(){
                     if(b.includes(i) ){
                         var items = item.selected.filter(function(iJ){ return iJ.active })
                         for (const j in items) {
+                            console.log(items[j])
                             value.push(items[j].name)
                             let renderitem = { type: items[j].type, name : items[j].name, slug : items[j].slug, price : items[j].price, image : (items[j].image) ? items[j].image : null, thumbnail : (items[j].thumbnail) ? items[j].thumbnail : null}
                             this.studioItems.push(renderitem)
