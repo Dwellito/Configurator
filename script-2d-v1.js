@@ -642,6 +642,7 @@ function init(){
                 }
             }
             try {
+                console.log("begin try")
                 var address = document.getElementById('Address').value.trim();
                 var city = document.getElementById('City').value.trim();
                 var state = document.getElementById('State').value.trim();
@@ -652,6 +653,7 @@ function init(){
                 const service = new google.maps.DistanceMatrixService();
 
                 if (address !== "" && city !== "" && state !== "") {
+                    consoloe.log("fields if")
                     var dest = "";
                     dest += address + "," + city + "," + state
 
@@ -701,12 +703,14 @@ function init(){
                         }
                     })
                 } else {
+                    console.log("fields else")
                     total = parseFloat(total) + parseFloat(this.shipping)
                     this.studio.price = formatter.format(this.setCurrencyPrice(total))
                     this.setLoan(total)
                     totalPrice = total
                 }
             } catch (error) {
+                console.log("catch")
                 total = parseFloat(total) + parseFloat(this.shipping)
                 this.studio.price = formatter.format(this.setCurrencyPrice(total))
                 this.setLoan(total)
