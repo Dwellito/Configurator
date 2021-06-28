@@ -332,6 +332,7 @@ function init(){
                 var parentClass = $parentHTML.find('.items-section').attr("class")
                 var htmlItems = '<div role="list" class="'+parentClass+'">'
                 st.items.map(function(it){
+                    console.log(it)
                     var $item = (it.selection == "simple") ? $(item) : $(itemM)
                     $item.removeAttr("id")
                     $item.find('.parent').attr("id", it.slug)
