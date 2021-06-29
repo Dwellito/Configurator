@@ -1,6 +1,3 @@
-// src= "http://localhost/scripts/scriptsjs/studios-caleb/script-2d.js"
-//https://distracted-hugle-94e570.netlify.app/script-2d.js
-
 var show_zero_price = "";
 var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = "22EP8BJUJKCW2YGUN8RS", hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
 var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 2});
@@ -164,7 +161,7 @@ function stripeMakePayment (card, secret) {
     }).then(function(result) {
         if (result.error) {
             // Show error to your customer (e.g., insufficient funds)
-            console.log(result.error.message);
+            // console.log(result.error.message);
 
             gtag("event", "purchase_failed", {
                 model_name: getModelName(window.location.pathname)
@@ -186,7 +183,7 @@ function stripeMakePayment (card, secret) {
                         {item_name: getModelName(window.location.pathname)}
                     ]
                 })
-                console.log("SUCCESS")
+                // console.log("SUCCESS")
                 window.location.href = "https://" + window.location.hostname + "/thank-you"
             }
         }
@@ -227,22 +224,36 @@ function init(){
     var sections = { m : [], exterior : [], interior : [], layout : [], upgrades : [], services : [] }
     var currencys = []
     var activeLevel = []
+    var activeOptionLevel = {
+        slug : "",
+        levels : [],
+    }
 
     setTimeout(() => { $(".div-block-257").removeClass("hidden") }, 300)
     $(".models").each(function(){
         sections.m.push({type : $(this).data("type"), name : $(this).data("name"), slug : $(this).data("slug"), price : $(this).data("price"), image : $(this).data("image")})
     })
     $('.rendered-sections').each(function(){
-        var type = $(this).data("type").toLowerCase()
+        var data = $(this).data() 
+        var type = data.type.toLowerCase()
         var description = $(this).closest(".w-dyn-item").find('.longer-description-html').html()
-        var st = $(this).data("subtype")
+        var st = data.subtype
         var exist_subtype = sections[type].find(function(item){
             return item.subtype == st && item.active == true
         })
-        var selection = $(this).data('selection').toLowerCase()
+        var selection = data.selection.toLowerCase()
         selection = (selection.includes("simple") ? "simple" : "multiple")
-        var active = !exist_subtype && selection == "simple" && $(this).data('parent') == ""
-        var itt = {type : $(this).data("type"), subtype : $(this).data("subtype"), namesubtype : $(this).data("namesubtype"), name : $(this).data("name"), slug : $(this).data("slug"), price : $(this).data("price"),  image : $(this).data("image"), thumbnail : $(this).data("thumbnail"), description, active, show : false, order : $(this).data('order'), selection : selection, object : $(this).data('object'), group : $(this).data('group'), material : $(this).data('material'), function : $(this).data('function'), parent : $(this).data('parent'), childs : [], activeLevel : [] }
+        var active = !exist_subtype && selection == "simple" && data.parent == ""
+        var labelLevels = []
+        
+        //var itt = {type : data.type, subtype : data.subtype, namesubtype : data.namesubtype, name : data.name, slug : data.slug, price : data.price,  image : data.image, thumbnail : data.thumbnail, description, active, show : false, order : data.order, selection : selection, object : data.object, group : data.group, material : data.material, function : data.function, parent : data.parent, childs : [], activeLevel : [] }
+        var itt = data
+        itt.description = description 
+        itt.active = active
+        itt.show = false,
+        itt.selection = selection
+        itt.childs = []
+        itt.activeLevel = []
         sections[type].push(itt)
     })
 
@@ -259,7 +270,7 @@ function init(){
             var classLevel = $(this).attr("class").split(" ")[0]
             var level = classLevel.replace("box-level-", "")
             levels[type].push(level)
-            var htmlParentLevel = $("."+classLevel)[0].outerHTML
+            var htmlParentLevel = $('.'+type+" ."+classLevel)[0].outerHTML
             var $htmlParentLevel = $(htmlParentLevel)
             var childLevel = $htmlParentLevel.find(".level-"+level)[0].outerHTML
 
@@ -291,6 +302,12 @@ function init(){
     var itemM = ($(ccFM).length > 0) ? $(ccFM)[0].outerHTML : itemDefault
     $(ccFM).remove()
 
+    var $nesting = $(".nesting")
+    $nesting.find('*[class^="box-level"]').each(function(){
+        $(this).remove()
+    })
+    var nesting = $nesting[0].outerHTML
+
     $(".btn-slides").each(function(i){
         $(this).find(".nav-bar-click-link").each(function(j){
             $(this).attr('x-bind:class', "{'selected' : slideActive == '"+j+"', 'not-selective-link' : slideActive < '"+j+"'}")
@@ -298,31 +315,58 @@ function init(){
     })
 
     $('.button-wrapper').find('a').attr('x-bind:class', '{"invalid" : !valid}')
+    var ll = ["selection", "selectionleveli", "selectionlevelii"]
+
+    function getLevel(element, level, s){
+        var sectionType = sections[s]
+        if(element.parent == ""){
+            return level
+        }else{
+            element = sectionType.find(st => st.slug === element.parent)
+            level++
+            level = getLevel(element, level, s)
+            return level
+        }
+    }
 
     for(var s in sections){
         if(s != "m" && s != 'services'){
             var section = sections[s]
             var subtypes = [];
             var j = 0
-            section.map(function(it){
+
+            section.map(async function(it){
                 it.childs = section.filter(st => st.parent === it.slug)
-                if(it.childs.length > 0 && it.active){
-                    it.childs[0].active = true
+                if(it.childs.length > 0 && it.active && it.selection == "simple"){
+                    var l = getLevel(it.childs[0], 0, s)
+                    it.childs[0].active = (it[ll[l]].toLowerCase() == "simple")
                 }
             })
 
             section.map(function(tag){
                 if(!subtypes.find(st => st.value === tag.subtype)){
                     var items = section.filter(st => st.subtype === tag.subtype && st.parent == "")
-                    subtypes.push({value : tag.subtype, title : tag.namesubtype, items })
+                    var selection = (items.length > 0) ? items[0].selection : "simple"
+                    var titlelaveli = (items.length > 0) ? items[0].titlelaveli : ""
+                    var titlelavelii = (items.length > 0) ? items[0].titlelavelii : ""
+                    subtypes.push({value : tag.subtype, title : tag.namesubtype, selection, items, titlelaveli, titlelavelii })
                 }
             })
 
-            subtypes.map(function(st){
+            subtypes.map(async function(st){
                 activeLevel[st.value] = []
-
+                
                 for(var l in levels[st.items[0].selection]){
-                    var itemsChilds = (l == 0 && st.items[0].active == true) ? st.items[0].childs : []
+                    var itemsChilds = []
+                    if(l == 0){ 
+                        itemsChilds = (st.items[0].active == true) ? st.items[0].childs : []
+                    }else{
+                        var prveLevel = activeLevel[st.value][l - 1]
+                        if(prveLevel && prveLevel.items.length > 0){
+                            itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                        }
+                    }
+                    
                     activeLevel[st.value].push({level : l, items : itemsChilds})
                 }
 
@@ -362,32 +406,42 @@ function init(){
                     }
                     $item.find('.parent').attr("data-selection", it.selection)
                     $item.find(".w-embed span").attr("data-name", it.name).attr("data-type", it.type)
-
-                    for(var m = 0; m < childHtml[it.selection].length; m++){
-                        var el = childHtml[it.selection][m]
-                        var classList = $(el.html).find(".list").attr("class")
-                        $(el.html).find(".list").remove()
-                        var $itemChild = $(el.htmlchild)
-                        $itemChild.find('.image').attr('x-bind:src', "option.thumbnail").attr("x-bind:srcset", "option.thumbnail")
-                        $itemChild.find('.text-name').attr('x-text', "option.name")
-                        $itemChild.find('.text-description').attr('x-text', "option.description")
-                        $itemChild.find('.text-price').attr('x-text', "setCurrencyPrice(option.price, '+ $')")
-                        $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
-                        var childTemplate = `<template x-if="getShowLevel('${it.slug}', '${el.level}', '${it.type}') == true">
-                        <div class="${classList}"><template role="listitem" x-for="option in activeLevel['${it.subtype}'][${m}].items" :key="option">
-                        ${$itemChild[0].outerHTML}
-                        </template></div></template>`
-                        $item.find(".box-level-"+el.level).html(childTemplate)
-                    }
-
+                    $item.find('*[class^="box-level"]').each(function(){
+                        $(this).remove()
+                    })
                     htmlItems += $item[0].outerHTML
                 })
                 htmlItems += '</div>'
                 $parentHTML.find(".w-dyn-list").html(htmlItems)
                 $('.'+s+' '+ccM).parent().append($parentHTML)
+
+                var $nesting = $(nesting)
+                for(var m = 0; m < childHtml[st.selection].length; m++){
+                    var el = childHtml[st.selection][m]
+                    var classList = $(el.html).find(".list").attr("class")
+                    $(el.html).find(".list").remove()
+                    var $itemChild = $(el.htmlchild)
+                    $itemChild.find('img').attr('x-bind:src', "option.thumbnail").attr("x-bind:srcset", "option.thumbnail")
+                    $itemChild.find('.text-name').attr('x-text', "option.name")
+                    $itemChild.find('.text-description').attr('x-text', "option.description")
+                    $itemChild.find('.text-price').attr('x-text', "setCurrencyPrice(option.price, '+ $')")
+                    $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
+                    var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
+                    ${$itemChild[0].outerHTML}
+                    </template></div>`
+                
+                    $nesting.append(el.html)
+                    var titleLavel = (st["titlelavel"+el.level]) ? st["titlelavel"+el.level] : ""
+                    $nesting.find(".box-level-"+el.level).find(".title-level").attr("x-show", `activeLevel['${st.value}'][${m}].items.length > 0`)
+                    $nesting.find(".box-level-"+el.level).find(".title-level").text(titleLavel)
+                    $nesting.find(".box-level-"+el.level).append(childTemplate)
+                }
+
+                $('.'+s+' '+ccM).parent().append($nesting)
             })
-        }
+        }    
     }
+    
     $("input:required").attr("x-on:input", "validate()")
     $('form').attr("x-on:keydown.enter.prevent", "")
     $('#next-button').attr("href", "javascript:void(0)")
@@ -510,15 +564,32 @@ function init(){
                         })
                     }
 
-                    for(var l = 0; l < levels[item.selection ].length; l++){
+                    for(var l = 0; l < levels[item.selection].length; l++){
                         this.activeLevel[item.subtype][l].items = []
                     }
 
-                    if(item.childs.length > 0 && item.active == true){
+                    if(item.childs.length > 0 && item.active == true && item.selection == "simple"){
                         item.childs[0].active = true
-                    }
 
-                    this.activeLevel[item.subtype][0].items = item.childs
+                    }
+                    
+                    for(var l in levels[item.selection]){
+                        var itemsChilds = []
+                        if(l == 0){ 
+                            itemsChilds = (item.active == true) ? item.childs : []
+                        }else{
+                            var prveLevel = activeLevel[item.subtype][l - 1]
+                            if(prveLevel && prveLevel.items.length > 0){
+                                itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                            }
+                        }
+                        
+                        if(itemsChilds.length > 0 && item.selection == "simple"){
+                            var li = getLevel(itemsChilds[0], 0, type)
+                            itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
+                        }
+                        this.activeLevel[item.subtype][l].items = itemsChilds
+                    }
 
                     this.activeOptionLevel = {
                         slug : "",
@@ -545,18 +616,11 @@ function init(){
                     var tag = sections[type]
                     var item = tag.find(function(i){ return i.slug == slug })
 
-                    // if(item.selection == "multiple"){
-                    //     $child.toggleClass("selected")
-
-                    // }else if(item.selection == "simple")
-                    $child.parent().find(".collection-item-5").removeClass("selected")
-                    $child.addClass("selected")
-                    //   }
-
                     var subtype = item.subtype
                     var _this = this
+
                     this.studio[type].selected.map(function(i){
-                        if(i.subtype == item.subtype )//&& item.selection == "simple"
+                        if(i.subtype == item.subtype && item["selectionlevel"+level].toLowerCase() == "simple") //
                             i.active = false
                         return i
                     })
@@ -565,7 +629,7 @@ function init(){
                             i.active = !i.active
 
                             var parent = i.parent
-                            if(parent != "")
+                            if(parent != "" && i.active)
                                 _this.setParent(parent, type)
                         }
                         return i
@@ -581,12 +645,19 @@ function init(){
 
                     for(var l = l_index; l < levels[item.selection ].length; l++){
                         this.activeLevel[item.subtype][l].items = []
-
                     }
 
-                    if(item.childs.length > 0){
+                    if(item.childs.length > 0 && item.active === false){
+                        for(c in item.childs){
+                            item.childs[c].active = false
+                        }
+                    }else if(item.childs.length > 0 && item.active === true && item["selectionlevel"+level].toLowerCase() == "simple"){
                         this.activeLevel[item.subtype][l_index].items = item.childs
                         this.activeOptionLevel.levels.push(next_level)
+                        var li = getLevel(item.childs[0], 0, type)
+                        if(item.selection == "simple"){
+                            item.childs[0].active = (item[ll[li]].toLowerCase() == "simple")//true
+                        }
                     }
 
                     setTimeout(function(){
@@ -617,12 +688,12 @@ function init(){
         },
         getShowLevel(slug, level, type){
             type = type.toLowerCase()
+
             var item = this.studio[type].selected.find(function(i){
                 return i.slug == slug
             })
 
             var show = (this.activeOptionLevel.slug == slug && this.activeOptionLevel.levels.includes(level)) || (item.active && item.selection == "simple")
-
             return show
         },
         setPrice : function(){
