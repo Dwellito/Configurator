@@ -161,7 +161,7 @@ function stripeMakePayment (card, secret) {
     }).then(function(result) {
         if (result.error) {
             // Show error to your customer (e.g., insufficient funds)
-            console.log(result.error.message);
+            // console.log(result.error.message);
 
             gtag("event", "purchase_failed", {
                 model_name: getModelName(window.location.pathname)
@@ -183,7 +183,7 @@ function stripeMakePayment (card, secret) {
                         {item_name: getModelName(window.location.pathname)}
                     ]
                 })
-                console.log("SUCCESS")
+                // console.log("SUCCESS")
                 window.location.href = "https://" + window.location.hostname + "/thank-you"
             }
         }
@@ -285,10 +285,6 @@ function init(){
         })
 
     }
-
-
-//console.log(childHtml)
-    
 
     var parentHTML = ""
     if($(ccM).parent().find(ccW).length > 0){
