@@ -243,7 +243,7 @@ function init(){
             var classLevel = $(this).attr("class").split(" ")[0]
             var level = classLevel.replace("box-level-", "")
             levels[type].push(level)
-            var htmlParentLevel = $("."+classLevel)[0].outerHTML
+            var htmlParentLevel = $('.'+type+" ."+classLevel)[0].outerHTML
             var $htmlParentLevel = $(htmlParentLevel)
             var childLevel = $htmlParentLevel.find(".level-"+level)[0].outerHTML
 
@@ -258,6 +258,10 @@ function init(){
         })
 
     }
+
+
+//console.log(childHtml)
+    
 
     var parentHTML = ""
     if($(ccM).parent().find(ccW).length > 0){
@@ -274,6 +278,12 @@ function init(){
 
     var itemM = ($(ccFM).length > 0) ? $(ccFM)[0].outerHTML : itemDefault
     $(ccFM).remove()
+
+    var $nesting = $(".nesting")
+    $nesting.find('*[class^="box-level"]').each(function(){
+        $(this).remove()
+    })
+    var nesting = $nesting[0].outerHTML
 
     $(".btn-slides").each(function(i){
         $(this).find(".nav-bar-click-link").each(function(j){
@@ -313,7 +323,10 @@ function init(){
             section.map(function(tag){
                 if(!subtypes.find(st => st.value === tag.subtype)){
                     var items = section.filter(st => st.subtype === tag.subtype && st.parent == "")
-                    subtypes.push({value : tag.subtype, title : tag.namesubtype, items })
+                    var selection = (items.length > 0) ? items[0].selection : "simple"
+                    var titlelaveli = (items.length > 0) ? items[0].titlelaveli : ""
+                    var titlelavelii = (items.length > 0) ? items[0].titlelavelii : ""
+                    subtypes.push({value : tag.subtype, title : tag.namesubtype, selection, items, titlelaveli, titlelavelii })
                 }
             })
 
@@ -373,33 +386,36 @@ function init(){
                     $item.find('*[class^="box-level"]').each(function(){
                         $(this).remove()
                     })
-                    for(var m = 0; m < childHtml[it.selection].length; m++){
-                        var el = childHtml[it.selection][m]
-                        var classList = $(el.html).find(".list").attr("class")
-                        $(el.html).find(".list").remove()
-                        var $itemChild = $(el.htmlchild)
-                        $itemChild.find('.image').attr('x-bind:src', "option.thumbnail").attr("x-bind:srcset", "option.thumbnail")
-                        $itemChild.find('.text-name').attr('x-text', "option.name")
-                        $itemChild.find('.text-description').attr('x-text', "option.description")
-                        $itemChild.find('.text-price').attr('x-text', "setCurrencyPrice(option.price, '+ $')")
-                        $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
-                        var childTemplate = `<template x-if="getShowLevel('${it.slug}', '${el.level}', '${it.type}') == true">
-                        <div class="${classList}"><template role="listitem" x-for="option in activeLevel['${it.subtype}'][${m}].items" :key="option">
-                        ${$itemChild[0].outerHTML}
-                        </template></div></template>`
-                        $item.append(el.html)
-                        var titleLavel = (it["titlelavel"+el.level]) ? it["titlelavel"+el.level] : ""
-                        $item.find(".box-level-"+el.level).find(".title-level").attr("x-show", `getShowLevel('${it.slug}', '${el.level}', '${it.type}') == true && activeLevel['${st.value}'][${m}].items.length > 0`)
-                        $item.find(".box-level-"+el.level).find(".title-level").text(titleLavel)
-                        $item.find(".box-level-"+el.level).append(childTemplate)
-
-                    }
-
                     htmlItems += $item[0].outerHTML
                 })
                 htmlItems += '</div>'
                 $parentHTML.find(".w-dyn-list").html(htmlItems)
                 $('.'+s+' '+ccM).parent().append($parentHTML)
+
+
+                var $nesting = $(nesting)
+                for(var m = 0; m < childHtml[st.selection].length; m++){
+                    var el = childHtml[st.selection][m]
+                    var classList = $(el.html).find(".list").attr("class")
+                    $(el.html).find(".list").remove()
+                    var $itemChild = $(el.htmlchild)
+                    $itemChild.find('img').attr('x-bind:src', "option.thumbnail").attr("x-bind:srcset", "option.thumbnail")
+                    $itemChild.find('.text-name').attr('x-text', "option.name")
+                    $itemChild.find('.text-description').attr('x-text', "option.description")
+                    $itemChild.find('.text-price').attr('x-text', "setCurrencyPrice(option.price, '+ $')")
+                    $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
+                    var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
+                    ${$itemChild[0].outerHTML}
+                    </template></div>`
+                
+                    $nesting.append(el.html)
+                    var titleLavel = (st["titlelavel"+el.level]) ? st["titlelavel"+el.level] : ""
+                    $nesting.find(".box-level-"+el.level).find(".title-level").attr("x-show", `activeLevel['${st.value}'][${m}].items.length > 0`)
+                    $nesting.find(".box-level-"+el.level).find(".title-level").text(titleLavel)
+                    $nesting.find(".box-level-"+el.level).append(childTemplate)
+                }
+
+                $('.'+s+' '+ccM).parent().append($nesting)
             })
         }    
     }
@@ -650,6 +666,7 @@ function init(){
         },
         getShowLevel(slug, level, type){
             type = type.toLowerCase()
+
             var item = this.studio[type].selected.find(function(i){
                 return i.slug == slug
             })
