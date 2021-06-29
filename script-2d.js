@@ -270,7 +270,7 @@ function init(){
             var classLevel = $(this).attr("class").split(" ")[0]
             var level = classLevel.replace("box-level-", "")
             levels[type].push(level)
-            var htmlParentLevel = $("."+classLevel)[0].outerHTML
+            var htmlParentLevel = $('.'+type+" ."+classLevel)[0].outerHTML
             var $htmlParentLevel = $(htmlParentLevel)
             var childLevel = $htmlParentLevel.find(".level-"+level)[0].outerHTML
 
@@ -285,6 +285,10 @@ function init(){
         })
 
     }
+
+
+//console.log(childHtml)
+    
 
     var parentHTML = ""
     if($(ccM).parent().find(ccW).length > 0){
@@ -409,7 +413,6 @@ function init(){
                     $item.find('*[class^="box-level"]').each(function(){
                         $(this).remove()
                     })
-
                     htmlItems += $item[0].outerHTML
                 })
                 htmlItems += '</div>'
@@ -592,8 +595,6 @@ function init(){
                         this.activeLevel[item.subtype][l].items = itemsChilds
                     }
 
-
-
                     this.activeOptionLevel = {
                         slug : "",
                         levels : []
@@ -619,14 +620,6 @@ function init(){
                     var tag = sections[type]
                     var item = tag.find(function(i){ return i.slug == slug })
 
-                    // if(item.selection == "multiple"){
-                    //     $child.toggleClass("selected")
-
-                    // }else if(item.selection == "simple")
-                    // $child.parent().find(".collection-item-5").removeClass("selected")
-                    // $child.addClass("selected")
-                    //   }
-
                     var subtype = item.subtype
                     var _this = this
 
@@ -640,7 +633,7 @@ function init(){
                             i.active = !i.active
 
                             var parent = i.parent
-                            if(parent != "")
+                            if(parent != "" && i.active)
                                 _this.setParent(parent, type)
                         }
                         return i
@@ -699,6 +692,7 @@ function init(){
         },
         getShowLevel(slug, level, type){
             type = type.toLowerCase()
+
             var item = this.studio[type].selected.find(function(i){
                 return i.slug == slug
             })
