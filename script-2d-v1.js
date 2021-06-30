@@ -817,6 +817,7 @@ function init(){
                     this.valid = false
                 }
                 else {
+                    console.log("else in goslide")
                     this.valid = true
                     this.setPrice()
 
