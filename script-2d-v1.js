@@ -220,7 +220,6 @@ $(() => {
         })
         $(".modal-pop-up._3d-model").addClass("no-visible")
     })
-    document.title = "Configurator"
 })
 
 function init(){
@@ -816,6 +815,7 @@ function init(){
                 if (inputs.length > 0){
                     this.valid = false
                 }
+                // This only fires when clicking next on the installation page
                 else {
                     console.log("else in goslide")
                     this.valid = true
