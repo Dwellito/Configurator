@@ -193,15 +193,15 @@ function stripeMakePayment (card, secret) {
     });
 }
 
-function loadGoogleAutocomplete () {
-    // TODO: remove, just for testing
-    var addressBox = document.getElementById("Address")
-    addressBox.insertAdjacentHTML("beforebegin", "<input type='text' id='autocomplete_goog'>")
-    const service = new google.maps.places.Autocomplete(document.getElementById("autocomplete_goog"));
-}
+// function loadGoogleAutocomplete () {
+//     // TODO: remove, just for testing
+//     var addressBox = document.getElementById("Address")
+//     addressBox.insertAdjacentHTML("beforebegin", "<input type='text' id='autocomplete_goog'>")
+//     const service = new google.maps.places.Autocomplete(document.getElementById("autocomplete_goog"));
+// }
 
 $(() => {
-    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=places&v=weekly", loadGoogleAutocomplete)
+    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=places&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
@@ -722,10 +722,21 @@ function init(){
                     }
                 }
             }
+
+
             try {
                 var address = document.getElementById('Address').value.trim();
                 var city = document.getElementById('City').value.trim();
                 var state = document.getElementById('State').value.trim();
+
+                var destTest = "";
+                destTest += address + "," + city + "," + state
+
+                const serviceTest = new google.maps.places.AutocompleteService()
+                serviceTest.getPlacePredictions({input: destTest}, (response, status) => {
+                    console.log(response)
+                    console.log(status)
+                })
 
                 const modelName = getModelName(window.location.pathname)
                 const pricePerMile = lookup[modelName]["price-per-mile"]
