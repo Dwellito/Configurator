@@ -194,7 +194,7 @@ function stripeMakePayment (card, secret) {
 }
 
 $(() => {
-    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=places&v=weekly", redirectToStripe)
+    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
@@ -220,7 +220,7 @@ $(() => {
         })
         $(".modal-pop-up._3d-model").addClass("no-visible")
     })
-    document.title = "Configurator"
+
 })
 
 function init(){
@@ -715,6 +715,8 @@ function init(){
                     }
                 }
             }
+
+
             try {
                 var address = document.getElementById('Address').value.trim();
                 var city = document.getElementById('City').value.trim();
@@ -816,6 +818,7 @@ function init(){
                 if (inputs.length > 0){
                     this.valid = false
                 }
+                // This only fires when clicking next on the installation page
                 else {
                     this.valid = true
                     this.setPrice()
