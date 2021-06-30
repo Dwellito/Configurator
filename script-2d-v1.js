@@ -725,7 +725,7 @@ function init(){
 
                 const service = new google.maps.DistanceMatrixService();
 
-                if (address !== "" && city !== "" && state !== "") {
+                if (address !== "" && city !== "" && state !== "" && (modelName === "the-twelve" || modelName === "the-sixteen")) {
                     var dest = "";
                     dest += address + "," + city + "," + state
 
@@ -768,7 +768,6 @@ function init(){
 
                             shippingCost = price
                             total = parseFloat(total) + price
-                            console.log(price + " " + total)
                             this.studio.price = formatter.format(this.setCurrencyPrice(total))
                             this.setLoan(total)
                             totalPrice = total;
@@ -818,7 +817,6 @@ function init(){
                     this.valid = false
                 }
                 else {
-                    console.log("Else")
                     this.valid = true
                     this.setPrice()
 
