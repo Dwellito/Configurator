@@ -768,6 +768,7 @@ function init(){
 
                             shippingCost = price
                             total = parseFloat(total) + price
+                            console.log(price + " " + total)
                             this.studio.price = formatter.format(this.setCurrencyPrice(total))
                             this.setLoan(total)
                             totalPrice = total;
