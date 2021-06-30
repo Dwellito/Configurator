@@ -220,6 +220,11 @@ $(() => {
         })
         $(".modal-pop-up._3d-model").addClass("no-visible")
     })
+   // TODO: remove, just for testing
+    var addressBox = document.getElementById("Address")
+    addressBox.insertAdjacentHTML("beforebegin", "<input type='text' id='autocomplete_goog'>")
+    const service = new google.maps.places.Autocomplete(document.getElementById("autocomplete_goog"));
+
 })
 
 function init(){
