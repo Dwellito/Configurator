@@ -193,8 +193,15 @@ function stripeMakePayment (card, secret) {
     });
 }
 
+function loadGoogleAutocomplete () {
+    // TODO: remove, just for testing
+    var addressBox = document.getElementById("Address")
+    addressBox.insertAdjacentHTML("beforebegin", "<input type='text' id='autocomplete_goog'>")
+    const service = new google.maps.places.Autocomplete(document.getElementById("autocomplete_goog"));
+}
+
 $(() => {
-    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=places&v=weekly", redirectToStripe)
+    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=places&v=weekly", loadGoogleAutocomplete)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
@@ -220,10 +227,6 @@ $(() => {
         })
         $(".modal-pop-up._3d-model").addClass("no-visible")
     })
-   // TODO: remove, just for testing
-    var addressBox = document.getElementById("Address")
-    addressBox.insertAdjacentHTML("beforebegin", "<input type='text' id='autocomplete_goog'>")
-    const service = new google.maps.places.Autocomplete(document.getElementById("autocomplete_goog"));
 
 })
 
