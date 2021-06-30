@@ -20,7 +20,7 @@ const lookup = {
         "vectary-id": "33d2bffa-d070-4254-92fb-6dfffacb9a5b"
     },
     "holo-plus": {
-        "vectary-id": "c26cb8eb-aae9-4137-8c39-6811da1cb31"
+        "vectary-id": "c26cb8eb-aae9-4137-8c39-6811da1cb314"
     },
     "auxffice": {
         "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08"

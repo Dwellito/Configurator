@@ -20,7 +20,7 @@ const lookup = {
         "vectary-id": "33d2bffa-d070-4254-92fb-6dfffacb9a5b"
     },
     "holo-plus": {
-        "vectary-id": "c26cb8eb-aae9-4137-8c39-6811da1cb31"
+        "vectary-id": "c26cb8eb-aae9-4137-8c39-6811da1cb314"
     },
     "auxffice": {
         "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08"
@@ -194,7 +194,7 @@ function stripeMakePayment (card, secret) {
 }
 
 $(() => {
-    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
+    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=places&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
@@ -237,7 +237,7 @@ function init(){
         sections.m.push({type : $(this).data("type"), name : $(this).data("name"), slug : $(this).data("slug"), price : $(this).data("price"), image : $(this).data("image")})
     })
     $('.rendered-sections').each(function(){
-        var data = $(this).data() 
+        var data = $(this).data()
         var type = data.type.toLowerCase()
         var description = $(this).closest(".w-dyn-item").find('.longer-description-html').html()
         var st = data.subtype
@@ -248,13 +248,13 @@ function init(){
         selection = (selection.includes("simple") ? "simple" : "multiple")
         var active = !exist_subtype && selection == "simple" && data.parent == ""
         var labelLevels = []
-        
+
         //var itt = {type : data.type, subtype : data.subtype, namesubtype : data.namesubtype, name : data.name, slug : data.slug, price : data.price,  image : data.image, thumbnail : data.thumbnail, description, active, show : false, order : data.order, selection : selection, object : data.object, group : data.group, material : data.material, function : data.function, parent : data.parent, childs : [], activeLevel : [] }
         var itt = data
-        itt.description = description 
+        itt.description = description
         itt.active = active
         itt.show = false,
-        itt.selection = selection
+            itt.selection = selection
         itt.childs = []
         itt.activeLevel = []
         sections[type].push(itt)
@@ -358,10 +358,10 @@ function init(){
 
             subtypes.map(async function(st){
                 activeLevel[st.value] = []
-                
+
                 for(var l in levels[st.items[0].selection]){
                     var itemsChilds = []
-                    if(l == 0){ 
+                    if(l == 0){
                         itemsChilds = (st.items[0].active == true) ? st.items[0].childs : []
                     }else{
                         var prveLevel = activeLevel[st.value][l - 1]
@@ -369,7 +369,7 @@ function init(){
                             itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
                         }
                     }
-                    
+
                     activeLevel[st.value].push({level : l, items : itemsChilds})
                 }
 
@@ -432,7 +432,7 @@ function init(){
                     var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
                     ${$itemChild[0].outerHTML}
                     </template></div>`
-                
+
                     $nesting.append(el.html)
                     var titleLavel = (st["titlelavel"+el.level]) ? st["titlelavel"+el.level] : ""
                     $nesting.find(".box-level-"+el.level).find(".title-level").attr("x-show", `activeLevel['${st.value}'][${m}].items.length > 0`)
@@ -442,9 +442,9 @@ function init(){
 
                 $('.'+s+' '+ccM).parent().append($nesting)
             })
-        }    
+        }
     }
-    
+
     $("input:required").attr("x-on:input", "validate()")
     $('form').attr("x-on:keydown.enter.prevent", "")
     $('#next-button').attr("href", "javascript:void(0)")
@@ -575,10 +575,10 @@ function init(){
                         item.childs[0].active = true
 
                     }
-                    
+
                     for(var l in levels[item.selection]){
                         var itemsChilds = []
-                        if(l == 0){ 
+                        if(l == 0){
                             itemsChilds = (item.active == true) ? item.childs : []
                         }else{
                             var prveLevel = activeLevel[item.subtype][l - 1]
@@ -586,7 +586,7 @@ function init(){
                                 itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
                             }
                         }
-                        
+
                         if(itemsChilds.length > 0 && item.selection == "simple"){
                             var li = getLevel(itemsChilds[0], 0, type)
                             itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
@@ -725,7 +725,7 @@ function init(){
 
                 const service = new google.maps.DistanceMatrixService();
 
-                if (address !== "" && city !== "" && state !== "") {
+                if (address !== "" && city !== "" && state !== "" && (modelName === "the-twelve" || modelName === "the-sixteen")) {
                     var dest = "";
                     dest += address + "," + city + "," + state
 
