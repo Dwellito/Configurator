@@ -2,8 +2,29 @@ var show_zero_price = "";
 var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = "22EP8BJUJKCW2YGUN8RS", hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
 var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 2});
 const lookup = {
-    "the-twelve": {"price-per-mile": 3.50},
-    "the-sixteen": {"price-per-mile": 4.00}
+    "the-twelve": {
+        "vectary-id": "54739396-1053-4f71-8096-44f4ce1a08bf",
+        "price-per-mile": 3.50
+    },
+    "the-sixteen": {
+        "vectary-id": "bf024eb5-edca-47b0-bbd9-14bac4512ee1",
+        "price-per-mile": 4.00,
+    },
+    "holo": {
+        "vectary-id": "202ef3f3-fc9c-4ba1-9913-fa7daedfc6f9"
+    },
+    "holo-extended-4ft": {
+        "vectary-id": "cfecc5ed-c8d8-4b85-bf75-88508e2bb40c"
+    },
+    "holo-extended-8ft": {
+        "vectary-id": "33d2bffa-d070-4254-92fb-6dfffacb9a5b"
+    },
+    "holo-plus": {
+        "vectary-id": ""
+    },
+    "auxffice": {
+        "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08"
+    },
 }
 
 var levels = {
@@ -49,7 +70,6 @@ function validEmail(email) {
     const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(email);
 }
-
 
 function parseMiles (str) {
     var regex = new RegExp('mi|,', 'igm')
@@ -144,7 +164,7 @@ function stripeMakePayment (card, secret) {
     }).then(function(result) {
         if (result.error) {
             // Show error to your customer (e.g., insufficient funds)
-            console.log(result.error.message);
+            // console.log(result.error.message);
 
             gtag("event", "purchase_failed", {
                 model_name: getModelName(window.location.pathname)
@@ -166,7 +186,7 @@ function stripeMakePayment (card, secret) {
                         {item_name: getModelName(window.location.pathname)}
                     ]
                 })
-                console.log("SUCCESS")
+                // console.log("SUCCESS")
                 window.location.href = "https://" + window.location.hostname + "/thank-you"
             }
         }
@@ -179,10 +199,20 @@ $(() => {
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => {
+        const modelName = getModelName(window.location.pathname)
         gtag("event", "3d_opened", {
-            model_name: getModelName(window.location.pathname)
+            model_name: modelName
         })
+
         $(".modal-pop-up._3d-model").removeClass("no-visible")
+
+        const modelID = lookup[modelName]["vectary-id"]
+        var vectaryViewerHTML = "<vctr-viewer id='test' model='" + modelID + "' turntable='0' gesturehandling='superior' showinteractionprompt='0' enableapi='1' zoom='0'></vctr-viewer>"
+        var vectaryEmbed = document.getElementById("vectary-embed")
+        if (vectaryEmbed.children.length === 0) {
+            vectaryEmbed.insertAdjacentHTML("afterbegin", vectaryViewerHTML)
+            loadScript("https://www.vectary.com/viewer/v1/scripts/vctr-viewer.js", redirectToStripe)
+        }
     })
     $("#close-3d-modal").click(() => {
         gtag("event", "3d_closed", {
@@ -258,10 +288,6 @@ function init(){
         })
 
     }
-
-
-//console.log(childHtml)
-
 
     var parentHTML = ""
     if($(ccM).parent().find(ccW).length > 0){
@@ -391,7 +417,6 @@ function init(){
                 htmlItems += '</div>'
                 $parentHTML.find(".w-dyn-list").html(htmlItems)
                 $('.'+s+' '+ccM).parent().append($parentHTML)
-
 
                 var $nesting = $(nesting)
                 for(var m = 0; m < childHtml[st.selection].length; m++){
@@ -819,7 +844,7 @@ function init(){
                         var items = item.selected.filter(function(iJ){ return iJ.active })
                         for (const j in items) {
                             value.push(items[j].name)
-                            let renderitem = { type: items[j].type, name : items[j].name, slug : items[j].slug, price : items[j].price, image : (items[j].image) ? items[j].image : null, thumbnail : (items[j].thumbnail) ? items[j].thumbnail : null}
+                            let renderitem = { type: items[j].type, name : items[j].namesubtype + " - " + items[j].name, slug : items[j].slug, price : items[j].price, image : (items[j].image) ? items[j].image : null, thumbnail : (items[j].thumbnail) ? items[j].thumbnail : null}
                             this.studioItems.push(renderitem)
                         }
                         this[i+"V"] = value.join(", ")
