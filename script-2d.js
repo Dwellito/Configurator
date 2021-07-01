@@ -32,8 +32,12 @@ var levels = {
     "simple" : []
 }
 
-const backendUrl = document.location.host === "www.configure.so" ? "https://dwellito.co" : "https://test.dwellito.co"
-const stripeKey = document.location.host === "www.configure.so" ? 'pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb' : 'pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'
+function isProd() {
+    return document.location.host === "www.configure.so"
+}
+
+const backendUrl = isProd() ? "https://dwellito.co" : "https://test.dwellito.co"
+const stripeKey = isProd() ? 'pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb' : 'pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'
 
 const getModelName = thePath => thePath.substring(thePath.lastIndexOf('/') + 1)
 
@@ -200,7 +204,7 @@ function stripeMakePayment (card, secret) {
 
 $(() => {
     // Minio hotjar user tracking
-    if (modelIsMinio()) {
+    if (modelIsMinio() && isProd()) {
         (function(h,o,t,j,a,r){
             h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
             h._hjSettings={hjid:2480927,hjsv:6};
