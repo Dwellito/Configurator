@@ -42,6 +42,11 @@ function isTakeRateModel () {
     return model !== "holo" && model !== "holo-extended-4ft" && model !== "holo-extended-8ft"
 }
 
+function modelIsMinio() {
+    const model = getModelName(window.location.pathname)
+    return model === "the-twelve" || model === "the-sixteen"
+}
+
 function loadScript(url, callback)
 {
     // Adding the script tag to the head as suggested before
@@ -194,6 +199,17 @@ function stripeMakePayment (card, secret) {
 }
 
 $(() => {
+    // Minio hotjar user tracking
+    if (modelIsMinio()) {
+        (function(h,o,t,j,a,r){
+            h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+            h._hjSettings={hjid:2480927,hjsv:6};
+            a=o.getElementsByTagName('head')[0];
+            r=o.createElement('script');r.async=1;
+            r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+            a.appendChild(r);
+        })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+    }
     loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});

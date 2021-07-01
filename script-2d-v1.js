@@ -199,6 +199,7 @@ function stripeMakePayment (card, secret) {
 }
 
 $(() => {
+    // Minio hotjar user tracking
     if (modelIsMinio()) {
         (function(h,o,t,j,a,r){
             h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
