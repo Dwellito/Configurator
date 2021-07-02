@@ -43,7 +43,7 @@ const getModelName = thePath => thePath.substring(thePath.lastIndexOf('/') + 1)
 
 function isTakeRateModel () {
     const model = getModelName(window.location.pathname)
-    return model !== "holo" && model !== "holo-extended-4ft" && model !== "holo-extended-8ft"
+    return model !== "holo" && model !== "holo-extended-4ft" && model !== "holo-extended-8ft" && model !== "holo-plus"
 }
 
 function modelIsMinio() {
