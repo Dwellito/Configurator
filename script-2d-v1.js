@@ -25,6 +25,9 @@ const lookup = {
     "auxffice": {
         "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08"
     },
+    "the-106" : {
+        "vectary-id": "04ebc49a-4b70-41e0-9671-be99716d46c2"
+    }
 }
 
 var levels = {
