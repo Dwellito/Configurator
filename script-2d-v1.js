@@ -178,9 +178,11 @@ function stripeMakePayment (card, secret) {
             // Show error to your customer (e.g., insufficient funds)
             // console.log(result.error.message);
 
-            gtag("event", "purchase_failed", {
-                model_name: getModelName(window.location.pathname)
-            })
+            if (isProd()) {
+                gtag("event", "purchase_failed", {
+                    model_name: getModelName(window.location.pathname)
+                })
+            }
             window.location.href = "https://" + window.location.hostname + "/payment-failure";
         } else {
             // The payment has been processed!
@@ -190,14 +192,16 @@ function stripeMakePayment (card, secret) {
                 // execution. Set up a webhook or plugin to listen for the
                 // payment_intent.succeeded event that handles any business critical
                 // post-payment actions.
-                gtag("event", "purchase", {
-                    currency: "USD",
-                    value: shippingCost ? totalPrice - shippingCost : totalPrice,
-                    shipping: shippingCost || 0,
-                    items: [
-                        {item_name: getModelName(window.location.pathname)}
-                    ]
-                })
+                if (isProd()) {
+                    gtag("event", "purchase", {
+                        currency: "USD",
+                        value: shippingCost ? totalPrice - shippingCost : totalPrice,
+                        shipping: shippingCost || 0,
+                        items: [
+                            {item_name: getModelName(window.location.pathname)}
+                        ]
+                    })
+                }
                 // console.log("SUCCESS")
                 window.location.href = "https://" + window.location.hostname + "/thank-you"
             }
@@ -223,9 +227,12 @@ $(() => {
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => {
         const modelName = getModelName(window.location.pathname)
-        gtag("event", "3d_opened", {
-            model_name: modelName
-        })
+
+        if (isProd()) {
+            gtag("event", "3d_opened", {
+                model_name: modelName
+            })
+        }
 
         $(".modal-pop-up._3d-model").removeClass("no-visible")
 
@@ -238,9 +245,11 @@ $(() => {
         }
     })
     $("#close-3d-modal").click(() => {
-        gtag("event", "3d_closed", {
-            model_name: getModelName(window.location.pathname)
-        })
+        if (isProd()) {
+            gtag("event", "3d_closed", {
+                model_name: getModelName(window.location.pathname)
+            })
+        }
         $(".modal-pop-up._3d-model").addClass("no-visible")
     })
 
@@ -828,9 +837,11 @@ function init(){
                 slideName = "model"
             }
 
-            gtag("event", slideName + "_next_clicked", {
-                model_name: getModelName(window.location.pathname)
-            })
+            if (isProd()) {
+                gtag("event", slideName + "_next_clicked", {
+                    model_name: getModelName(window.location.pathname)
+                })
+            }
 
             if (slide == 'next'){ slide = (this.valid) ? parseInt(this.slideActive) + 1 : this.slideActive }
             this.valid = true
@@ -940,15 +951,19 @@ function init(){
             const model = getModelName(window.location.pathname)
 
             if (isTakeRateModel()) {
-                gtag("event", "clicked_make_purchase", {
-                    model_name: model
-                })
+                if (isProd()) {
+                    gtag("event", "clicked_make_purchase", {
+                        model_name: model
+                    })
+                }
                 stripeMakePayment(stripeCard, stripePaymentIntentSecret)
 
             } else {
-                gtag("event", "clicked_submit_nontake", {
-                    model_name: model
-                })
+                if (isProd()) {
+                    gtag("event", "clicked_submit_nontake", {
+                        model_name: model
+                    })
+                }
                 setTimeout(() => {
                     window.location.href = "https://" + window.location.hostname + "/thank-you"
                 }, 2000)
