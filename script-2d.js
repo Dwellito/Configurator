@@ -4,29 +4,37 @@ var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'U
 const lookup = {
     "the-twelve": {
         "vectary-id": "54739396-1053-4f71-8096-44f4ce1a08bf",
-        "price-per-mile": 3.50
+        "price-per-mile": 3.50,
+        "builder": "mini-o",
     },
     "the-sixteen": {
         "vectary-id": "bf024eb5-edca-47b0-bbd9-14bac4512ee1",
         "price-per-mile": 4.00,
+        "builder": "mini-o",
     },
     "holo": {
-        "vectary-id": "202ef3f3-fc9c-4ba1-9913-fa7daedfc6f9"
+        "vectary-id": "202ef3f3-fc9c-4ba1-9913-fa7daedfc6f9",
+        "builder": "drop-structures",
     },
     "holo-extended-4ft": {
-        "vectary-id": "cfecc5ed-c8d8-4b85-bf75-88508e2bb40c"
+        "vectary-id": "cfecc5ed-c8d8-4b85-bf75-88508e2bb40c",
+        "builder": "drop-structures",
     },
     "holo-extended-8ft": {
-        "vectary-id": "33d2bffa-d070-4254-92fb-6dfffacb9a5b"
+        "vectary-id": "33d2bffa-d070-4254-92fb-6dfffacb9a5b",
+        "builder": "drop-structures",
     },
     "holo-plus": {
-        "vectary-id": "c26cb8eb-aae9-4137-8c39-6811da1cb314"
+        "vectary-id": "c26cb8eb-aae9-4137-8c39-6811da1cb314",
+        "builder": "drop-structures",
     },
     "auxffice": {
-        "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08"
+        "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08",
+        "builder": "auxbox",
     },
     "the-106" : {
-        "vectary-id": "04ebc49a-4b70-41e0-9671-be99716d46c2"
+        "vectary-id": "04ebc49a-4b70-41e0-9671-be99716d46c2",
+        "builder": "auxbox",
     }
 }
 
@@ -44,14 +52,17 @@ const stripeKey = isProd() ? 'pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvV
 
 const getModelName = thePath => thePath.substring(thePath.lastIndexOf('/') + 1)
 
-function isTakeRateModel () {
+function getBuilder () {
     const model = getModelName(window.location.pathname)
-    return model !== "holo" && model !== "holo-extended-4ft" && model !== "holo-extended-8ft" && model !== "holo-plus"
+    return lookup[model].builder;
+}
+
+function isTakeRateModel () {
+    return getBuilder() !== "drop-structures"
 }
 
 function modelIsMinio() {
-    const model = getModelName(window.location.pathname)
-    return model === "the-twelve" || model === "the-sixteen"
+    return getBuilder() === "mini-o"
 }
 
 function loadScript(url, callback)
@@ -180,7 +191,8 @@ function stripeMakePayment (card, secret) {
 
             if (isProd()) {
                 gtag("event", "purchase_failed", {
-                    model_name: getModelName(window.location.pathname)
+                    model_name: getModelName(window.location.pathname),
+                    builder: getBuilder()
                 })
             }
             window.location.href = "https://" + window.location.hostname + "/payment-failure";
@@ -210,6 +222,21 @@ function stripeMakePayment (card, secret) {
 }
 
 $(() => {
+    // View events based on the model and the builder. The verbosity is for funnel analysis limitations
+    if (isProd()) {
+        const builder = getBuilder()
+        const model = getModelName(window.location.pathname)
+        if (builder && model) {
+            gtag("event", builder + "_viewed", {
+                model_name: model,
+                builder: builder
+            })
+            gtag("event", model + "_viewed", {
+                model_name: model,
+                builder: builder
+            })
+        }
+    }
     // Minio hotjar user tracking
     if (modelIsMinio() && isProd()) {
         (function(h,o,t,j,a,r){
@@ -230,7 +257,8 @@ $(() => {
 
         if (isProd()) {
             gtag("event", "3d_opened", {
-                model_name: modelName
+                model_name: modelName,
+                builder: getBuilder()
             })
         }
 
@@ -247,7 +275,8 @@ $(() => {
     $("#close-3d-modal").click(() => {
         if (isProd()) {
             gtag("event", "3d_closed", {
-                model_name: getModelName(window.location.pathname)
+                model_name: getModelName(window.location.pathname),
+                builder: getBuilder()
             })
         }
         $(".modal-pop-up._3d-model").addClass("no-visible")
@@ -839,7 +868,8 @@ function init(){
 
             if (isProd()) {
                 gtag("event", slideName + "_next_clicked", {
-                    model_name: getModelName(window.location.pathname)
+                    model_name: getModelName(window.location.pathname),
+                    builder: getBuilder()
                 })
             }
 
@@ -953,7 +983,8 @@ function init(){
             if (isTakeRateModel()) {
                 if (isProd()) {
                     gtag("event", "clicked_make_purchase", {
-                        model_name: model
+                        model_name: model,
+                        builder: getBuilder()
                     })
                 }
                 stripeMakePayment(stripeCard, stripePaymentIntentSecret)
@@ -961,7 +992,8 @@ function init(){
             } else {
                 if (isProd()) {
                     gtag("event", "clicked_submit_nontake", {
-                        model_name: model
+                        model_name: model,
+                        builder: getBuilder()
                     })
                 }
                 setTimeout(() => {
