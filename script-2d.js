@@ -102,7 +102,14 @@ function parseMiles (str) {
 
 function createOrUpdatePaymentIntent () {
     const emailElement = document.getElementById("Email");
-    const email = emailElement.value;
+    const email = emailElement.value.trim();
+    const city = document.getElementById('City').value.trim();
+    const state = document.getElementById('State').value.trim();
+    const zip = document.getElementById('Zip-Code').value.trim();
+    const name = document.getElementById('Name').value.trim();
+    const phone = document.getElementById('Phone-Number').value.trim();
+    const address = document.getElementById('Address').value.trim();
+
     const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
     const depositAmount = Math.floor(amount * 0.015)
 
@@ -121,7 +128,13 @@ function createOrUpdatePaymentIntent () {
             amount: depositAmount * 100,
             email: email,
             model: getModelName(window.location.pathname),
-            id: stripePaymentIntentID
+            id: stripePaymentIntentID,
+            name: name,
+            address: address,
+            city: city,
+            "postal-code": zip,
+            state: state,
+            phone: phone
         })
     }).then(function(response) {
         return response.json();
