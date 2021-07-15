@@ -1,9 +1,20 @@
+//https://quoscripts.sfo2.digitaloceanspaces.com/studio-configurator/vectary-v2.min.js
+
 import { VctrApi } from "https://www.vectary.com/viewer-api/v1/api.js";
 var switchingInProgress = false;
 
-$(".material-change").click(async function(){
-    var material = $(this).data("material")
-    var group = $(this).data("group")
+$(".material-change---object-visibility").click(async function(){
+  setVisibility(this)
+  setMaterial(this)
+})
+
+$(".material-change").click(function(){
+  setMaterial(this)
+})
+
+async function setMaterial(el){
+  var material = $(el).data("material")
+    var group = $(el).data("group")
     var color = null
 
     if(material){
@@ -12,8 +23,10 @@ $(".material-change").click(async function(){
       material = material[0]
     }
     
-    var objects = $(this).data("object")
+    var objects = $(el).data("object")
     if(objects){
+      objects = objects.split("|")
+      objects = objects[0]
       objects = objects.split(",")
     }
     
@@ -21,22 +34,29 @@ $(".material-change").click(async function(){
         const objectG = await vA.getObjectByName(group);
         objects = objectG.childrenNames
     }
-
+    console.log(objects)
     for(var i in objects){
       var object = objects[i]
+      console.log(object, material)
       const changeMaterialSuccess = await vA.setMaterial(object, material);
+      console.log(changeMaterialSuccess)
 
-      if(color)
+      if(color){
         var colorChangeResultt = await vA.updateMaterial(material, { color: color });
+        console.log(colorChangeResultt)
+      }
     }
-
-})
+}
 
 $(".object-visibility").click(async function(){
-  var visibility = $(this).hasClass("selected")
+  setVisibility(this)
+})
+async function setVisibility(el){
+  console.log($(el))
+  var visibility = $(el).parent().hasClass("selected")
   
-  var objects = $(this).data("object")
-  var group = $(this).data("group")
+  var objects = $(el).data("object")
+  var group = $(el).data("group")
   
   if(group != ""){
     var groups = group.split("|")
@@ -56,6 +76,7 @@ $(".object-visibility").click(async function(){
 
     for(var i in primary){
       var object = primary[i]
+      console.log("Primary: ", object, visibility)
       const changeVisibilitySuccess = await vA.setVisibility(
         [object],
         visibility,
@@ -64,13 +85,14 @@ $(".object-visibility").click(async function(){
 
     for(var i in secundary){
       var object = secundary[i]
+      console.log("Secundary: ", object, visibility)
       const changeVisibilitySuccess = await vA.setVisibility(
         [object],
         false,
         false);
     }
   }
-})
+}
 
 $(".full-width-button, .btn-slides a").click(async function(){
 	var uri = window.location.href
@@ -96,12 +118,64 @@ $(".full-width-button, .btn-slides a").click(async function(){
   }
 })
 
+function addOptionsToSelector(names, htmlSelectElem) {
+  names.forEach((name) => {
+      const newOption = document.createElement("option");
+      newOption.value = name;
+      newOption.innerText = name;
+
+      htmlSelectElem.appendChild(newOption);
+  });
+}
+
+const materialSelector = document.getElementById("select_material");
+const meshSelector = document.getElementById("select_mesh");
+
+async function changeV(){
+  var object = $("#select_mesh").val();
+  console.log(object)
+  const isVisible = vA.getVisibility(object);
+  console.log(isVisible)
+  const changeVisibilitySuccess = await vA.setVisibility(
+    object,
+    true,
+    true);
+}
+
+async function changeM(){
+  var object = $("#select_mesh").val();
+  var material = $("#select_material").val();
+  console.log(object, material)
+  const changeMaterialSuccess = await vA.setMaterial(object, material);
+  console.log(changeMaterialSuccess)
+}
+
+$("#select_mesh").change(function(){
+  changeV()
+})
+
+$("#select_material").change(function(){
+  changeM()
+})
+
 async function run() {
     function errHandler(err) {
         //console.log("API error", err);
     }
 
-    async function onReady() {        
+    async function onReady() {  
+      console.log(await vA.getObjects());
+      
+      const allSceneCameras=await vA.getCameras();
+      console.log("Cameras",allSceneCameras);
+      const allSceneMaterials=await vA.getMaterials();
+      console.log("Materials",allSceneMaterials);
+
+      const allMeshes = await vA.getMeshes();
+      
+      addOptionsToSelector(allSceneMaterials.map(mat => mat.name), materialSelector);
+      addOptionsToSelector(allMeshes.map(mesh => mesh.name), meshSelector);
+
         var objects_hidden = []
         const objectG = await vA.getObjectByName("Hide");
         objects_hidden = objectG.childrenNames
@@ -174,4 +248,10 @@ async function run() {
     onReady();
 }
 
-run();
+$("#open-3d-modal").click(() => {
+  setTimeout(function(){
+    run();
+  }, 300)
+  
+})
+
