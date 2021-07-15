@@ -4,24 +4,38 @@ var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'U
 const lookup = {
     "the-twelve": {
         "vectary-id": "54739396-1053-4f71-8096-44f4ce1a08bf",
-        "price-per-mile": 3.50
+        "price-per-mile": 3.50,
+        "builder": "mini-o",
     },
     "the-sixteen": {
         "vectary-id": "bf024eb5-edca-47b0-bbd9-14bac4512ee1",
         "price-per-mile": 4.00,
+        "builder": "mini-o",
     },
     "holo": {
-        "vectary-id": "202ef3f3-fc9c-4ba1-9913-fa7daedfc6f9"
+        "vectary-id": "202ef3f3-fc9c-4ba1-9913-fa7daedfc6f9",
+        "builder": "drop-structures",
     },
     "holo-extended-4ft": {
-        "vectary-id": "cfecc5ed-c8d8-4b85-bf75-88508e2bb40c"
+        "vectary-id": "cfecc5ed-c8d8-4b85-bf75-88508e2bb40c",
+        "builder": "drop-structures",
     },
     "holo-extended-8ft": {
-        "vectary-id": "33d2bffa-d070-4254-92fb-6dfffacb9a5b"
+        "vectary-id": "33d2bffa-d070-4254-92fb-6dfffacb9a5b",
+        "builder": "drop-structures",
+    },
+    "holo-plus": {
+        "vectary-id": "c26cb8eb-aae9-4137-8c39-6811da1cb314",
+        "builder": "drop-structures",
     },
     "auxffice": {
-        "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08"
+        "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08",
+        "builder": "auxbox",
     },
+    "the-106" : {
+        "vectary-id": "04ebc49a-4b70-41e0-9671-be99716d46c2",
+        "builder": "auxbox",
+    }
 }
 
 var levels = {
@@ -29,14 +43,26 @@ var levels = {
     "simple" : []
 }
 
-const backendUrl = document.location.host === "www.configure.so" ? "https://dwellito.co" : "https://test.dwellito.co"
-const stripeKey = document.location.host === "www.configure.so" ? 'pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb' : 'pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'
+function isProd() {
+    return document.location.host === "www.configure.so"
+}
+
+const backendUrl = isProd() ? "https://dwellito.co" : "https://test.dwellito.co"
+const stripeKey = isProd() ? 'pk_live_51IbUhkHy8pZ91dsyEHbItdV3dRUHfxAhBaBYaYQvVrofC3IoygYQcjbEaMUcDhaaWYOvCU30o3zm0hS5mVLZZBQi00nfYUtQmb' : 'pk_test_51IbUhkHy8pZ91dsyNfbUFA1ynj6Sb0NmifdoQm4ISo83X4cOFpA68UH0DbLrgzsaQxlV3lJrGr394Cj3GMCUHTcA006LK2wa7Y'
 
 const getModelName = thePath => thePath.substring(thePath.lastIndexOf('/') + 1)
 
-function isTakeRateModel () {
+function getBuilder () {
     const model = getModelName(window.location.pathname)
-    return model !== "holo" && model !== "holo-extended-4ft" && model !== "holo-extended-8ft"
+    return lookup[model].builder;
+}
+
+function isTakeRateModel () {
+    return getBuilder() !== "drop-structures"
+}
+
+function modelIsMinio() {
+    return getBuilder() === "mini-o"
 }
 
 function loadScript(url, callback)
@@ -76,7 +102,14 @@ function parseMiles (str) {
 
 function createOrUpdatePaymentIntent () {
     const emailElement = document.getElementById("Email");
-    const email = emailElement.value;
+    const email = emailElement.value.trim();
+    const city = document.getElementById('City').value.trim();
+    const state = document.getElementById('State').value.trim();
+    const zip = document.getElementById('Zip-Code').value.trim();
+    const name = document.getElementById('Name').value.trim();
+    const phone = document.getElementById('Phone-Number').value.trim();
+    const address = document.getElementById('Address').value.trim();
+
     const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
     const depositAmount = Math.floor(amount * 0.015)
 
@@ -95,7 +128,13 @@ function createOrUpdatePaymentIntent () {
             amount: depositAmount * 100,
             email: email,
             model: getModelName(window.location.pathname),
-            id: stripePaymentIntentID
+            id: stripePaymentIntentID,
+            name: name,
+            address: address,
+            city: city,
+            "postal-code": zip,
+            state: state,
+            phone: phone
         })
     }).then(function(response) {
         return response.json();
@@ -163,9 +202,12 @@ function stripeMakePayment (card, secret) {
             // Show error to your customer (e.g., insufficient funds)
             // console.log(result.error.message);
 
-            gtag("event", "purchase_failed", {
-                model_name: getModelName(window.location.pathname)
-            })
+            if (isProd()) {
+                gtag("event", "purchase_failed", {
+                    model_name: getModelName(window.location.pathname),
+                    builder: getBuilder()
+                })
+            }
             window.location.href = "https://" + window.location.hostname + "/payment-failure";
         } else {
             // The payment has been processed!
@@ -175,14 +217,16 @@ function stripeMakePayment (card, secret) {
                 // execution. Set up a webhook or plugin to listen for the
                 // payment_intent.succeeded event that handles any business critical
                 // post-payment actions.
-                gtag("event", "purchase", {
-                    currency: "USD",
-                    value: shippingCost ? totalPrice - shippingCost : totalPrice,
-                    shipping: shippingCost || 0,
-                    items: [
-                        {item_name: getModelName(window.location.pathname)}
-                    ]
-                })
+                if (isProd()) {
+                    gtag("event", "purchase", {
+                        currency: "USD",
+                        value: shippingCost ? totalPrice - shippingCost : totalPrice,
+                        shipping: shippingCost || 0,
+                        items: [
+                            {item_name: getModelName(window.location.pathname)}
+                        ]
+                    })
+                }
                 // console.log("SUCCESS")
                 window.location.href = "https://" + window.location.hostname + "/thank-you"
             }
@@ -191,15 +235,45 @@ function stripeMakePayment (card, secret) {
 }
 
 $(() => {
+    // View events based on the model and the builder. The verbosity is for funnel analysis limitations
+    if (isProd()) {
+        const builder = getBuilder()
+        const model = getModelName(window.location.pathname)
+        if (builder && model) {
+            gtag("event", builder + "_viewed", {
+                model_name: model,
+                builder: builder
+            })
+            gtag("event", model + "_viewed", {
+                model_name: model,
+                builder: builder
+            })
+        }
+    }
+    // Minio hotjar user tracking
+    if (modelIsMinio() && isProd()) {
+        (function(h,o,t,j,a,r){
+            h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+            h._hjSettings={hjid:2480927,hjsv:6};
+            a=o.getElementsByTagName('head')[0];
+            r=o.createElement('script');r.async=1;
+            r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+            a.appendChild(r);
+        })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+    }
     loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => {
         const modelName = getModelName(window.location.pathname)
-        gtag("event", "3d_opened", {
-            model_name: modelName
-        })
+
+        if (isProd()) {
+            gtag("event", "3d_opened", {
+                model_name: modelName,
+                builder: getBuilder()
+            })
+        }
 
         $(".modal-pop-up._3d-model").removeClass("no-visible")
 
@@ -212,12 +286,15 @@ $(() => {
         }
     })
     $("#close-3d-modal").click(() => {
-        gtag("event", "3d_closed", {
-            model_name: getModelName(window.location.pathname)
-        })
+        if (isProd()) {
+            gtag("event", "3d_closed", {
+                model_name: getModelName(window.location.pathname),
+                builder: getBuilder()
+            })
+        }
         $(".modal-pop-up._3d-model").addClass("no-visible")
     })
-    document.title = "Configurator"
+
 })
 
 function init(){
@@ -234,7 +311,7 @@ function init(){
         sections.m.push({type : $(this).data("type"), name : $(this).data("name"), slug : $(this).data("slug"), price : $(this).data("price"), image : $(this).data("image")})
     })
     $('.rendered-sections').each(function(){
-        var data = $(this).data() 
+        var data = $(this).data()
         var type = data.type.toLowerCase()
         var description = $(this).closest(".w-dyn-item").find('.longer-description-html').html()
         var st = data.subtype
@@ -358,7 +435,7 @@ function init(){
                 
                 for(var l in levels[st.items[0].selection]){
                     var itemsChilds = []
-                    if(l == 0){ 
+                    if(l == 0){
                         itemsChilds = (st.items[0].active == true) ? st.items[0].childs : []
                     }else{
                         var prveLevel = activeLevel[st.value][l - 1]
@@ -366,7 +443,6 @@ function init(){
                             itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
                         }
                     }
-                    
                     activeLevel[st.value].push({level : l, items : itemsChilds})
                 }
 
@@ -429,7 +505,6 @@ function init(){
                     var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
                     ${$itemChild[0].outerHTML}
                     </template></div>`
-                
                     $nesting.append(el.html)
                     var titleLavel = (st["titlelavel"+el.level]) ? st["titlelavel"+el.level] : ""
                     $nesting.find(".box-level-"+el.level).find(".title-level").attr("x-show", `activeLevel['${st.value}'][${m}].items.length > 0`)
@@ -441,7 +516,6 @@ function init(){
             })
         }    
     }
-    
     $("input:required").attr("x-on:input", "validate()")
     $('form').attr("x-on:keydown.enter.prevent", "")
     $('#next-button').attr("href", "javascript:void(0)")
@@ -572,10 +646,10 @@ function init(){
                         item.childs[0].active = true
 
                     }
-                    
+
                     for(var l in levels[item.selection]){
                         var itemsChilds = []
-                        if(l == 0){ 
+                        if(l == 0){
                             itemsChilds = (item.active == true) ? item.childs : []
                         }else{
                             var prveLevel = activeLevel[item.subtype][l - 1]
@@ -583,7 +657,6 @@ function init(){
                                 itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
                             }
                         }
-                        
                         if(itemsChilds.length > 0 && item.selection == "simple"){
                             var li = getLevel(itemsChilds[0], 0, type)
                             itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
@@ -712,6 +785,8 @@ function init(){
                     }
                 }
             }
+
+
             try {
                 var address = document.getElementById('Address').value.trim();
                 var city = document.getElementById('City').value.trim();
@@ -722,7 +797,7 @@ function init(){
 
                 const service = new google.maps.DistanceMatrixService();
 
-                if (address !== "" && city !== "" && state !== "") {
+                if (address !== "" && city !== "" && state !== "" && (modelName === "the-twelve" || modelName === "the-sixteen")) {
                     var dest = "";
                     dest += address + "," + city + "," + state
 
@@ -800,9 +875,12 @@ function init(){
                 slideName = "model"
             }
 
-            gtag("event", slideName + "_next_clicked", {
-                model_name: getModelName(window.location.pathname)
-            })
+            if (isProd()) {
+                gtag("event", slideName + "_next_clicked", {
+                    model_name: getModelName(window.location.pathname),
+                    builder: getBuilder()
+                })
+            }
 
             if (slide == 'next'){ slide = (this.valid) ? parseInt(this.slideActive) + 1 : this.slideActive }
             this.valid = true
@@ -813,6 +891,7 @@ function init(){
                 if (inputs.length > 0){
                     this.valid = false
                 }
+                // This only fires when clicking next on the installation page
                 else {
                     this.valid = true
                     this.setPrice()
@@ -911,15 +990,21 @@ function init(){
             const model = getModelName(window.location.pathname)
 
             if (isTakeRateModel()) {
-                gtag("event", "clicked_make_purchase", {
-                    model_name: model
-                })
+                if (isProd()) {
+                    gtag("event", "clicked_make_purchase", {
+                        model_name: model,
+                        builder: getBuilder()
+                    })
+                }
                 stripeMakePayment(stripeCard, stripePaymentIntentSecret)
 
             } else {
-                gtag("event", "clicked_submit_nontake", {
-                    model_name: model
-                })
+                if (isProd()) {
+                    gtag("event", "clicked_submit_nontake", {
+                        model_name: model,
+                        builder: getBuilder()
+                    })
+                }
                 setTimeout(() => {
                     window.location.href = "https://" + window.location.hostname + "/thank-you"
                 }, 2000)
