@@ -99,7 +99,7 @@ function loadSentry (callback) {
     script.type = 'text/javascript';
     script.src = "https://browser.sentry-cdn.com/6.9.0/bundle.min.js";
     script.integrity = "sha384-WO22OE751vRf/HrLRHFis3ipNR16hUk5Q0qW9ascPaSswHI9Q/0ZFMaMvJ0ZgmSI"
-    script.crossorigin = "anonymous"
+    script.crossOrigin = "anonymous"
     // Then bind the event to the callback function.
     // There are several events for cross browser compatibility.
     script.onreadystatechange = callback;
