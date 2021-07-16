@@ -171,36 +171,38 @@ function createOrUpdatePaymentIntent () {
         }).then(function(response) {
             return response.json();
         }).then(function(responseJson) {
-            document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 32px 8px")
+            if (response.status === 200) {
+                document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 32px 8px")
 
-            stripePaymentIntentSecret = responseJson.secret;
-            stripePaymentIntentID = responseJson.id;
+                stripePaymentIntentSecret = responseJson.secret;
+                stripePaymentIntentID = responseJson.id;
 
-            stripeObj = Stripe(stripeKey);
-            var elements = stripeObj.elements();
-            var style = {
-                base: {
-                    color: "#32325d",
-                }
-            };
+                stripeObj = Stripe(stripeKey);
+                var elements = stripeObj.elements();
+                var style = {
+                    base: {
+                        color: "#32325d",
+                    }
+                };
 
-            stripeCard = elements.create("card", { style: style });
-            stripeCard.mount("#card-element");
+                stripeCard = elements.create("card", { style: style });
+                stripeCard.mount("#card-element");
 
-            stripeCard.on('change', ({error}) => {
-                let displayError = document.getElementById('card-errors');
-                if (error) {
-                    displayError.setAttribute("style", "margin: 8px")
-                    displayError.textContent = error.message;
-                    document.getElementById("checkout-button-price").disabled = true;
-                    document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
-                } else {
-                    displayError.removeAttribute("style")
-                    displayError.textContent = '';
-                    document.getElementById("checkout-button-price").disabled = false;
-                    document.getElementById("checkout-button-price").removeAttribute("style")
-                }
-            });
+                stripeCard.on('change', ({error}) => {
+                    let displayError = document.getElementById('card-errors');
+                    if (error) {
+                        displayError.setAttribute("style", "margin: 8px")
+                        displayError.textContent = error.message;
+                        document.getElementById("checkout-button-price").disabled = true;
+                        document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
+                    } else {
+                        displayError.removeAttribute("style")
+                        displayError.textContent = '';
+                        document.getElementById("checkout-button-price").disabled = false;
+                        document.getElementById("checkout-button-price").removeAttribute("style")
+                    }
+                });
+            }
         });
 
     } catch (e) {
