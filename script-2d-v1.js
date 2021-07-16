@@ -141,8 +141,8 @@ function createOrUpdatePaymentIntent () {
     }).then(function(responseJson) {
         document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 32px 8px")
 
-        stripePaymentIntentSecret = responseJson.secret;
-        stripePaymentIntentID = responseJson.id;
+        stripePaymentIntentSecret = responseJson.secret ? responseJson.secret : null;
+        stripePaymentIntentID = responseJson.id ? responseJson.id : null;
 
         stripeObj = Stripe(stripeKey);
         var elements = stripeObj.elements();
