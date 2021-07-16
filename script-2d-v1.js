@@ -80,6 +80,34 @@ function loadScript(url, callback)
     head.appendChild(script);
 }
 
+function initSentry() {
+    Sentry.init({
+        dsn: "https://18d93beab9fc404b9dac83ef1d9168d0@o921834.ingest.sentry.io/5868634",
+        release: "dwellito-frontend",
+        integrations: [new Sentry.Integrations.BrowserTracing()],
+
+        // We recommend adjusting this value in production, or using tracesSampler
+        // for finer control
+        tracesSampleRate: 1.0,
+    });
+}
+
+function loadSentry (callback) {
+    // Adding the script tag to the head as suggested before
+    var head = document.head;
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = "https://browser.sentry-cdn.com/6.9.0/bundle.min.js";
+    script.integrity = "sha384-WO22OE751vRf/HrLRHFis3ipNR16hUk5Q0qW9ascPaSswHI9Q/0ZFMaMvJ0ZgmSI"
+    script.crossorigin = "anonymous"
+    // Then bind the event to the callback function.
+    // There are several events for cross browser compatibility.
+    script.onreadystatechange = callback;
+    script.onload = callback;
+    // Fire the loading
+    head.appendChild(script);
+}
+
 var shippingCost = null;
 var totalPrice = null;
 var stripePaymentIntentSecret = null;
@@ -250,6 +278,7 @@ $(() => {
             })
         }
     }
+    loadSentry(initSentry)
     // Minio hotjar user tracking
     if (modelIsMinio() && isProd()) {
         (function(h,o,t,j,a,r){
