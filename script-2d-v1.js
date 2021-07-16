@@ -93,24 +93,23 @@ function initSentry() {
         // for finer control
         tracesSampleRate: 1.0,
     });
-    console.log("initSentry called")
 }
 
-function loadSentry (callback) {
-    // Adding the script tag to the head as suggested before
-    var head = document.head;
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = "https://browser.sentry-cdn.com/6.9.0/bundle.min.js";
-    script.integrity = "sha384-WO22OE751vRf/HrLRHFis3ipNR16hUk5Q0qW9ascPaSswHI9Q/0ZFMaMvJ0ZgmSI"
-    script.crossOrigin = "anonymous"
-    // Then bind the event to the callback function.
-    // There are several events for cross browser compatibility.
-    script.onreadystatechange = callback;
-    script.onload = callback;
-    // Fire the loading
-    head.appendChild(script);
-}
+// function loadSentry (callback) {
+//     // Adding the script tag to the head as suggested before
+//     var head = document.head;
+//     var script = document.createElement('script');
+//     script.type = 'text/javascript';
+//     script.src = "https://browser.sentry-cdn.com/6.9.0/bundle.min.js";
+//     script.integrity = "sha384-WO22OE751vRf/HrLRHFis3ipNR16hUk5Q0qW9ascPaSswHI9Q/0ZFMaMvJ0ZgmSI"
+//     script.crossOrigin = "anonymous"
+//     // Then bind the event to the callback function.
+//     // There are several events for cross browser compatibility.
+//     script.onreadystatechange = callback;
+//     script.onload = callback;
+//     // Fire the loading
+//     head.appendChild(script);
+// }
 
 var shippingCost = null;
 var totalPrice = null;
@@ -267,7 +266,7 @@ function stripeMakePayment (card, secret) {
 }
 
 $(() => {
-    loadSentry(initSentry)
+    // loadSentry(initSentry)
     loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     // View events based on the model and the builder. The verbosity is for funnel analysis limitations
