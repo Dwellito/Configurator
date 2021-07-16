@@ -204,6 +204,7 @@ function createOrUpdatePaymentIntent () {
         });
 
     } catch (e) {
+        console.log("createOrUpdatePaymentIntent catch")
         Sentry.captureException(e)
     }
 }
@@ -271,6 +272,7 @@ function stripeMakePayment (card, secret) {
         });
 
     } catch (e) {
+        console.log("stripeMakePayment catch")
         Sentry.captureException(e)
     }
 
