@@ -84,14 +84,16 @@ function initSentry() {
     Sentry.init({
         dsn: "https://18d93beab9fc404b9dac83ef1d9168d0@o921834.ingest.sentry.io/5868634",
         release: "dwellito-frontend",
-        integrations: [
-            //new Sentry.Integrations.BrowserTracing() // not enabled currently
-        ],
+        // integrations: [
+        //     new Sentry.Integrations.BrowserTracing() // not enabled currently
+        // ],
+        environment: isProd() ? "prod" : "test",
 
         // We recommend adjusting this value in production, or using tracesSampler
         // for finer control
         tracesSampleRate: 1.0,
     });
+    console.log("initSentry called")
 }
 
 function loadSentry (callback) {
