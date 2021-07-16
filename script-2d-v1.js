@@ -267,6 +267,9 @@ function stripeMakePayment (card, secret) {
 }
 
 $(() => {
+    loadSentry(initSentry)
+    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
+    loadScript("https://js.stripe.com/v3", redirectToStripe)
     // View events based on the model and the builder. The verbosity is for funnel analysis limitations
     if (isProd()) {
         const builder = getBuilder()
@@ -282,7 +285,6 @@ $(() => {
             })
         }
     }
-    loadSentry(initSentry)
     // Minio hotjar user tracking
     if (modelIsMinio() && isProd()) {
         (function(h,o,t,j,a,r){
@@ -294,8 +296,6 @@ $(() => {
             a.appendChild(r);
         })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
     }
-    loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
-    loadScript("https://js.stripe.com/v3", redirectToStripe)
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => {
@@ -327,7 +327,7 @@ $(() => {
         }
         $(".modal-pop-up._3d-model").addClass("no-visible")
     })
-
+    myUndefinedFunction();
 })
 
 function init(){
