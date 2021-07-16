@@ -266,7 +266,7 @@ function stripeMakePayment (card, secret) {
 }
 
 $(() => {
-    // loadSentry(initSentry)
+    initSentry()
     loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
     // View events based on the model and the builder. The verbosity is for funnel analysis limitations
