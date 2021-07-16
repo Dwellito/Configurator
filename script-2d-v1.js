@@ -100,7 +100,7 @@ function parseMiles (str) {
     return parseInt(txt)
 }
 
-function createOrUpdatePaymentIntent () {
+async function createOrUpdatePaymentIntent () {
     const emailElement = document.getElementById("Email");
     const email = emailElement.value.trim();
     const city = document.getElementById('City').value.trim();
@@ -117,7 +117,7 @@ function createOrUpdatePaymentIntent () {
     document.getElementById("checkout-button-price").disabled = true;
     document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
 
-    var response = fetch(backendUrl + '/api/stripe/secret', {
+    const response = await fetch(backendUrl + '/api/stripe/secret', {
         method : "POST",
         headers: {
             'Content-Type': 'application/json'
@@ -136,44 +136,42 @@ function createOrUpdatePaymentIntent () {
             state: state,
             phone: phone
         })
-    }).then(function(response) {
-        return response.json();
-    }).then(function(responseJson) {
-        console.log(response)
-        if (response.status === 200) {
+    })
+    const responseJson = await response.json()
 
-            document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 32px 8px")
+    if (response.status === 200) {
 
-            stripePaymentIntentSecret = responseJson.secret;
-            stripePaymentIntentID = responseJson.id;
+        document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 32px 8px")
 
-            stripeObj = Stripe(stripeKey);
-            var elements = stripeObj.elements();
-            var style = {
-                base: {
-                    color: "#32325d",
-                }
-            };
+        stripePaymentIntentSecret = responseJson.secret;
+        stripePaymentIntentID = responseJson.id;
 
-            stripeCard = elements.create("card", { style: style });
-            stripeCard.mount("#card-element");
+        stripeObj = Stripe(stripeKey);
+        var elements = stripeObj.elements();
+        var style = {
+            base: {
+                color: "#32325d",
+            }
+        };
 
-            stripeCard.on('change', ({error}) => {
-                let displayError = document.getElementById('card-errors');
-                if (error) {
-                    displayError.setAttribute("style", "margin: 8px")
-                    displayError.textContent = error.message;
-                    document.getElementById("checkout-button-price").disabled = true;
-                    document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
-                } else {
-                    displayError.removeAttribute("style")
-                    displayError.textContent = '';
-                    document.getElementById("checkout-button-price").disabled = false;
-                    document.getElementById("checkout-button-price").removeAttribute("style")
-                }
-            });
-        }
-    });
+        stripeCard = elements.create("card", { style: style });
+        stripeCard.mount("#card-element");
+
+        stripeCard.on('change', ({error}) => {
+            let displayError = document.getElementById('card-errors');
+            if (error) {
+                displayError.setAttribute("style", "margin: 8px")
+                displayError.textContent = error.message;
+                document.getElementById("checkout-button-price").disabled = true;
+                document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
+            } else {
+                displayError.removeAttribute("style")
+                displayError.textContent = '';
+                document.getElementById("checkout-button-price").disabled = false;
+                document.getElementById("checkout-button-price").removeAttribute("style")
+            }
+        });
+    }
 }
 
 function stripeMakePayment (card, secret) {
