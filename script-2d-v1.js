@@ -132,137 +132,148 @@ function parseMiles (str) {
 }
 
 function createOrUpdatePaymentIntent () {
-    const emailElement = document.getElementById("Email");
-    const email = emailElement.value.trim();
-    const city = document.getElementById('City').value.trim();
-    const state = document.getElementById('State').value.trim();
-    const zip = document.getElementById('Zip-Code').value.trim();
-    const name = document.getElementById('Name').value.trim();
-    const phone = document.getElementById('Phone-Number').value.trim();
-    const address = document.getElementById('Address').value.trim();
+    try {
+        const emailElement = document.getElementById("Email");
+        const email = emailElement.value.trim();
+        const city = document.getElementById('City').value.trim();
+        const state = document.getElementById('State').value.trim();
+        const zip = document.getElementById('Zip-Code').value.trim();
+        const name = document.getElementById('Name').value.trim();
+        const phone = document.getElementById('Phone-Number').value.trim();
+        const address = document.getElementById('Address').value.trim();
 
-    const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
-    const depositAmount = Math.floor(amount * 0.015)
+        const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
+        const depositAmount = Math.floor(amount * 0.015)
 
-    document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
-    document.getElementById("checkout-button-price").disabled = true;
-    document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
+        document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
+        document.getElementById("checkout-button-price").disabled = true;
+        document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
 
-    var response = fetch(backendUrl + '/api/stripe/secret', {
-        method : "POST",
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        mode: "cors",
-        redirect: "error",
-        body: JSON.stringify({
-            amount: depositAmount * 100,
-            email: email,
-            model: getModelName(window.location.pathname),
-            id: stripePaymentIntentID,
-            name: name,
-            address: address,
-            city: city,
-            "postal-code": zip,
-            state: state,
-            phone: phone
-        })
-    }).then(function(response) {
-        return response.json();
-    }).then(function(responseJson) {
-        document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 32px 8px")
+        var response = fetch(backendUrl + '/api/stripe/secret', {
+            method : "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            mode: "cors",
+            redirect: "error",
+            body: JSON.stringify({
+                amount: depositAmount * 100,
+                email: email,
+                model: getModelName(window.location.pathname),
+                id: stripePaymentIntentID,
+                name: name,
+                address: address,
+                city: city,
+                "postal-code": zip,
+                state: state,
+                phone: phone
+            })
+        }).then(function(response) {
+            return response.json();
+        }).then(function(responseJson) {
+            document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 32px 8px")
 
-        stripePaymentIntentSecret = responseJson.secret;
-        stripePaymentIntentID = responseJson.id;
+            stripePaymentIntentSecret = responseJson.secret;
+            stripePaymentIntentID = responseJson.id;
 
-        stripeObj = Stripe(stripeKey);
-        var elements = stripeObj.elements();
-        var style = {
-            base: {
-                color: "#32325d",
-            }
-        };
+            stripeObj = Stripe(stripeKey);
+            var elements = stripeObj.elements();
+            var style = {
+                base: {
+                    color: "#32325d",
+                }
+            };
 
-        stripeCard = elements.create("card", { style: style });
-        stripeCard.mount("#card-element");
+            stripeCard = elements.create("card", { style: style });
+            stripeCard.mount("#card-element");
 
-        stripeCard.on('change', ({error}) => {
-            let displayError = document.getElementById('card-errors');
-            if (error) {
-                displayError.setAttribute("style", "margin: 8px")
-                displayError.textContent = error.message;
-                document.getElementById("checkout-button-price").disabled = true;
-                document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
-            } else {
-                displayError.removeAttribute("style")
-                displayError.textContent = '';
-                document.getElementById("checkout-button-price").disabled = false;
-                document.getElementById("checkout-button-price").removeAttribute("style")
-            }
+            stripeCard.on('change', ({error}) => {
+                let displayError = document.getElementById('card-errors');
+                if (error) {
+                    displayError.setAttribute("style", "margin: 8px")
+                    displayError.textContent = error.message;
+                    document.getElementById("checkout-button-price").disabled = true;
+                    document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
+                } else {
+                    displayError.removeAttribute("style")
+                    displayError.textContent = '';
+                    document.getElementById("checkout-button-price").disabled = false;
+                    document.getElementById("checkout-button-price").removeAttribute("style")
+                }
+            });
         });
-    });
+
+    } catch (e) {
+        Sentry.captureException(e)
+    }
 }
 
 function stripeMakePayment (card, secret) {
 
-    var address = document.getElementById('Address').value.trim();
-    var city = document.getElementById('City').value.trim();
-    var state = document.getElementById('State').value.trim();
-    var zip = document.getElementById('Zip-Code').value.trim();
-    var name = document.getElementById('Name').value.trim();
-    var email = document.getElementById('Email').value.trim();
-    var phone = document.getElementById('Phone-Number').value.trim();
+    try {
+        var address = document.getElementById('Address').value.trim();
+        var city = document.getElementById('City').value.trim();
+        var state = document.getElementById('State').value.trim();
+        var zip = document.getElementById('Zip-Code').value.trim();
+        var name = document.getElementById('Name').value.trim();
+        var email = document.getElementById('Email').value.trim();
+        var phone = document.getElementById('Phone-Number').value.trim();
 
-    stripeObj.confirmCardPayment(secret, {
-        payment_method: {
-            card: card,
-            billing_details: {
-                address: {
-                    line1: address,
-                    city: city,
-                    state: state,
-                    postal_code: zip
-                },
-                name: name,
-                email: email,
-                phone: phone
+        stripeObj.confirmCardPayment(secret, {
+            payment_method: {
+                card: card,
+                billing_details: {
+                    address: {
+                        line1: address,
+                        city: city,
+                        state: state,
+                        postal_code: zip
+                    },
+                    name: name,
+                    email: email,
+                    phone: phone
+                }
             }
-        }
-    }).then(function(result) {
-        if (result.error) {
-            // Show error to your customer (e.g., insufficient funds)
-            // console.log(result.error.message);
+        }).then(function(result) {
+            if (result.error) {
+                // Show error to your customer (e.g., insufficient funds)
+                // console.log(result.error.message);
 
-            if (isProd()) {
-                gtag("event", "purchase_failed", {
-                    model_name: getModelName(window.location.pathname),
-                    builder: getBuilder()
-                })
-            }
-            window.location.href = "https://" + window.location.hostname + "/payment-failure";
-        } else {
-            // The payment has been processed!
-            if (result.paymentIntent.status === 'succeeded') {
-                // Show a success message to your customer
-                // There's a risk of the customer closing the window before callback
-                // execution. Set up a webhook or plugin to listen for the
-                // payment_intent.succeeded event that handles any business critical
-                // post-payment actions.
                 if (isProd()) {
-                    gtag("event", "purchase", {
-                        currency: "USD",
-                        value: shippingCost ? totalPrice - shippingCost : totalPrice,
-                        shipping: shippingCost || 0,
-                        items: [
-                            {item_name: getModelName(window.location.pathname)}
-                        ]
+                    gtag("event", "purchase_failed", {
+                        model_name: getModelName(window.location.pathname),
+                        builder: getBuilder()
                     })
                 }
-                // console.log("SUCCESS")
-                window.location.href = "https://" + window.location.hostname + "/thank-you"
+                window.location.href = "https://" + window.location.hostname + "/payment-failure";
+            } else {
+                // The payment has been processed!
+                if (result.paymentIntent.status === 'succeeded') {
+                    // Show a success message to your customer
+                    // There's a risk of the customer closing the window before callback
+                    // execution. Set up a webhook or plugin to listen for the
+                    // payment_intent.succeeded event that handles any business critical
+                    // post-payment actions.
+                    if (isProd()) {
+                        gtag("event", "purchase", {
+                            currency: "USD",
+                            value: shippingCost ? totalPrice - shippingCost : totalPrice,
+                            shipping: shippingCost || 0,
+                            items: [
+                                {item_name: getModelName(window.location.pathname)}
+                            ]
+                        })
+                    }
+                    // console.log("SUCCESS")
+                    window.location.href = "https://" + window.location.hostname + "/thank-you"
+                }
             }
-        }
-    });
+        });
+
+    } catch (e) {
+        Sentry.captureException(e)
+    }
+
 }
 
 $(() => {
