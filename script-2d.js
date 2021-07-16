@@ -426,7 +426,9 @@ function init(){
                     var selection = (items.length > 0) ? items[0].selection : "simple"
                     var titlelaveli = (items.length > 0) ? items[0].titlelaveli : ""
                     var titlelavelii = (items.length > 0) ? items[0].titlelavelii : ""
-                    subtypes.push({value : tag.subtype, title : tag.namesubtype, selection, items, titlelaveli, titlelavelii })
+                    var vectaryi = (items.length > 0) ? items[0].vectaryi.toLowerCase().replace(/ /g, "-") : ""
+                    var vectaryii = (items.length > 0) ? items[0].vectaryii.toLowerCase().replace(/ /g, "-") : ""
+                    subtypes.push({value : tag.subtype, title : tag.namesubtype, selection, items, titlelaveli, titlelavelii, vectaryi, vectaryii })
                 }
             })
 
@@ -456,7 +458,7 @@ function init(){
                     $item.removeAttr("id")
                     $item.find('.parent').attr("id", it.slug)
                     $item.find('.parent').attr("data-type", it.type)
-                    var vectary_function = it.function.toLowerCase().replace(" ", "-")
+                    var vectary_function = it.function.toLowerCase().replace(/ /g, "-")
                     $item.find('.parent').attr("data-object", it.object).attr("data-group", it.group).attr("data-material", it.material).attr("data-function", it.function).addClass(vectary_function)
                     $item.find('img.image').attr('src', it.thumbnail).attr('srcset', it.thumbnail)
                     $item.find('.text-block').text(it.name)
@@ -501,6 +503,9 @@ function init(){
                     $itemChild.find('.text-name').attr('x-text', "option.name")
                     $itemChild.find('.text-description').attr('x-text', "option.description")
                     $itemChild.find('.text-price').attr('x-text', "setCurrencyPrice(option.price, '+ $')")
+                    vectary_function = (st["vectary"+el.level]) ? st["vectary"+el.level] : ""
+                    $itemChild.addClass(vectary_function)
+                    $itemChild.attr("x-bind:data-material", "option.material").attr("x-bind:data-group", "option.group").attr("x-bind:data-object", "option.object")
                     $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
                     var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
                     ${$itemChild[0].outerHTML}

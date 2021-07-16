@@ -3,12 +3,16 @@
 import { VctrApi } from "https://www.vectary.com/viewer-api/v1/api.js";
 var switchingInProgress = false;
 
-$(".material-change---object-visibility").click(async function(){
-  setVisibility(this)
+$(".wrapper-selections-40").on("click", ".material-change---object-visibility", async function(){
+  var _this = this
+  setTimeout(function(){
+    setVisibility(_this)
+  }, 120)
+  
   setMaterial(this)
 })
 
-$(".material-change").click(function(){
+$(".wrapper-selections-40").on("click",".material-change", function(){
   setMaterial(this)
 })
 
@@ -47,14 +51,18 @@ async function setMaterial(el){
       }
     }
 }
-
-$(".object-visibility").click(async function(){
+$(".wrapper-selections-40").on("click",".object-visibility", function(){
   setVisibility(this)
 })
 async function setVisibility(el){
   console.log($(el))
-  var visibility = $(el).parent().hasClass("selected")
+  if($(el).parent().hasClass("list"))
+    var visibility = $(el).hasClass("selected")
+  else
+    var visibility = $(el).parent().hasClass("selected")
   
+    console.log(visibility)
+
   var objects = $(el).data("object")
   var group = $(el).data("group")
   
