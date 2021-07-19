@@ -35,15 +35,19 @@ async function setMaterial(el){
     }
     
     if(group != ""){
-        const objectG = await vA.getObjectByName(group);
-        objects = objectG.childrenNames
+        group = group.split(",")
+        objects = []
+        for(var i in group){
+          var g = group[i]
+          const objectG = await vA.getObjectByName(g);
+          objects = objects.concat(objectG.childrenNames)
+        }
+
     }
-    console.log(objects)
+
     for(var i in objects){
       var object = objects[i]
-      console.log(object, material)
       const changeMaterialSuccess = await vA.setMaterial(object, material);
-      console.log(changeMaterialSuccess)
 
       if(color){
         var colorChangeResultt = await vA.updateMaterial(material, { color: color });
@@ -52,29 +56,23 @@ async function setMaterial(el){
     }
 }
 $(".wrapper-selections-40").on("click",".object-visibility", function(){
-  setVisibility(this)
+  var _this = this
+  setTimeout(function(){
+    setVisibility(_this)
+  }, 120)
 })
 async function setVisibility(el){
   console.log($(el))
-  if($(el).parent().hasClass("list"))
+  if($(el).parent().hasClass("list") || $(el).parent().hasClass("multiple"))
     var visibility = $(el).hasClass("selected")
   else
     var visibility = $(el).parent().hasClass("selected")
   
-    console.log(visibility)
-
   var objects = $(el).data("object")
   var group = $(el).data("group")
   
   if(group != ""){
-    var groups = group.split("|")
-    const objectG = await vA.getObjectByName(groups[0]);
-    objects = objectG.childrenNames.join(",")
-
-    if(groups.length > 1){
-      var objectGS = await vA.getObjectByName(groups[1]);
-      objects = objects + "|" + objectGS.childrenNames.join(",")
-    }
+    objects = group
   }
 
   if(objects){
@@ -82,23 +80,21 @@ async function setVisibility(el){
     var primary = objects[0].split(",")
     var secundary = (objects.length > 1) ? objects[1].split(",") : [] 
 
-    for(var i in primary){
-      var object = primary[i]
-      console.log("Primary: ", object, visibility)
-      const changeVisibilitySuccess = await vA.setVisibility(
-        [object],
-        visibility,
-        false);
-    }
+      for(var i in primary){
+        var object = primary[i]
+        if(object.includes("-invert")){
+          object = object.replace("-invert", "")
+          visibility = !visibility
+        }
+        var changeVisibilitySuccess = await vA.setVisibility(object, visibility, false);
+        console.log(object, visibility, changeVisibilitySuccess)
+      }
+      
+      if(secundary.length > 0){
+        console.log("Secundary: ", secundary)
+        changeVisibilitySuccess = await vA.setVisibility(secundary, false, false);
+      }
 
-    for(var i in secundary){
-      var object = secundary[i]
-      console.log("Secundary: ", object, visibility)
-      const changeVisibilitySuccess = await vA.setVisibility(
-        [object],
-        false,
-        false);
-    }
   }
 }
 
@@ -142,7 +138,7 @@ const meshSelector = document.getElementById("select_mesh");
 async function changeV(){
   var object = $("#select_mesh").val();
   console.log(object)
-  const isVisible = vA.getVisibility(object);
+  const isVisible = await vA.getVisibility(object);
   console.log(isVisible)
   const changeVisibilitySuccess = await vA.setVisibility(
     object,
