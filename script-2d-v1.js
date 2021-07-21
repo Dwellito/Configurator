@@ -100,7 +100,7 @@ function parseMiles (str) {
     return parseInt(txt)
 }
 
-function createOrUpdatePaymentIntent () {
+async function createOrUpdatePaymentIntent () {
     const emailElement = document.getElementById("Email");
     const email = emailElement.value.trim();
     const city = document.getElementById('City').value.trim();
@@ -117,7 +117,7 @@ function createOrUpdatePaymentIntent () {
     document.getElementById("checkout-button-price").disabled = true;
     document.getElementById("checkout-button-price").setAttribute("style", "background: gray")
 
-    var response = fetch(backendUrl + '/api/stripe/secret', {
+    const response = await fetch(backendUrl + '/api/stripe/secret', {
         method : "POST",
         headers: {
             'Content-Type': 'application/json'
@@ -136,9 +136,11 @@ function createOrUpdatePaymentIntent () {
             state: state,
             phone: phone
         })
-    }).then(function(response) {
-        return response.json();
-    }).then(function(responseJson) {
+    })
+    const responseJson = await response.json()
+
+    if (response.status === 200) {
+
         document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 32px 8px")
 
         stripePaymentIntentSecret = responseJson.secret;
@@ -169,7 +171,7 @@ function createOrUpdatePaymentIntent () {
                 document.getElementById("checkout-button-price").removeAttribute("style")
             }
         });
-    });
+    }
 }
 
 function stripeMakePayment (card, secret) {
