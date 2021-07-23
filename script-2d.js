@@ -898,10 +898,10 @@ function init(){
                 slideName = "model"
             }
 
-            if (slideName === "layout" && !intercomAdded){
+            if (slideName === "interior" && !intercomAdded){
                 loadIntercom()
                 intercomAdded = true;
-                Intercom('showNewMessage');
+                //Intercom('showNewMessage');
             }
 
             if (isProd()) {
