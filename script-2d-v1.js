@@ -898,6 +898,7 @@ function init(){
             if (slideName === "layout" && !intercomAdded){
                 loadIntercom()
                 intercomAdded = true;
+                Intercom('showNewMessage', 'Hey, Anil here! Feel free to ask me any questions!');
             }
 
             if (isProd()) {
