@@ -35,6 +35,9 @@ const lookup = {
     "the-106" : {
         "vectary-id": "04ebc49a-4b70-41e0-9671-be99716d46c2",
         "builder": "auxbox",
+    },
+    "the-146" : {
+        "builder" : "auxbox",
     }
 }
 
