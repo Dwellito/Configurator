@@ -264,7 +264,6 @@ $(() => {
             })
         }
     }
-    loadIntercom()
 
     // Minio hotjar user tracking
     if (modelIsMinio() && isProd()) {
@@ -891,6 +890,7 @@ function init(){
         goSlide : function(slide) {
             var slideName = slidesT[this.slideActive]
 
+            console.log(slideName)
             if (slideName === "size") {
                 slideName = "model"
             }
