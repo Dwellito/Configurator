@@ -90,6 +90,7 @@ var stripePaymentIntentSecret = null;
 var stripePaymentIntentID = null;
 var stripeCard = null;
 var stripeObj = null;
+var intercomAdded = false;
 
 const redirectToStripe = function() {};
 
@@ -890,9 +891,13 @@ function init(){
         goSlide : function(slide) {
             var slideName = slidesT[this.slideActive]
 
-            console.log(slideName)
             if (slideName === "size") {
                 slideName = "model"
+            }
+
+            if (slideName === "layout" && !intercomAdded){
+                loadIntercom()
+                intercomAdded = true;
             }
 
             if (isProd()) {
