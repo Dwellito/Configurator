@@ -39,6 +39,9 @@ const lookup = {
     "the-146" : {
         "vectary-id": "2420b723-9a36-4672-a184-a7b2133785b6",
         "builder" : "auxbox",
+    },
+    "full" : {
+        "builder" : "plus-hus"
     }
 }
 
@@ -265,6 +268,7 @@ $(() => {
             })
         }
     }
+
     // Minio hotjar user tracking
     if (modelIsMinio() && isProd()) {
         (function(h,o,t,j,a,r){
