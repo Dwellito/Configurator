@@ -28,6 +28,10 @@ const lookup = {
         "vectary-id": "c26cb8eb-aae9-4137-8c39-6811da1cb314",
         "builder": "drop-structures",
     },
+    "holo-off-grid" : {
+        "vectary-id": "4483e431-bb3a-4809-966f-493ce0cdbad4",
+        "builder": "drop-structures",
+    },
     "auxffice": {
         "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08",
         "builder": "auxbox",
@@ -35,7 +39,44 @@ const lookup = {
     "the-106" : {
         "vectary-id": "04ebc49a-4b70-41e0-9671-be99716d46c2",
         "builder": "auxbox",
-    }
+    },
+    "the-146" : {
+        "vectary-id": "2420b723-9a36-4672-a184-a7b2133785b6",
+        "builder" : "auxbox",
+    },
+    "full" : {
+        "builder" : "plus-hus"
+    },
+    "cliff" : {
+        "builder": "q-haus",
+    },
+    "vos" : {
+        "builder": "vos",
+    },
+    "ho2-one-wall-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho2-two-walls-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho3-one-wall-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho3-two-walls-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho4-one-wall-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho4-two-walls-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho5-one-wall-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho5-two-walls-of-glass" : {
+        "builder": "honomobo",
+    },
 }
 
 var levels = {
@@ -86,6 +127,7 @@ var stripePaymentIntentSecret = null;
 var stripePaymentIntentID = null;
 var stripeCard = null;
 var stripeObj = null;
+var intercomAdded = false;
 
 const redirectToStripe = function() {};
 
@@ -236,6 +278,14 @@ function stripeMakePayment (card, secret) {
     });
 }
 
+function loadIntercom(){
+    const APP_ID = "wuhofi95"
+    window.intercomSettings = {
+        app_id: APP_ID
+    };
+    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/' + APP_ID;var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s, x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+}
+
 $(() => {
     // View events based on the model and the builder. The verbosity is for funnel analysis limitations
     if (isProd()) {
@@ -252,6 +302,7 @@ $(() => {
             })
         }
     }
+
     // Minio hotjar user tracking
     if (modelIsMinio() && isProd()) {
         (function(h,o,t,j,a,r){
@@ -892,6 +943,12 @@ function init(){
 
             if (slideName === "size") {
                 slideName = "model"
+            }
+
+            if (slideName === "interior" && !intercomAdded){
+                loadIntercom()
+                intercomAdded = true;
+                //Intercom('showNewMessage');
             }
 
             if (isProd()) {
