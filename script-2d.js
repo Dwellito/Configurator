@@ -28,6 +28,10 @@ const lookup = {
         "vectary-id": "c26cb8eb-aae9-4137-8c39-6811da1cb314",
         "builder": "drop-structures",
     },
+    "holo-off-grid" : {
+        "vectary-id": "4483e431-bb3a-4809-966f-493ce0cdbad4",
+        "builder": "drop-structures",
+    },
     "auxffice": {
         "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08",
         "builder": "auxbox",
@@ -42,7 +46,37 @@ const lookup = {
     },
     "full" : {
         "builder" : "plus-hus"
-    }
+    },
+    "cliff" : {
+        "builder": "q-haus",
+    },
+    "vos" : {
+        "builder": "vos",
+    },
+    "ho2-one-wall-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho2-two-walls-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho3-one-wall-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho3-two-walls-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho4-one-wall-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho4-two-walls-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho5-one-wall-of-glass" : {
+        "builder": "honomobo",
+    },
+    "ho5-two-walls-of-glass" : {
+        "builder": "honomobo",
+    },
 }
 
 var levels = {
