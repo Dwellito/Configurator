@@ -77,6 +77,9 @@ const lookup = {
     "ho5-two-walls-of-glass" : {
         "builder": "honomobo",
     },
+    "modal-01" : {
+        "builder" : "live-modal",
+    },
 }
 
 var levels = {
@@ -99,7 +102,8 @@ function getBuilder () {
 }
 
 function isTakeRateModel () {
-    return getBuilder() !== "drop-structures"
+    const builder = getBuilder()
+    return (builder !== "drop-structures" && builder !== "honomobo")
 }
 
 function modelIsMinio() {
@@ -963,6 +967,7 @@ function init(){
                         createOrUpdatePaymentIntent()
                     } else {
                         // Right now this is only Drop Structure for Holo. 1k deposit.
+                        // TODO: Deposit for honomobo
                         document.getElementById("deposit-price").innerHTML = formatter.format(1000)
                         document.getElementById("checkout-button-price").value = "Submit"
                     }
