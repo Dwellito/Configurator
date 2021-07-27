@@ -6,14 +6,19 @@ var switchingInProgress = false;
 $(".wrapper-selections-40").on("click", ".material-change---object-visibility", async function(){
   var _this = this
   setTimeout(function(){
-    setVisibility(_this)
+    //setVisibility(_this)
+    setStudio()
   }, 120)
   
-  setMaterial(this)
+  //setMaterial(this)
 })
 
 $(".wrapper-selections-40").on("click",".material-change", function(){
-  setMaterial(this)
+  // setMaterial(this)
+
+  setTimeout(function(){
+    setStudio()
+  }, 120)
 })
 
 async function setMaterial(el){
@@ -39,26 +44,30 @@ async function setMaterial(el){
         objects = []
         for(var i in group){
           var g = group[i]
+          // console.log(g)
           const objectG = await vA.getObjectByName(g);
-          objects = objects.concat(objectG.childrenNames)
+          // console.log(objectG)
+          if(objectG)
+            objects = objects.concat(objectG.childrenNames)
         }
 
     }
-
+// console.log(objects)
     for(var i in objects){
       var object = objects[i]
       const changeMaterialSuccess = await vA.setMaterial(object, material);
-
+      // console.log(object, changeMaterialSuccess)
       if(color){
         var colorChangeResultt = await vA.updateMaterial(material, { color: color });
-        console.log(colorChangeResultt)
+        // console.log(colorChangeResultt)
       }
     }
 }
 $(".wrapper-selections-40").on("click",".object-visibility", function(){
   var _this = this
   setTimeout(function(){
-    setVisibility(_this)
+    //setVisibility(_this)
+    setStudio()
   }, 120)
 })
 async function setVisibility(el){
@@ -162,6 +171,104 @@ $("#select_material").change(function(){
   changeM()
 })
 
+async function setStudio(){
+  console.log(_studio)
+  var itemsRepeat = []
+  var sec = ["exterior", "interior", "layout"]
+        for (var i in _studio){
+          if( sec.includes(i)){
+            var section = _studio[i].selected
+
+            for (var j in section){
+              var item = section[j]
+             // console.log(item)
+              if((item.object && item.object != "") || (item.group && item.group != "")){
+                var vectary_function = (item.function) ? item.function.toLowerCase().replace(/ /g, "-") : ""
+                var objectsP = item.object.split("|")
+                var objectsS = (objectsP.length > 1) ? objectsP[1].split(",") : []
+                objectsP = objectsP[0].split(",")
+                
+                var objectsVP = objectsP
+                var objectsVS = objectsS
+                var group = item.group
+     //console.log(group, vectary_function, {...item})
+                if(group != ""){
+                  var groups = group.split("|")
+                  var primaryGroup = groups[0].split(",")
+                  objectsVP = primaryGroup
+                  for(var i in primaryGroup){
+                    var g = primaryGroup[i]
+                    const objectG = await vA.getObjectByName(g);
+                    var o = [g]
+                    objectsP = (objectG && objectG.type == "group") ? objectsP.concat(objectG.childrenNames) : objectsP.concat(o)
+                    // console.log(o, objectG, objectsP)
+                  }
+
+              
+                   if(groups.length > 1){
+                     var secundaryGroup = groups[1].split(",")
+                     objectsVS = secundaryGroup
+                  //   for(var i in secundaryGroup){
+                  //     var g = secundaryGroup[i]
+                  //     const objectGS = await vA.getObjectByName(g);
+                  //     if(objectGS)
+                  //       objectsS = objectsS.concat(objectGS.childrenNames)
+                  //   }
+                   }
+                }
+
+                if(vectary_function === "object-visibility" || vectary_function === "material-change---object-visibility"){
+                  var visibility = item.active
+                  for(var h in objectsVP){
+                    var o = objectsVP[h]
+                    if(itemsRepeat.includes(o)){
+                      visibility = true
+                    }
+                    if(o.includes("-invert")){
+                      o = o.replace("-invert", "")
+                      visibility = !visibility
+                    }
+                    const changeVisibilitySuccess = await vA.setVisibility(o,visibility,false);
+                    if(item.active)
+                      itemsRepeat.push(objectsVP[h])
+                    //console.log(objectsVP[h], o, changeVisibilitySuccess, visibility, item.active)
+                  }
+
+                  for(var h in objectsVS){
+                    visibility = false
+                    var o = objectsVS[h]
+                    if(o.includes("-invert")){
+                      o = o.replace("-invert", "")
+                      visibility = !visibility
+                    }
+                    const changeVisibilitySuccess = await vA.setVisibility(o,visibility,false);
+                    //console.log(o, changeVisibilitySuccess, visibility)
+                  }
+                  
+                }
+                if(item.active == true && (vectary_function === "material-change" || vectary_function === "material-change---object-visibility")){
+                  var material = (item.material && item.material != "") ? item.material.split("|") : []
+                  var color = (material.length > 1) ? material[1] : null
+                  material = (material.length > 0) ? material[0] : ""
+                  if(material != ""){
+                    for(var i in objectsP){
+                      var object = objectsP[i]
+                      const changeMaterialSuccess = await vA.setMaterial(object, material);
+                      console.log(object, material, color, changeMaterialSuccess)
+                      if(color)
+                        var colorChangeResult = await vA.updateMaterial(material, { color: color });
+                    }
+                  }
+                }
+
+              }
+
+
+            }
+          }
+        }
+}
+
 async function run() {
     function errHandler(err) {
         //console.log("API error", err);
@@ -175,71 +282,22 @@ async function run() {
       const allSceneMaterials=await vA.getMaterials();
       console.log("Materials",allSceneMaterials);
 
-      const allMeshes = await vA.getMeshes();
+      const allMeshes = await vA.getObjects();
       
       addOptionsToSelector(allSceneMaterials.map(mat => mat.name), materialSelector);
       addOptionsToSelector(allMeshes.map(mesh => mesh.name), meshSelector);
 
         var objects_hidden = []
         const objectG = await vA.getObjectByName("Hide");
-        objects_hidden = objectG.childrenNames
+        if(objectG)
+          objects_hidden = objectG.childrenNames
 
         for (var i in objects_hidden){
 					var o = objects_hidden[i]
           const changeVisibilitySuccess = await vA.setVisibility([o],false,false);
         }
 
-        for (var i in _sections){
-          var section = _sections[i]
-          for (var j in section){
-            var item = section[j]
-
-            if((item.object && item.object != "") || (item.group && item.group != "")){
-              var vectary_function = (item.function) ? item.function.toLowerCase().replace(" ", "-") : ""
-              var objects = item.object.split("|")
-              var group = item.group
-  
-              if(group != ""){
-                var groups = group.split("|")
-                const objectG = await vA.getObjectByName(groups[0]);
-                objects = objectG.childrenNames.join(",")
-            
-                if(groups.length > 1){
-                  var objectGS = await vA.getObjectByName(groups[1]);
-                  objects = objects + "|" + objectGS.childrenNames.join(",")
-                }
-                objects = objects.split("|")
-              }
-
-              if(item.active == false && vectary_function === "object-visibility"){
-                  var primary = objects[0].split(",")
-              
-                  for (var k in primary){
-                    var o = primary[k]
-                    const changeVisibilitySuccess = await vA.setVisibility([o],false,false);
-                  }
-              }
-
-              if(item.active == true && vectary_function === "material-change"){
-                var material = (item.material && item.material != "") ? item.material.split("|") : []
-                var color = (material.length > 1) ? material[1] : null
-                material = (material.length > 0) ? material[0] : ""
-                objects = objects[0].split(",")
-
-                for(var i in objects){
-                  var object = objects[i]
-                  const changeMaterialSuccess = await vA.setMaterial(object, material);
-                  if(color)
-                    var colorChangeResult = await vA.updateMaterial(material, { color: color });
-                }
-            }
-
-            }
-
-
-          }
-            
-        }
+        setStudio()
     }
 
     vA = new VctrApi("test", errHandler);

@@ -333,6 +333,7 @@ function init(){
         itt.selection = selection
         itt.childs = []
         itt.activeLevel = []
+        itt.level = null
         sections[type].push(itt)
     })
 
@@ -395,6 +396,7 @@ function init(){
 
     $('.button-wrapper').find('a').attr('x-bind:class', '{"invalid" : !valid}')
     var ll = ["selection", "selectionleveli", "selectionlevelii"]
+    var vf = ["function", "vectaryi", "vectaryii"]
 
     function getLevel(element, level, s){
         var sectionType = sections[s]
@@ -416,9 +418,16 @@ function init(){
 
             section.map(async function(it){
                 it.childs = section.filter(st => st.parent === it.slug)
-                if(it.childs.length > 0 && it.active && it.selection == "simple"){
-                    var l = getLevel(it.childs[0], 0, s)
-                    it.childs[0].active = (it[ll[l]].toLowerCase() == "simple")
+                if(it.childs.length > 0){
+                    if(it.active && it.selection == "simple"){
+                        var l = getLevel(it.childs[0], 0, s)
+                        it.childs[0].active = (it[ll[l]].toLowerCase() == "simple")
+                    }
+                }
+                if(it.parent != ""){
+                    var l = getLevel(it, 0, s)
+                    it.level = l
+                    it.function = it[vf[l]]
                 }
             })
 
@@ -507,7 +516,7 @@ function init(){
                     $itemChild.find('.text-price').attr('x-text', "setCurrencyPrice(option.price, '+ $')")
                     vectary_function = (st["vectary"+el.level]) ? st["vectary"+el.level] : ""
                     $itemChild.addClass(vectary_function)
-                    $itemChild.attr("x-bind:data-material", "option.material").attr("x-bind:data-group", "option.group").attr("x-bind:data-object", "option.object")
+                    $itemChild.attr("x-bind:data-material", "option.material").attr("x-bind:data-group", "option.group").attr("x-bind:data-object", "option.object").attr("x-bind:data-function", "option.function")
                     $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
                     var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
                     ${$itemChild[0].outerHTML}
@@ -523,6 +532,8 @@ function init(){
             })
         }    
     }
+
+    console.log(sections)
     $("input:required").attr("x-on:input", "validate()")
     $('form').attr("x-on:keydown.enter.prevent", "")
     $('#next-button').attr("href", "javascript:void(0)")
@@ -597,6 +608,7 @@ function init(){
                 history.pushState({}, null, uri + "#"+ slidesT[nS]);
 
             });
+            _studio = this.studio
         },
         setStudio : function(event){
             if(!this.runScript){
@@ -750,7 +762,7 @@ function init(){
                 setTimeout(function(){
                     _this.runScript = false
                 }, 120)
-
+                _studio = this.studio
             }
         },
         setParent(p, type){
