@@ -320,6 +320,7 @@ $(() => {
     }
     loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
+    loadIntercom()
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => {
@@ -936,11 +937,11 @@ function init(){
                 slideName = "model"
             }
 
-            if (slideName === "interior" && !intercomAdded){
-                loadIntercom()
-                intercomAdded = true;
-                //Intercom('showNewMessage');
-            }
+            // if (slideName === "interior" && !intercomAdded){
+            //     loadIntercom()
+            //     intercomAdded = true;
+            //     //Intercom('showNewMessage');
+            // }
 
             if (isProd()) {
                 gtag("event", slideName + "_next_clicked", {
