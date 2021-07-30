@@ -32,6 +32,10 @@ const lookup = {
         "vectary-id": "4483e431-bb3a-4809-966f-493ce0cdbad4",
         "builder": "drop-structures",
     },
+    "holo-off-grid-extended-4ft" : {
+        "vectary-id": "e234953b-5c6f-4a48-836b-d6d0b26d1342",
+        "builder": "drop-structures"
+    },
     "auxffice": {
         "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08",
         "builder": "auxbox",
@@ -45,13 +49,15 @@ const lookup = {
         "builder" : "auxbox",
     },
     "full" : {
+        "vectary-id" : "96e81270-a1f9-4edf-ba79-f156bc763192",
         "builder" : "plus-hus"
     },
     "cliff" : {
         "builder": "q-haus",
     },
     "vos" : {
-        "builder": "vos",
+        "vectary-id": "575b517f-0802-4332-aa37-92e5eec78716",
+        "builder": "bunkie",
     },
     "ho2-one-wall-of-glass" : {
         "builder": "honomobo",
