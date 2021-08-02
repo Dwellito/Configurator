@@ -29,7 +29,7 @@ const lookup = {
         "builder": "drop-structures",
     },
     "holo-off-grid" : {
-        "vectary-id": "4483e431-bb3a-4809-966f-493ce0cdbad4",
+        "vectary-id": "db8d01d2-e090-4208-9bf7-40ae1e02cd18",
         "builder": "drop-structures",
     },
     "holo-off-grid-extended-4ft" : {
