@@ -33,8 +33,8 @@ const lookup = {
         "builder": "drop-structures",
     },
     "holo-off-grid-extended-4ft" : {
-      "vectary-id": "e234953b-5c6f-4a48-836b-d6d0b26d1342",
-      "builder": "drop-structures"
+        "vectary-id": "e234953b-5c6f-4a48-836b-d6d0b26d1342",
+        "builder": "drop-structures"
     },
     "auxffice": {
         "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08",
@@ -46,6 +46,9 @@ const lookup = {
     },
     "the-146" : {
         "vectary-id": "2420b723-9a36-4672-a184-a7b2133785b6",
+        "builder" : "auxbox",
+    },
+    "the-240" : {
         "builder" : "auxbox",
     },
     "full" : {

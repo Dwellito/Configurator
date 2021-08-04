@@ -48,6 +48,9 @@ const lookup = {
         "vectary-id": "2420b723-9a36-4672-a184-a7b2133785b6",
         "builder" : "auxbox",
     },
+    "the-240" : {
+      "builder" : "auxbox",
+    },
     "full" : {
         "vectary-id" : "96e81270-a1f9-4edf-ba79-f156bc763192",
         "builder" : "plus-hus"
