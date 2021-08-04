@@ -784,7 +784,7 @@ function init(){
                         _this.setPrice()
                     }, 300)
 
-                }else if($child.length > 0){
+                }else if($child && $child.length > 0){
                     var slug = $child.attr("id")
                     var type = $child.data("type").toLowerCase()
                     var level = $child.data("level").toLowerCase()
