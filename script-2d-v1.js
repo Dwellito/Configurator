@@ -330,6 +330,14 @@ function loadIntercom(){
                 }
             }
         })();
+        if (isProd()) {
+            Intercom('onShow', function() {
+                gtag("event", "chat_shown")
+            })
+            Intercom('onHide', function() {
+                gtag("event", "chat_hidden")
+            })
+        }
     }
 }
 

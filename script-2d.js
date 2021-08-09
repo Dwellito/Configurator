@@ -49,7 +49,7 @@ const lookup = {
         "builder" : "auxbox",
     },
     "the-240" : {
-      "builder" : "auxbox",
+        "builder" : "auxbox",
     },
     "full" : {
         "vectary-id" : "96e81270-a1f9-4edf-ba79-f156bc763192",
@@ -330,6 +330,14 @@ function loadIntercom(){
                 }
             }
         })();
+        if (isProd()) {
+            Intercom('onShow', function() {
+                gtag("event", "chat_shown")
+            })
+            Intercom('onHide', function() {
+                gtag("event", "chat_hidden")
+            })
+        }
     }
 }
 
