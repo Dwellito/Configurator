@@ -164,6 +164,8 @@ async function createOrUpdatePaymentIntent () {
     const name = document.getElementById('Name').value.trim();
     const phone = document.getElementById('Phone-Number').value.trim();
     const address = document.getElementById('Address').value.trim();
+    const creditScore = document.getElementById('Credit-Score').value.trim();
+    const householdIncome = document.getElementById('Household-Income').value.trim();
 
     const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
     const depositAmount = Math.floor(amount * 0.015)
@@ -189,7 +191,9 @@ async function createOrUpdatePaymentIntent () {
             city: city,
             "postal-code": zip,
             state: state,
-            phone: phone
+            phone: phone,
+            "credit-score": creditScore,
+            "household-income": householdIncome
         })
     })
     const responseJson = await response.json()
