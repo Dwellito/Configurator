@@ -21,6 +21,20 @@ $(".wrapper-selections-40").on("click",".material-change", function(){
   }, 120)
 })
 
+async function getObjects(g, objects = []){
+    if(g.type == "mesh"){
+      objects.push(g)
+      return objects
+    }else{
+      for(var i in g.childrenNames){
+        var nG = g.childrenNames[i]
+        const objectG = await vA.getObjectByName(nG);
+        objects = await getObjects(objectG, objects)
+      }
+      return objects
+    }
+}
+
 async function setMaterial(el){
   var material = $(el).data("material")
     var group = $(el).data("group")
@@ -163,8 +177,12 @@ async function changeM(){
   console.log(changeMaterialSuccess)
 }
 
-$("#select_mesh").change(function(){
+$("#select_mesh").change(async function(){
   changeV()
+  var o = $("#select_mesh").val()
+  const objectG = await vA.getObjectByName(o);
+  var objects = await getObjects(objectG)
+  console.log(objects)
 })
 
 $("#select_material").change(function(){
@@ -196,12 +214,18 @@ async function setStudio(){
                   var groups = group.split("|")
                   var primaryGroup = groups[0].split(",")
                   objectsVP = primaryGroup
+                  
                   for(var i in primaryGroup){
                     var g = primaryGroup[i]
                     const objectG = await vA.getObjectByName(g);
-                    var o = [g]
-                    objectsP = (objectG && objectG.type == "group") ? objectsP.concat(objectG.childrenNames) : objectsP.concat(o)
-                    // console.log(o, objectG, objectsP)
+                    if(objectG){
+                      var objectsG = await getObjects(objectG)
+                      objectsP = objectsP.concat(objectsG)
+                    }
+
+                    // var o = [g]
+                    // objectsP = (objectG && objectG.type == "group") ? objectsP.concat(objectG.childrenNames) : objectsP.concat(o)
+                    // // console.log(o, objectG, objectsP)
                   }
 
               
@@ -254,7 +278,7 @@ async function setStudio(){
                     for(var i in objectsP){
                       var object = objectsP[i]
                       const changeMaterialSuccess = await vA.setMaterial(object, material);
-                      console.log(object, material, color, changeMaterialSuccess)
+                      // console.log(object, material, color, changeMaterialSuccess)
                       if(color)
                         var colorChangeResult = await vA.updateMaterial(material, { color: color });
                     }
