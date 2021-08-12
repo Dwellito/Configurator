@@ -29,8 +29,12 @@ const lookup = {
         "builder": "drop-structures",
     },
     "holo-off-grid" : {
-        "vectary-id": "4483e431-bb3a-4809-966f-493ce0cdbad4",
+        "vectary-id": "db8d01d2-e090-4208-9bf7-40ae1e02cd18",
         "builder": "drop-structures",
+    },
+    "holo-off-grid-extended-4ft" : {
+        "vectary-id": "e234953b-5c6f-4a48-836b-d6d0b26d1342",
+        "builder": "drop-structures"
     },
     "auxffice": {
         "vectary-id": "81e53fd2-2ce3-454d-880d-961f1f81ed08",
@@ -44,14 +48,19 @@ const lookup = {
         "vectary-id": "2420b723-9a36-4672-a184-a7b2133785b6",
         "builder" : "auxbox",
     },
+    "the-240" : {
+        "builder" : "auxbox",
+    },
     "full" : {
+        "vectary-id" : "96e81270-a1f9-4edf-ba79-f156bc763192",
         "builder" : "plus-hus"
     },
     "cliff" : {
         "builder": "q-haus",
     },
     "vos" : {
-        "builder": "vos",
+        "vectary-id": "575b517f-0802-4332-aa37-92e5eec78716",
+        "builder": "bunkie",
     },
     "ho2-one-wall-of-glass" : {
         "builder": "honomobo",
@@ -77,6 +86,9 @@ const lookup = {
     "ho5-two-walls-of-glass" : {
         "builder": "honomobo",
     },
+    "modal-01" : {
+        "builder" : "live-modal",
+    },
 }
 
 var levels = {
@@ -99,7 +111,8 @@ function getBuilder () {
 }
 
 function isTakeRateModel () {
-    return getBuilder() !== "drop-structures"
+    const builder = getBuilder()
+    return (builder !== "drop-structures" && builder !== "honomobo")
 }
 
 function modelIsMinio() {
@@ -279,11 +292,53 @@ function stripeMakePayment (card, secret) {
 }
 
 function loadIntercom(){
-    const APP_ID = "wuhofi95"
-    window.intercomSettings = {
-        app_id: APP_ID
-    };
-    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/' + APP_ID;var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s, x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+    if (getBuilder() !== "auxbox") {
+        const APP_ID = "wuhofi95"
+        window.intercomSettings = {
+            app_id: APP_ID
+        };
+        (function () {
+            var w = window;
+            var ic = w.Intercom;
+            if (typeof ic === "function") {
+                ic('reattach_activator');
+                ic('update', w.intercomSettings);
+            } else {
+                var d = document;
+                var i = function () {
+                    i.c(arguments);
+                };
+                i.q = [];
+                i.c = function (args) {
+                    i.q.push(args);
+                };
+                w.Intercom = i;
+                var l = function () {
+                    var s = d.createElement('script');
+                    s.type = 'text/javascript';
+                    s.async = true;
+                    s.src = 'https://widget.intercom.io/widget/' + APP_ID;
+                    var x = d.getElementsByTagName('script')[0];
+                    x.parentNode.insertBefore(s, x);
+                };
+                if (document.readyState === 'complete') {
+                    l();
+                } else if (w.attachEvent) {
+                    w.attachEvent('onload', l);
+                } else {
+                    w.addEventListener('load', l, false);
+                }
+            }
+        })();
+        if (isProd()) {
+            Intercom('onShow', function() {
+                gtag("event", "chat_shown")
+            })
+            Intercom('onHide', function() {
+                gtag("event", "chat_hidden")
+            })
+        }
+    }
 }
 
 $(() => {
@@ -316,6 +371,7 @@ $(() => {
     }
     loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
+    loadIntercom()
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => {
@@ -752,7 +808,7 @@ function init(){
                         _this.setPrice()
                     }, 300)
 
-                }else if($child.length > 0){
+                }else if($child && $child.length > 0){
                     var slug = $child.attr("id")
                     var type = $child.data("type").toLowerCase()
                     var level = $child.data("level").toLowerCase()
@@ -945,11 +1001,11 @@ function init(){
                 slideName = "model"
             }
 
-            if (slideName === "interior" && !intercomAdded){
-                loadIntercom()
-                intercomAdded = true;
-                //Intercom('showNewMessage');
-            }
+            // if (slideName === "interior" && !intercomAdded){
+            //     loadIntercom()
+            //     intercomAdded = true;
+            //     //Intercom('showNewMessage');
+            // }
 
             if (isProd()) {
                 gtag("event", slideName + "_next_clicked", {
@@ -976,6 +1032,7 @@ function init(){
                         createOrUpdatePaymentIntent()
                     } else {
                         // Right now this is only Drop Structure for Holo. 1k deposit.
+                        // TODO: Deposit for honomobo
                         document.getElementById("deposit-price").innerHTML = formatter.format(1000)
                         document.getElementById("checkout-button-price").value = "Submit"
                     }
