@@ -1,3 +1,35 @@
+Skip to content
+Search or jump to…
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@QuoAPIs8 
+Dwellito
+/
+Configurator
+Private
+1
+00
+Code
+Issues
+Pull requests
+1
+Actions
+Projects
+Wiki
+Security
+Insights
+Configurator/script-2d.js /
+@ylayaly
+ylayaly Merge branch 'main' of github.com:Dwellito/Configurator into Quo
+Latest commit 9a9302f 4 hours ago
+ History
+ 3 contributors
+@jonwalch@QuoAPIs8@ylayaly
+1167 lines (1055 sloc)  48.5 KB
+  
 var show_zero_price = "";
 var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = "22EP8BJUJKCW2YGUN8RS", hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
 var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 2});
@@ -164,8 +196,6 @@ async function createOrUpdatePaymentIntent () {
     const name = document.getElementById('Name').value.trim();
     const phone = document.getElementById('Phone-Number').value.trim();
     const address = document.getElementById('Address').value.trim();
-    const creditScore = document.getElementById('Credit-Score').value.trim();
-    const householdIncome = document.getElementById('Household-Income').value.trim();
 
     const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
     const depositAmount = Math.floor(amount * 0.015)
@@ -191,9 +221,7 @@ async function createOrUpdatePaymentIntent () {
             city: city,
             "postal-code": zip,
             state: state,
-            phone: phone,
-            "credit-score": creditScore,
-            "household-income": householdIncome
+            phone: phone
         })
     })
     const responseJson = await response.json()
@@ -435,22 +463,17 @@ function init(){
         selection = (selection.includes("simple") ? "simple" : "multiple")
         var active = !exist_subtype && selection == "simple" && data.parent == ""
         var labelLevels = []
-
+        
         //var itt = {type : data.type, subtype : data.subtype, namesubtype : data.namesubtype, name : data.name, slug : data.slug, price : data.price,  image : data.image, thumbnail : data.thumbnail, description, active, show : false, order : data.order, selection : selection, object : data.object, group : data.group, material : data.material, function : data.function, parent : data.parent, childs : [], activeLevel : [] }
         var itt = data
-        itt.description = description
+        itt.description = description 
         itt.active = active
         itt.show = false,
-            itt.selection = selection
+        itt.selection = selection
         itt.childs = []
         itt.activeLevel = []
+        itt.level = null
         sections[type].push(itt)
-    })
-
-    $(".installation").each(function(){
-        var data = $(this).find(".Services").data()
-        $(this).addClass("parent")
-        $(this).attr("id", data.id).attr("data-type", data.type).attr("data-selection", data.selection)
     })
 
     var childHtml = {
@@ -512,6 +535,7 @@ function init(){
 
     $('.button-wrapper').find('a').attr('x-bind:class', '{"invalid" : !valid}')
     var ll = ["selection", "selectionleveli", "selectionlevelii"]
+    var vf = ["function", "vectaryi", "vectaryii"]
 
     function getLevel(element, level, s){
         var sectionType = sections[s]
@@ -533,9 +557,16 @@ function init(){
 
             section.map(async function(it){
                 it.childs = section.filter(st => st.parent === it.slug)
-                if(it.childs.length > 0 && it.active && it.selection == "simple"){
-                    var l = getLevel(it.childs[0], 0, s)
-                    it.childs[0].active = (it[ll[l]].toLowerCase() == "simple")
+                if(it.childs.length > 0){
+                    if(it.active && it.selection == "simple"){
+                        var l = getLevel(it.childs[0], 0, s)
+                        it.childs[0].active = (it[ll[l]].toLowerCase() == "simple")
+                    }
+                }
+                if(it.parent != ""){
+                    var l = getLevel(it, 0, s)
+                    it.level = l
+                    it.function = it[vf[l]]
                 }
             })
 
@@ -545,13 +576,15 @@ function init(){
                     var selection = (items.length > 0) ? items[0].selection : "simple"
                     var titlelaveli = (items.length > 0) ? items[0].titlelaveli : ""
                     var titlelavelii = (items.length > 0) ? items[0].titlelavelii : ""
-                    subtypes.push({value : tag.subtype, title : tag.namesubtype, selection, items, titlelaveli, titlelavelii })
+                    var vectaryi = (items.length > 0) ? items[0].vectaryi.toLowerCase().replace(/ /g, "-") : ""
+                    var vectaryii = (items.length > 0) ? items[0].vectaryii.toLowerCase().replace(/ /g, "-") : ""
+                    subtypes.push({value : tag.subtype, title : tag.namesubtype, selection, items, titlelaveli, titlelavelii, vectaryi, vectaryii })
                 }
             })
 
             subtypes.map(async function(st){
                 activeLevel[st.value] = []
-
+                
                 for(var l in levels[st.items[0].selection]){
                     var itemsChilds = []
                     if(l == 0){
@@ -562,7 +595,6 @@ function init(){
                             itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
                         }
                     }
-
                     activeLevel[st.value].push({level : l, items : itemsChilds})
                 }
 
@@ -576,7 +608,7 @@ function init(){
                     $item.removeAttr("id")
                     $item.find('.parent').attr("id", it.slug)
                     $item.find('.parent').attr("data-type", it.type)
-                    var vectary_function = it.function.toLowerCase().replace(" ", "-")
+                    var vectary_function = it.function.toLowerCase().replace(/ /g, "-")
                     $item.find('.parent').attr("data-object", it.object).attr("data-group", it.group).attr("data-material", it.material).attr("data-function", it.function).addClass(vectary_function)
                     $item.find('img.image').attr('src', it.thumbnail).attr('srcset', it.thumbnail)
                     $item.find('.text-block').text(it.name)
@@ -621,11 +653,13 @@ function init(){
                     $itemChild.find('.text-name').attr('x-text', "option.name")
                     $itemChild.find('.text-description').attr('x-text', "option.description")
                     $itemChild.find('.text-price').attr('x-text', "setCurrencyPrice(option.price, '+ $')")
+                    vectary_function = (st["vectary"+el.level]) ? st["vectary"+el.level] : ""
+                    $itemChild.addClass(vectary_function)
+                    $itemChild.attr("x-bind:data-material", "option.material").attr("x-bind:data-group", "option.group").attr("x-bind:data-object", "option.object").attr("x-bind:data-function", "option.function")
                     $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
                     var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
                     ${$itemChild[0].outerHTML}
                     </template></div>`
-
                     $nesting.append(el.html)
                     var titleLavel = (st["titlelavel"+el.level]) ? st["titlelavel"+el.level] : ""
                     $nesting.find(".box-level-"+el.level).find(".title-level").attr("x-show", `activeLevel['${st.value}'][${m}].items.length > 0`)
@@ -635,9 +669,10 @@ function init(){
 
                 $('.'+s+' '+ccM).parent().append($nesting)
             })
-        }
+        }    
     }
 
+    console.log(sections)
     $("input:required").attr("x-on:input", "validate()")
     $('form').attr("x-on:keydown.enter.prevent", "")
     $('#next-button').attr("href", "javascript:void(0)")
@@ -712,11 +747,10 @@ function init(){
                 history.pushState({}, null, uri + "#"+ slidesT[nS]);
 
             });
+            _studio = this.studio
         },
         setStudio : function(event){
-            
             if(!this.runScript){
-                
                 this.runScript = true
                 var target = event.target
                 var $target = $(target).closest(".parent")
@@ -762,34 +796,30 @@ function init(){
                         })
                     }
 
-                    if(this.activeLevel[item.subtype]){
-                        for(var l = 0; l < levels[item.selection].length; l++){
-                            this.activeLevel[item.subtype][l].items = []
-                        }
+                    for(var l = 0; l < levels[item.selection].length; l++){
+                        this.activeLevel[item.subtype][l].items = []
                     }
 
                     if(item.childs.length > 0 && item.active == true && item.selection == "simple"){
                         item.childs[0].active = true
 
                     }
-                    if(this.activeLevel[item.subtype]){
-                        for(var l in levels[item.selection]){
-                            var itemsChilds = []
-                            if(l == 0){
-                                itemsChilds = (item.active == true) ? item.childs : []
-                            }else{
-                                var prveLevel = activeLevel[item.subtype][l - 1]
-                                if(prveLevel && prveLevel.items.length > 0){
-                                    itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
-                                }
-                            }
 
-                            if(itemsChilds.length > 0 && item.selection == "simple"){
-                                var li = getLevel(itemsChilds[0], 0, type)
-                                itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
+                    for(var l in levels[item.selection]){
+                        var itemsChilds = []
+                        if(l == 0){
+                            itemsChilds = (item.active == true) ? item.childs : []
+                        }else{
+                            var prveLevel = activeLevel[item.subtype][l - 1]
+                            if(prveLevel && prveLevel.items.length > 0){
+                                itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
                             }
-                            this.activeLevel[item.subtype][l].items = itemsChilds
                         }
+                        if(itemsChilds.length > 0 && item.selection == "simple"){
+                            var li = getLevel(itemsChilds[0], 0, type)
+                            itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
+                        }
+                        this.activeLevel[item.subtype][l].items = itemsChilds
                     }
 
                     this.activeOptionLevel = {
@@ -870,8 +900,8 @@ function init(){
                 var _this = this
                 setTimeout(function(){
                     _this.runScript = false
-                }, 300)
-
+                }, 120)
+                _studio = this.studio
             }
         },
         setParent(p, type){
@@ -1167,3 +1197,16 @@ function init(){
         }
     }
 }
+© 2021 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Docs
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
+Loading complete
