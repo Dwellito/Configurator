@@ -447,6 +447,12 @@ function init(){
         sections[type].push(itt)
     })
 
+    $(".installation").each(function(){
+        var data = $(this).find(".Services").data()
+        $(this).addClass("parent")
+        $(this).attr("id", data.id).attr("data-type", data.type).attr("data-selection", data.selection)
+    })
+
     var childHtml = {
         "multiple" : [],
         "simple" : []
@@ -708,7 +714,9 @@ function init(){
             });
         },
         setStudio : function(event){
+
             if(!this.runScript){
+
                 this.runScript = true
                 var target = event.target
                 var $target = $(target).closest(".parent")
@@ -754,31 +762,34 @@ function init(){
                         })
                     }
 
-                    for(var l = 0; l < levels[item.selection].length; l++){
-                        this.activeLevel[item.subtype][l].items = []
+                    if(this.activeLevel[item.subtype]){
+                        for(var l = 0; l < levels[item.selection].length; l++){
+                            this.activeLevel[item.subtype][l].items = []
+                        }
                     }
 
                     if(item.childs.length > 0 && item.active == true && item.selection == "simple"){
                         item.childs[0].active = true
 
                     }
-
-                    for(var l in levels[item.selection]){
-                        var itemsChilds = []
-                        if(l == 0){
-                            itemsChilds = (item.active == true) ? item.childs : []
-                        }else{
-                            var prveLevel = activeLevel[item.subtype][l - 1]
-                            if(prveLevel && prveLevel.items.length > 0){
-                                itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                    if(this.activeLevel[item.subtype]){
+                        for(var l in levels[item.selection]){
+                            var itemsChilds = []
+                            if(l == 0){
+                                itemsChilds = (item.active == true) ? item.childs : []
+                            }else{
+                                var prveLevel = activeLevel[item.subtype][l - 1]
+                                if(prveLevel && prveLevel.items.length > 0){
+                                    itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                                }
                             }
-                        }
 
-                        if(itemsChilds.length > 0 && item.selection == "simple"){
-                            var li = getLevel(itemsChilds[0], 0, type)
-                            itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
+                            if(itemsChilds.length > 0 && item.selection == "simple"){
+                                var li = getLevel(itemsChilds[0], 0, type)
+                                itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
+                            }
+                            this.activeLevel[item.subtype][l].items = itemsChilds
                         }
-                        this.activeLevel[item.subtype][l].items = itemsChilds
                     }
 
                     this.activeOptionLevel = {
@@ -859,7 +870,7 @@ function init(){
                 var _this = this
                 setTimeout(function(){
                     _this.runScript = false
-                }, 120)
+                }, 300)
 
             }
         },
