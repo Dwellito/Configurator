@@ -461,24 +461,27 @@ function init(){
     var typeItem = ["simple", "multiple"]
     for(var i in typeItem){
         var type = typeItem[i]
-
         $('.'+type+' [class^="box-level"]').each(function(i){
-            var classLevel = $(this).attr("class").split(" ")[0]
-            var level = classLevel.replace("box-level-", "")
-            levels[type].push(level)
-            var htmlParentLevel = $('.'+type+" ."+classLevel)[0].outerHTML
-            var $htmlParentLevel = $(htmlParentLevel)
-            var childLevel = $htmlParentLevel.find(".level-"+level)[0].outerHTML
 
-            $htmlParentLevel.find('*[class^="box-level"]').each(function(){
-                $(this).remove()
-            })
-            $htmlParentLevel.find(".level-"+level).remove()
+                var classLevel = $(this).attr("class").split(" ")[0]
+                var level = classLevel.replace("box-level-", "")
+                levels[type].push(level)
+                var htmlParentLevel = $('.'+type+" ."+classLevel)[0].outerHTML
+                var $htmlParentLevel = $(htmlParentLevel)
+                
+                var childLevel = ($htmlParentLevel.find(".level-"+level).length > 0) ? $htmlParentLevel.find(".level-"+level)[0].outerHTML : ""
 
-            var htmlParentLevel = $htmlParentLevel[0].outerHTML //'<div role="list" class="'+parentClass+'"></div>'
+                $htmlParentLevel.find('*[class^="box-level"]').each(function(){
+                    $(this).remove()
+                })
+                $htmlParentLevel.find(".level-"+level).remove()
 
-            childHtml[type].push({level : level, html : htmlParentLevel, htmlchild : childLevel })
+                var htmlParentLevel = $htmlParentLevel[0].outerHTML //'<div role="list" class="'+parentClass+'"></div>'
+
+                childHtml[type].push({level : level, html : htmlParentLevel, htmlchild : childLevel })
+            
         })
+        
 
     }
 
@@ -545,25 +548,28 @@ function init(){
                     var selection = (items.length > 0) ? items[0].selection : "simple"
                     var titlelaveli = (items.length > 0) ? items[0].titlelaveli : ""
                     var titlelavelii = (items.length > 0) ? items[0].titlelavelii : ""
-                    subtypes.push({value : tag.subtype, title : tag.namesubtype, selection, items, titlelaveli, titlelavelii })
+                    if(items.length > 0)
+                        subtypes.push({value : tag.subtype, title : tag.namesubtype, selection, items, titlelaveli, titlelavelii })
                 }
             })
 
-            subtypes.map(async function(st){
+            subtypes.map(async function(st) {
                 activeLevel[st.value] = []
 
-                for(var l in levels[st.items[0].selection]){
-                    var itemsChilds = []
-                    if(l == 0){
-                        itemsChilds = (st.items[0].active == true) ? st.items[0].childs : []
-                    }else{
-                        var prveLevel = activeLevel[st.value][l - 1]
-                        if(prveLevel && prveLevel.items.length > 0){
-                            itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                if (st.items[0]) {
+                    for (var l in levels[st.items[0].selection]) {
+                        var itemsChilds = []
+                        if (l == 0) {
+                            itemsChilds = (st.items[0].active == true) ? st.items[0].childs : []
+                        } else {
+                            var prveLevel = activeLevel[st.value][l - 1]
+                            if (prveLevel && prveLevel.items.length > 0) {
+                                itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                            }
                         }
-                    }
 
-                    activeLevel[st.value].push({level : l, items : itemsChilds})
+                        activeLevel[st.value].push({level: l, items: itemsChilds})
+                    }
                 }
 
                 var $parentHTML = $(parentHTML)
@@ -571,6 +577,7 @@ function init(){
 
                 var parentClass = $parentHTML.find('.items-section').attr("class")
                 var htmlItems = '<div role="list" class="'+parentClass+'">'
+                
                 st.items.map(function(it){
                     var $item = (it.selection == "simple") ? $(item) : $(itemM)
                     $item.removeAttr("id")
@@ -589,7 +596,8 @@ function init(){
                     if(h_price){
                         h_price = h_price.replace("{price}", it.price)
                         $p.html(h_price)
-                        $item.find('.text-price span').attr("x-text", "setCurrencyPrice("+it.price+", '+ $')")
+                        if(it.price != "")
+                            $item.find('.text-price span').attr("x-text", "setCurrencyPrice("+it.price+", '+ $')")
                     }
                     if(it.price === 0)
                         $p.addClass(hc)
@@ -607,6 +615,7 @@ function init(){
                     })
                     htmlItems += $item[0].outerHTML
                 })
+                
                 htmlItems += '</div>'
                 $parentHTML.find(".w-dyn-list").html(htmlItems)
                 $('.'+s+' '+ccM).parent().append($parentHTML)
@@ -622,15 +631,17 @@ function init(){
                     $itemChild.find('.text-description').attr('x-text', "option.description")
                     $itemChild.find('.text-price').attr('x-text', "setCurrencyPrice(option.price, '+ $')")
                     $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
-                    var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
-                    ${$itemChild[0].outerHTML}
-                    </template></div>`
+                    if(st.items.length > 0){
+                        var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
+                        ${$itemChild[0].outerHTML}
+                        </template></div>`
 
-                    $nesting.append(el.html)
-                    var titleLavel = (st["titlelavel"+el.level]) ? st["titlelavel"+el.level] : ""
-                    $nesting.find(".box-level-"+el.level).find(".title-level").attr("x-show", `activeLevel['${st.value}'][${m}].items.length > 0`)
-                    $nesting.find(".box-level-"+el.level).find(".title-level").text(titleLavel)
-                    $nesting.find(".box-level-"+el.level).append(childTemplate)
+                        $nesting.append(el.html)
+                        var titleLavel = (st["titlelavel"+el.level]) ? st["titlelavel"+el.level] : ""
+                        $nesting.find(".box-level-"+el.level).find(".title-level").attr("x-show", `activeLevel['${st.value}'][${m}].items.length > 0`)
+                        $nesting.find(".box-level-"+el.level).find(".title-level").text(titleLavel)
+                        $nesting.find(".box-level-"+el.level).append(childTemplate)
+                    }
                 }
 
                 $('.'+s+' '+ccM).parent().append($nesting)
@@ -845,7 +856,8 @@ function init(){
                     this.activeOptionLevel.levels.splice(l_index);
 
                     for(var l = l_index; l < levels[item.selection ].length; l++){
-                        this.activeLevel[item.subtype][l].items = []
+                        if(this.activeLevel[item.subtype] && this.activeLevel[item.subtype].length > 0)
+                            this.activeLevel[item.subtype][l].items = []
                     }
 
                     if(item.childs.length > 0 && item.active === false){
@@ -853,7 +865,8 @@ function init(){
                             item.childs[c].active = false
                         }
                     }else if(item.childs.length > 0 && item.active === true && item["selectionlevel"+level].toLowerCase() == "simple"){
-                        this.activeLevel[item.subtype][l_index].items = item.childs
+                        if(this.activeLevel[item.subtype] && this.activeLevel[item.subtype].length > 0)
+                            this.activeLevel[item.subtype][l_index].items = item.childs
                         this.activeOptionLevel.levels.push(next_level)
                         var li = getLevel(item.childs[0], 0, type)
                         if(item.selection == "simple"){
