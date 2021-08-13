@@ -549,21 +549,23 @@ function init(){
                 }
             })
 
-            subtypes.map(async function(st){
+            subtypes.map(async function(st) {
                 activeLevel[st.value] = []
 
-                for(var l in levels[st.items[0].selection]){
-                    var itemsChilds = []
-                    if(l == 0){
-                        itemsChilds = (st.items[0].active == true) ? st.items[0].childs : []
-                    }else{
-                        var prveLevel = activeLevel[st.value][l - 1]
-                        if(prveLevel && prveLevel.items.length > 0){
-                            itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                if (st.items[0]) {
+                    for (var l in levels[st.items[0].selection]) {
+                        var itemsChilds = []
+                        if (l == 0) {
+                            itemsChilds = (st.items[0].active == true) ? st.items[0].childs : []
+                        } else {
+                            var prveLevel = activeLevel[st.value][l - 1]
+                            if (prveLevel && prveLevel.items.length > 0) {
+                                itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                            }
                         }
-                    }
 
-                    activeLevel[st.value].push({level : l, items : itemsChilds})
+                        activeLevel[st.value].push({level: l, items: itemsChilds})
+                    }
                 }
 
                 var $parentHTML = $(parentHTML)
