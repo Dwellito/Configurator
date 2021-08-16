@@ -257,6 +257,7 @@ async function createOrUpdatePaymentIntent () {
         document.getElementById("deposit-price").innerHTML = formatter.format(1000)
         document.getElementById("checkout-button-price").value = "Submit"
         document.getElementById("checkout-button-price").disabled = false;
+        document.getElementById("checkout-button-price").removeAttribute("style")
     }
 }
 
