@@ -133,6 +133,13 @@ function takeRatePercent() {
     }
 }
 
+function referralSource() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const source = urlParams.get('source');
+
+    return source
+}
+
 function modelIsMinio() {
     return getBuilder() === "mini-o"
 }
@@ -213,6 +220,7 @@ async function createOrUpdatePaymentIntent () {
             "credit-score": creditScore,
             "household-income": householdIncome,
             "take-rate": isTakeRate(),
+            source: referralSource()
         })
     })
     const responseJson = await response.json()
