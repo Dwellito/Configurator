@@ -110,9 +110,27 @@ function getBuilder () {
     return lookup[model].builder;
 }
 
-function isTakeRateModel () {
+function isTakeRate() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const take = urlParams.get('take');
+
+    if (take === "true") {
+        return true
+    }
+
     const builder = getBuilder()
     return (builder !== "drop-structures" && builder !== "honomobo")
+}
+
+function takeRatePercent() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const take = urlParams.get('take');
+
+    if (take === "true") {
+        return 0.035
+    } else {
+        return 0.015
+    }
 }
 
 function modelIsMinio() {
@@ -168,7 +186,7 @@ async function createOrUpdatePaymentIntent () {
     const householdIncome = document.getElementById('Household-Income').value.trim();
 
     const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
-    const depositAmount = Math.floor(amount * 0.015)
+    const depositAmount = Math.floor(amount * takeRatePercent())
 
     document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
     document.getElementById("checkout-button-price").disabled = true;
@@ -193,12 +211,14 @@ async function createOrUpdatePaymentIntent () {
             state: state,
             phone: phone,
             "credit-score": creditScore,
-            "household-income": householdIncome
+            "household-income": householdIncome,
+            "take-rate": isTakeRate(),
         })
     })
     const responseJson = await response.json()
 
-    if (response.status === 200) {
+    // take rate
+    if (response.status === 200 && responseJson.secret && responseJson.id) {
 
         document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 32px 8px")
 
@@ -230,6 +250,14 @@ async function createOrUpdatePaymentIntent () {
                 document.getElementById("checkout-button-price").removeAttribute("style")
             }
         });
+        // Non take rate
+    } else if (response.status === 200) {
+        // Right now this is only Drop Structure for Holo. 1k deposit.
+        // TODO: Deposit for honomobo
+        document.getElementById("deposit-price").innerHTML = formatter.format(1000)
+        document.getElementById("checkout-button-price").value = "Submit"
+        document.getElementById("checkout-button-price").disabled = false;
+        document.getElementById("checkout-button-price").removeAttribute("style")
     }
 }
 
@@ -716,9 +744,9 @@ function init(){
             });
         },
         setStudio : function(event){
-            
+
             if(!this.runScript){
-                
+
                 this.runScript = true
                 var target = event.target
                 var $target = $(target).closest(".parent")
@@ -1032,14 +1060,7 @@ function init(){
                     this.valid = true
                     this.setPrice()
 
-                    if (isTakeRateModel()) {
-                        createOrUpdatePaymentIntent()
-                    } else {
-                        // Right now this is only Drop Structure for Holo. 1k deposit.
-                        // TODO: Deposit for honomobo
-                        document.getElementById("deposit-price").innerHTML = formatter.format(1000)
-                        document.getElementById("checkout-button-price").value = "Submit"
-                    }
+                    createOrUpdatePaymentIntent()
                 }
             }
             if (this.valid) { $("#slick-slide-control0"+slide).click() }
@@ -1126,7 +1147,7 @@ function init(){
 
             const model = getModelName(window.location.pathname)
 
-            if (isTakeRateModel()) {
+            if (isTakeRate()) {
                 if (isProd()) {
                     gtag("event", "clicked_make_purchase", {
                         model_name: model,
