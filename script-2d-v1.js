@@ -256,6 +256,7 @@ async function createOrUpdatePaymentIntent () {
         // TODO: Deposit for honomobo
         document.getElementById("deposit-price").innerHTML = formatter.format(1000)
         document.getElementById("checkout-button-price").value = "Submit"
+        document.getElementById("checkout-button-price").disabled = false;
     }
 }
 
