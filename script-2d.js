@@ -62,28 +62,16 @@ const lookup = {
         "vectary-id": "575b517f-0802-4332-aa37-92e5eec78716",
         "builder": "bunkie",
     },
-    "ho2-one-wall-of-glass" : {
+    "ho2" : {
         "builder": "honomobo",
     },
-    "ho2-two-walls-of-glass" : {
+    "ho3" : {
         "builder": "honomobo",
     },
-    "ho3-one-wall-of-glass" : {
+    "ho4" : {
         "builder": "honomobo",
     },
-    "ho3-two-walls-of-glass" : {
-        "builder": "honomobo",
-    },
-    "ho4-one-wall-of-glass" : {
-        "builder": "honomobo",
-    },
-    "ho4-two-walls-of-glass" : {
-        "builder": "honomobo",
-    },
-    "ho5-one-wall-of-glass" : {
-        "builder": "honomobo",
-    },
-    "ho5-two-walls-of-glass" : {
+    "ho5" : {
         "builder": "honomobo",
     },
     "modal-01" : {
