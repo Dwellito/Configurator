@@ -49,6 +49,7 @@ const lookup = {
         "builder" : "auxbox",
     },
     "the-240" : {
+        "vectary-id": "716b27f5-8097-472f-a827-558ef50e0416",
         "builder" : "auxbox",
     },
     "full" : {
@@ -76,6 +77,9 @@ const lookup = {
     },
     "modal-01" : {
         "builder" : "live-modal",
+    },
+    "navajo-960" : {
+        "builder": "meka-modular"
     },
 }
 
