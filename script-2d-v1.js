@@ -271,7 +271,7 @@ function stripeMakePayment (card, secret) {
     var email = document.getElementById('Email').value.trim();
     var phone = document.getElementById('Phone-Number').value.trim();
 
-    stripeObj.confirmCardPayment(secret, {
+    let stripeArgs = {
         payment_method: {
             card: card,
             billing_details: {
@@ -283,10 +283,15 @@ function stripeMakePayment (card, secret) {
                 },
                 name: name,
                 email: email,
-                phone: phone
             }
         }
-    }).then(function(result) {
+    }
+
+    if (phone) {
+        stripeArgs["payment_method"]["billing_details"]["phone"] = phone
+    }
+
+    stripeObj.confirmCardPayment(secret, stripeArgs).then(function(result) {
         if (result.error) {
             // Show error to your customer (e.g., insufficient funds)
             // console.log(result.error.message);
