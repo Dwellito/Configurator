@@ -63,6 +63,10 @@ const lookup = {
         "vectary-id": "575b517f-0802-4332-aa37-92e5eec78716",
         "builder": "bunkie",
     },
+    "monarch" : {
+        "vectary-id": "331a0d53-c5b5-473a-921d-423cd1004d31",
+        "builder": "bunkie"
+    },
     "ho2" : {
         "builder": "honomobo",
     },
