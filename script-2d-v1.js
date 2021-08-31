@@ -969,7 +969,7 @@ function init(){
                     dest += address + "," + city + "," + state
 
                     service.getDistanceMatrix({
-                        origins: ["9424 W Walton, Blanchard, MI", "5617 104th Pl NE, Marysville, WA"],
+                        origins: ["Chattanooga, TN", "5617 104th Pl NE, Marysville, WA"],
                         destinations: [dest],
                         unitSystem: google.maps.UnitSystem.IMPERIAL,
                         travelMode: google.maps.TravelMode.DRIVING,
