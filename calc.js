@@ -11,6 +11,9 @@ function currencyToNumber (str) {
     return isNaN(num) ? -1 : num
 }
 
+const amount = document.getElementById("Amount").placeholder
+document.getElementById("Amount").value = amount
+
 async function submitCalc () {
     const fourAPR = document.getElementById("4 APR").checked
     const fiveAPR = document.getElementById("5 APR").checked
