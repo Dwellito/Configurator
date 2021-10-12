@@ -83,7 +83,6 @@ async function submitCalc () {
             debt: debt //int
         })
     })
-    const responseJson = await response.json()
 }
 
 document.addEventListener('DOMContentLoaded', function() {
