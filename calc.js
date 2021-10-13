@@ -37,11 +37,11 @@ function updateMonthlyPayment() {
     const monthlyFive = (principal * xFive * interestFive) / (xFive - 1);
     const monthlySix = (principal * xSix * interestSix) / (xSix - 1);
 
-    document.getElementById("20-down-price").innerHTML = formatter.format(monthlyFour)
-    document.getElementById("10-down-price").innerHTML = formatter.format(monthlyFive)
-    document.getElementById("no-down-price").innerHTML = formatter.format(monthlySix)
+    document.getElementById("20-down-price").innerHTML = formatter.format(monthlyFour) + "/mo"
+    document.getElementById("10-down-price").innerHTML = formatter.format(monthlyFive) + "/mo"
+    document.getElementById("no-down-price").innerHTML = formatter.format(monthlySix) + "/mo"
 
-    return formatter.format(monthlyFour)
+    return formatter.format(monthlyFour) + "/mo"
 }
 // Price of the unit, already in page
 const amount = document.getElementById("unit-price").innerHTML
@@ -51,7 +51,7 @@ document.getElementById("Amount").value = "$" + amount
 document.getElementById("Amount").addEventListener('input', updateMonthlyPayment)
 
 // Prepopulate model and update "As low as xxxx/mo"
-document.getElementById("monthly-estimate").innerHTML = updateMonthlyPayment() + "/mo"
+document.getElementById("monthly-estimate").innerHTML = updateMonthlyPayment()
 
 async function submitCalc () {
     const fourAPR = document.getElementById("4 APR").checked
@@ -80,7 +80,10 @@ async function submitCalc () {
     const loanAmount = currencyToNumber(amount);
 
     const monthlyPaymentStr = document.getElementById(monthly).innerHTML
-    const monthlyPayment = currencyToNumber(monthlyPaymentStr)
+    console.log(monthlyPaymentStr)
+    console.log(monthlyPaymentStr.substring(0, monthlyPaymentStr.length - 3))
+    const monthlyPayment = currencyToNumber(monthlyPaymentStr.substring(0, monthlyPaymentStr.length - 3))
+    console.log(monthlyPayment)
 
     const dob = document.getElementById("Date-of-birth").value
     const creditScore = document.getElementById("Credit-score").value
