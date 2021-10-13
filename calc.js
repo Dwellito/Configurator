@@ -11,8 +11,42 @@ function currencyToNumber (str) {
     return isNaN(num) ? -1 : num
 }
 
-const amount = document.getElementById("Amount").placeholder
-document.getElementById("Amount").value = amount
+const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+
+    // These options are needed to round to whole numbers if that's what you want.
+    //minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
+    maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
+});
+
+function updateMonthlyPayment() {
+    const interestFour = 0.04 / 12
+    const interestFive = 0.05 / 12
+    const interestSix = 0.06 / 12
+    const payments = 30 * 12 // 30 year term
+
+    const amount = document.getElementById("Amount").value
+    const principal = currencyToNumber(amount);
+
+    const xFour = Math.pow(1 + interestFour, payments)
+    const xFive = Math.pow(1 + interestFive, payments)
+    const xSix = Math.pow(1 + interestSix, payments)
+
+    const monthlyFour = (principal * xFour * interestFour) / (xFour - 1);
+    const monthlyFive = (principal * xFive * interestFive) / (xFive - 1);
+    const monthlySix = (principal * xSix * interestSix) / (xSix - 1);
+
+    document.getElementById("20-down-price").innerHTML = formatter.format(monthlyFour)
+    document.getElementById("10-down-price").innerHTML = formatter.format(monthlyFive)
+    document.getElementById("no-down-price").innerHTML = formatter.format(monthlySix)
+}
+
+const amount = document.getElementById("unit-price")
+document.getElementById("Amount").value = "$" + amount.innerHTML
+updateMonthlyPayment()
+
+amount.addEventListener('input', updateMonthlyPayment)
 
 async function submitCalc () {
     const fourAPR = document.getElementById("4 APR").checked
@@ -37,7 +71,7 @@ async function submitCalc () {
         down = 0
     }
 
-    const amount = document.getElementById("Amount").value || document.getElementById("Amount").placeholder
+    const amount = document.getElementById("Amount").value
     const loanAmount = currencyToNumber(amount);
 
     const monthlyPaymentStr = document.getElementById(monthly).innerHTML
