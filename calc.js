@@ -80,7 +80,10 @@ async function submitCalc () {
     const loanAmount = currencyToNumber(amount);
 
     const monthlyPaymentStr = document.getElementById(monthly).innerHTML
+    console.log(monthlyPaymentStr)
+    console.log(monthlyPaymentStr.substring(0, monthlyPaymentStr.length - 3))
     const monthlyPayment = currencyToNumber(monthlyPaymentStr.substring(0, monthlyPaymentStr.length - 3))
+    console.log(monthlyPayment)
 
     const dob = document.getElementById("Date-of-birth").value
     const creditScore = document.getElementById("Credit-score").value
