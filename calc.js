@@ -41,13 +41,18 @@ function updateMonthlyPayment() {
     document.getElementById("20-down-price").innerHTML = formatter.format(monthlyFour)
     document.getElementById("10-down-price").innerHTML = formatter.format(monthlyFive)
     document.getElementById("no-down-price").innerHTML = formatter.format(monthlySix)
+
+    return formatter.format(monthlyFour)
 }
-
+// Price of the unit, already in page
 const amount = document.getElementById("unit-price").innerHTML
-document.getElementById("Amount").value = "$" + amount
-updateMonthlyPayment()
 
+//Set loan model input amount
+document.getElementById("Amount").value = "$" + amount
 document.getElementById("Amount").addEventListener('input', updateMonthlyPayment)
+
+// Prepopulate model and update "As low as xxxx/mo"
+document.getElementById("monthly-estimate").innerHTML = updateMonthlyPayment() + "/mo"
 
 async function submitCalc () {
     const fourAPR = document.getElementById("4 APR").checked
