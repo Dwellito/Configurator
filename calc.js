@@ -43,11 +43,11 @@ function updateMonthlyPayment() {
     document.getElementById("no-down-price").innerHTML = formatter.format(monthlySix)
 }
 
-const amount = document.getElementById("unit-price")
-document.getElementById("Amount").value = "$" + amount.innerHTML
+const amount = document.getElementById("unit-price").innerHTML
+document.getElementById("Amount").value = "$" + amount
 updateMonthlyPayment()
 
-amount.addEventListener('input', updateMonthlyPayment)
+document.getElementById("Amount").addEventListener('input', updateMonthlyPayment)
 
 async function submitCalc () {
     const fourAPR = document.getElementById("4 APR").checked
