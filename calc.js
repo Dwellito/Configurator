@@ -21,6 +21,7 @@ const formatter = new Intl.NumberFormat('en-US', {
 });
 
 function updateMonthlyPayment() {
+    console.log("updateMonthlyPayment")
     const interestFour = 0.04 / 12
     const interestFive = 0.05 / 12
     const interestSix = 0.06 / 12
