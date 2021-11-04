@@ -79,6 +79,18 @@ const lookup = {
     "ho5" : {
         "builder": "honomobo",
     },
+    "ho2-c" : {
+        "builder": "honomobo-cad",
+    },
+    "ho3-4" : {
+        "builder": "honomobo-cad",
+    },
+    "ho4-a" : {
+        "builder": "honomobo-cad",
+    },
+    "ho5-f" : {
+        "builder": "honomobo-cad",
+    },
     "modal-01" : {
         "builder" : "live-modal",
     },
