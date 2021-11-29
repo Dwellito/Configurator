@@ -127,7 +127,7 @@ function isTakeRate() {
     }
 
     const builder = getBuilder()
-    return (builder !== "drop-structures" && builder !== "honomobo" && builder !== "live-modal" && builder !== "auxbox")
+    return (builder !== "drop-structures" && builder !== "honomobo" && builder !== "honomobo-cad" && builder !== "live-modal" && builder !== "auxbox")
 }
 
 function takeRatePercent() {
