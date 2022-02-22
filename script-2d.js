@@ -49,6 +49,7 @@ const lookup = {
         "builder" : "auxbox",
     },
     "the-240" : {
+        "vectary-id": "716b27f5-8097-472f-a827-558ef50e0416",
         "builder" : "auxbox",
     },
     "full" : {
@@ -62,32 +63,39 @@ const lookup = {
         "vectary-id": "575b517f-0802-4332-aa37-92e5eec78716",
         "builder": "bunkie",
     },
-    "ho2-one-wall-of-glass" : {
+    "monarch" : {
+        "vectary-id": "331a0d53-c5b5-473a-921d-423cd1004d31",
+        "builder": "bunkie"
+    },
+    "ho2" : {
         "builder": "honomobo",
     },
-    "ho2-two-walls-of-glass" : {
+    "ho3" : {
         "builder": "honomobo",
     },
-    "ho3-one-wall-of-glass" : {
+    "ho4" : {
         "builder": "honomobo",
     },
-    "ho3-two-walls-of-glass" : {
+    "ho5" : {
         "builder": "honomobo",
     },
-    "ho4-one-wall-of-glass" : {
-        "builder": "honomobo",
+    "ho2-c" : {
+        "builder": "honomobo-cad",
     },
-    "ho4-two-walls-of-glass" : {
-        "builder": "honomobo",
+    "ho3-4" : {
+        "builder": "honomobo-cad",
     },
-    "ho5-one-wall-of-glass" : {
-        "builder": "honomobo",
+    "ho4-a" : {
+        "builder": "honomobo-cad",
     },
-    "ho5-two-walls-of-glass" : {
-        "builder": "honomobo",
+    "ho5-f" : {
+        "builder": "honomobo-cad",
     },
     "modal-01" : {
         "builder" : "live-modal",
+    },
+    "navajo-960" : {
+        "builder": "meka-modular"
     },
 }
 
@@ -110,9 +118,35 @@ function getBuilder () {
     return lookup[model].builder;
 }
 
-function isTakeRateModel () {
-    const builder = getBuilder()
-    return (builder !== "drop-structures" && builder !== "honomobo")
+function isTakeRate() {
+    return false
+    //const urlParams = new URLSearchParams(window.location.search);
+    //const take = urlParams.get('take');
+
+    //if (take === "true") {
+    //    return true
+    //}
+
+    //const builder = getBuilder()
+    //return (builder !== "drop-structures" && builder !== "honomobo" && builder !== "honomobo-cad" && builder !== "live-modal" && builder !== "auxbox")
+}
+
+function takeRatePercent() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const take = urlParams.get('take');
+
+    if (take === "true") {
+        return 0.035
+    } else {
+        return 0.015
+    }
+}
+
+function referralSource() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const source = urlParams.get('source');
+
+    return source
 }
 
 function modelIsMinio() {
@@ -159,7 +193,7 @@ async function createOrUpdatePaymentIntent () {
     const emailElement = document.getElementById("Email");
     const email = emailElement.value.trim();
     const city = document.getElementById('City').value.trim();
-    const state = document.getElementById('State').value.trim();
+    const state = $('#State').val()
     const zip = document.getElementById('Zip-Code').value.trim();
     const name = document.getElementById('Name').value.trim();
     const phone = document.getElementById('Phone-Number').value.trim();
@@ -168,7 +202,7 @@ async function createOrUpdatePaymentIntent () {
     const householdIncome = document.getElementById('Household-Income').value.trim();
 
     const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
-    const depositAmount = Math.floor(amount * 0.015)
+    const depositAmount = Math.floor(amount * takeRatePercent())
 
     document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
     document.getElementById("checkout-button-price").disabled = true;
@@ -193,12 +227,15 @@ async function createOrUpdatePaymentIntent () {
             state: state,
             phone: phone,
             "credit-score": creditScore,
-            "household-income": householdIncome
+            "household-income": householdIncome,
+            "take-rate": isTakeRate(),
+            source: referralSource()
         })
     })
     const responseJson = await response.json()
 
-    if (response.status === 200) {
+    // take rate
+    if (response.status === 200 && responseJson.secret && responseJson.id) {
 
         document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 32px 8px")
 
@@ -230,6 +267,14 @@ async function createOrUpdatePaymentIntent () {
                 document.getElementById("checkout-button-price").removeAttribute("style")
             }
         });
+        // Non take rate
+    } else if (response.status === 200) {
+        // Right now this is only Drop Structure for Holo. 1k deposit.
+        // TODO: Deposit for honomobo
+        document.getElementById("deposit-price").innerHTML = formatter.format(1000)
+        document.getElementById("checkout-button-price").value = "Submit"
+        document.getElementById("checkout-button-price").disabled = false;
+        document.getElementById("checkout-button-price").removeAttribute("style")
     }
 }
 
@@ -237,13 +282,13 @@ function stripeMakePayment (card, secret) {
 
     var address = document.getElementById('Address').value.trim();
     var city = document.getElementById('City').value.trim();
-    var state = document.getElementById('State').value.trim();
+    var state =  $('#State').val()
     var zip = document.getElementById('Zip-Code').value.trim();
     var name = document.getElementById('Name').value.trim();
     var email = document.getElementById('Email').value.trim();
     var phone = document.getElementById('Phone-Number').value.trim();
 
-    stripeObj.confirmCardPayment(secret, {
+    let stripeArgs = {
         payment_method: {
             card: card,
             billing_details: {
@@ -255,10 +300,15 @@ function stripeMakePayment (card, secret) {
                 },
                 name: name,
                 email: email,
-                phone: phone
             }
         }
-    }).then(function(result) {
+    }
+
+    if (phone) {
+        stripeArgs["payment_method"]["billing_details"]["phone"] = phone
+    }
+
+    stripeObj.confirmCardPayment(secret, stripeArgs).then(function(result) {
         if (result.error) {
             // Show error to your customer (e.g., insufficient funds)
             // console.log(result.error.message);
@@ -375,7 +425,7 @@ $(() => {
     }
     loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
-    loadIntercom()
+    // loadIntercom()
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => {
@@ -461,27 +511,24 @@ function init(){
     var typeItem = ["simple", "multiple"]
     for(var i in typeItem){
         var type = typeItem[i]
+
         $('.'+type+' [class^="box-level"]').each(function(i){
+            var classLevel = $(this).attr("class").split(" ")[0]
+            var level = classLevel.replace("box-level-", "")
+            levels[type].push(level)
+            var htmlParentLevel = $('.'+type+" ."+classLevel)[0].outerHTML
+            var $htmlParentLevel = $(htmlParentLevel)
+            var childLevel = $htmlParentLevel.find(".level-"+level)[0].outerHTML
 
-                var classLevel = $(this).attr("class").split(" ")[0]
-                var level = classLevel.replace("box-level-", "")
-                levels[type].push(level)
-                var htmlParentLevel = $('.'+type+" ."+classLevel)[0].outerHTML
-                var $htmlParentLevel = $(htmlParentLevel)
-                
-                var childLevel = ($htmlParentLevel.find(".level-"+level).length > 0) ? $htmlParentLevel.find(".level-"+level)[0].outerHTML : ""
+            $htmlParentLevel.find('*[class^="box-level"]').each(function(){
+                $(this).remove()
+            })
+            $htmlParentLevel.find(".level-"+level).remove()
 
-                $htmlParentLevel.find('*[class^="box-level"]').each(function(){
-                    $(this).remove()
-                })
-                $htmlParentLevel.find(".level-"+level).remove()
+            var htmlParentLevel = $htmlParentLevel[0].outerHTML //'<div role="list" class="'+parentClass+'"></div>'
 
-                var htmlParentLevel = $htmlParentLevel[0].outerHTML //'<div role="list" class="'+parentClass+'"></div>'
-
-                childHtml[type].push({level : level, html : htmlParentLevel, htmlchild : childLevel })
-            
+            childHtml[type].push({level : level, html : htmlParentLevel, htmlchild : childLevel })
         })
-        
 
     }
 
@@ -548,8 +595,7 @@ function init(){
                     var selection = (items.length > 0) ? items[0].selection : "simple"
                     var titlelaveli = (items.length > 0) ? items[0].titlelaveli : ""
                     var titlelavelii = (items.length > 0) ? items[0].titlelavelii : ""
-                    if(items.length > 0)
-                        subtypes.push({value : tag.subtype, title : tag.namesubtype, selection, items, titlelaveli, titlelavelii })
+                    subtypes.push({value : tag.subtype, title : tag.namesubtype, selection, items, titlelaveli, titlelavelii })
                 }
             })
 
@@ -577,7 +623,6 @@ function init(){
 
                 var parentClass = $parentHTML.find('.items-section').attr("class")
                 var htmlItems = '<div role="list" class="'+parentClass+'">'
-                
                 st.items.map(function(it){
                     var $item = (it.selection == "simple") ? $(item) : $(itemM)
                     $item.removeAttr("id")
@@ -596,8 +641,7 @@ function init(){
                     if(h_price){
                         h_price = h_price.replace("{price}", it.price)
                         $p.html(h_price)
-                        if(it.price != "")
-                            $item.find('.text-price span').attr("x-text", "setCurrencyPrice("+it.price+", '+ $')")
+                        $item.find('.text-price span').attr("x-text", "setCurrencyPrice("+it.price+", '+ $')")
                     }
                     if(it.price === 0)
                         $p.addClass(hc)
@@ -615,7 +659,6 @@ function init(){
                     })
                     htmlItems += $item[0].outerHTML
                 })
-                
                 htmlItems += '</div>'
                 $parentHTML.find(".w-dyn-list").html(htmlItems)
                 $('.'+s+' '+ccM).parent().append($parentHTML)
@@ -631,17 +674,15 @@ function init(){
                     $itemChild.find('.text-description').attr('x-text', "option.description")
                     $itemChild.find('.text-price').attr('x-text', "setCurrencyPrice(option.price, '+ $')")
                     $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
-                    if(st.items.length > 0){
-                        var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
-                        ${$itemChild[0].outerHTML}
-                        </template></div>`
+                    var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
+                    ${$itemChild[0].outerHTML}
+                    </template></div>`
 
-                        $nesting.append(el.html)
-                        var titleLavel = (st["titlelavel"+el.level]) ? st["titlelavel"+el.level] : ""
-                        $nesting.find(".box-level-"+el.level).find(".title-level").attr("x-show", `activeLevel['${st.value}'][${m}].items.length > 0`)
-                        $nesting.find(".box-level-"+el.level).find(".title-level").text(titleLavel)
-                        $nesting.find(".box-level-"+el.level).append(childTemplate)
-                    }
+                    $nesting.append(el.html)
+                    var titleLavel = (st["titlelavel"+el.level]) ? st["titlelavel"+el.level] : ""
+                    $nesting.find(".box-level-"+el.level).find(".title-level").attr("x-show", `activeLevel['${st.value}'][${m}].items.length > 0`)
+                    $nesting.find(".box-level-"+el.level).find(".title-level").text(titleLavel)
+                    $nesting.find(".box-level-"+el.level).append(childTemplate)
                 }
 
                 $('.'+s+' '+ccM).parent().append($nesting)
@@ -721,13 +762,15 @@ function init(){
                 uri = uri.split("#")[0]
                 _this.slideActive = nS
                 history.pushState({}, null, uri + "#"+ slidesT[nS]);
-
+            });
+            $('#State').on('select2:select', function (e) { 
+                _this.customer.state = e.target.value
             });
         },
         setStudio : function(event){
-            
+
             if(!this.runScript){
-                
+
                 this.runScript = true
                 var target = event.target
                 var $target = $(target).closest(".parent")
@@ -856,8 +899,7 @@ function init(){
                     this.activeOptionLevel.levels.splice(l_index);
 
                     for(var l = l_index; l < levels[item.selection ].length; l++){
-                        if(this.activeLevel[item.subtype] && this.activeLevel[item.subtype].length > 0)
-                            this.activeLevel[item.subtype][l].items = []
+                        this.activeLevel[item.subtype][l].items = []
                     }
 
                     if(item.childs.length > 0 && item.active === false){
@@ -865,8 +907,7 @@ function init(){
                             item.childs[c].active = false
                         }
                     }else if(item.childs.length > 0 && item.active === true && item["selectionlevel"+level].toLowerCase() == "simple"){
-                        if(this.activeLevel[item.subtype] && this.activeLevel[item.subtype].length > 0)
-                            this.activeLevel[item.subtype][l_index].items = item.childs
+                        this.activeLevel[item.subtype][l_index].items = item.childs
                         this.activeOptionLevel.levels.push(next_level)
                         var li = getLevel(item.childs[0], 0, type)
                         if(item.selection == "simple"){
@@ -931,7 +972,7 @@ function init(){
             try {
                 var address = document.getElementById('Address').value.trim();
                 var city = document.getElementById('City').value.trim();
-                var state = document.getElementById('State').value.trim();
+                var state =  this.customer.state
 
                 const modelName = getModelName(window.location.pathname)
                 const pricePerMile = lookup[modelName]["price-per-mile"]
@@ -943,7 +984,7 @@ function init(){
                     dest += address + "," + city + "," + state
 
                     service.getDistanceMatrix({
-                        origins: ["9424 W Walton, Blanchard, MI", "5617 104th Pl NE, Marysville, WA"],
+                        origins: ["Chattanooga, TN", "5617 104th Pl NE, Marysville, WA"],
                         destinations: [dest],
                         unitSystem: google.maps.UnitSystem.IMPERIAL,
                         travelMode: google.maps.TravelMode.DRIVING,
@@ -1043,14 +1084,7 @@ function init(){
                     this.valid = true
                     this.setPrice()
 
-                    if (isTakeRateModel()) {
-                        createOrUpdatePaymentIntent()
-                    } else {
-                        // Right now this is only Drop Structure for Holo. 1k deposit.
-                        // TODO: Deposit for honomobo
-                        document.getElementById("deposit-price").innerHTML = formatter.format(1000)
-                        document.getElementById("checkout-button-price").value = "Submit"
-                    }
+                    createOrUpdatePaymentIntent()
                 }
             }
             if (this.valid) { $("#slick-slide-control0"+slide).click() }
@@ -1137,7 +1171,7 @@ function init(){
 
             const model = getModelName(window.location.pathname)
 
-            if (isTakeRateModel()) {
+            if (isTakeRate()) {
                 if (isProd()) {
                     gtag("event", "clicked_make_purchase", {
                         model_name: model,
@@ -1180,3 +1214,19 @@ function init(){
         }
     }
 }
+$(document).ready(() => {
+    var states = [{country: "United States", items : {"AL" : "Alabama","AK" : "Alaska","AZ" : "Arizona","AR" : "Arkansas","CA" : "California","CO" : "Colorado","CT" : "Connecticut","DE" : "Delaware","FL" : "Florida","GA" : "Georgia","HI" : "Hawaii","ID" : "Idaho","IL" : "Illinois","IN" : "Indiana","IA" : "Iowa","KS" : "Kansas","KY" : "Kentucky","LA" : "Louisiana","ME" : "Maine","MD" : "Maryland","MA" : "Massachusetts","MI" : "Michigan","MN" : "Minnesota","MS" : "Mississippi","MO" : "Missouri","MT" : "Montana","NE" : "Nebraska","NV" : "Nevada","NH" : "New Hampshire","NJ" : "New Jersey","NM" : "New Mexico","NY" : "New York","NC" : "North Carolina","ND" : "North Dakota", "OH" : "Ohio","OK" : "Oklahoma","OR" : "Oregon","PA" : "Pennsylvania","RI" : "Rhode Island","SC" : "South Carolina","SD" : "South Dakota","TN" : "Tennessee","TX" : "Texas","UT" : "Utah","VT" : "Vermont","VA" : "Virginia","WA" : "Washington","WV" : "West Virginia","WI" : "Wisconsin","WY" : "Wyoming"}}, {country: "Canada", items: {"AB" : "Alberta","BC" : "British Columbia","MB" : "Manitoba","NB" : "New Brunswick","NL" : "Newfoundland and Labrador","NT" : "Northwest Territories","NS" : "Nova Scotia","NU" : "Nunavut","ON" : "Ontario","PE" : "Prince Edward Island","QC" : "Quebec","SK" : "Saskatchewan","YT" : "Yukon"}}]
+    for(let i in states){
+        var items = []
+      for(let key in states[i].items){
+        items.push(`<option value="${key}">${states[i].items[key]}</option>` );
+      }
+      $("#State").append(`<optgroup label="${states[i].country}">
+        ${items.join()}
+        </optgroup>`)
+    }
+    $('#State').select2({
+    	placeholder : "Select One"
+    });
+    
+})
