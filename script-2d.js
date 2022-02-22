@@ -873,7 +873,7 @@ function init(){
 
                     var subtype = item.subtype
                     var _this = this
-
+                    
                     this.studio[type].selected.map(function(i){
                         if(i.subtype == item.subtype && item["selectionlevel"+level].toLowerCase() == "simple") //
                             i.active = false
@@ -1226,7 +1226,7 @@ $(document).ready(() => {
         </optgroup>`)
     }
     $('#State').select2({
-    	placeholder : "Select One"
+    	placeholder : "State / Province"
     });
     
 })
