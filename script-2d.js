@@ -193,7 +193,7 @@ async function createOrUpdatePaymentIntent () {
     const emailElement = document.getElementById("Email");
     const email = emailElement.value.trim();
     const city = document.getElementById('City').value.trim();
-    const state = document.getElementById('State').value.trim();
+    const state = $('#State').val()
     const zip = document.getElementById('Zip-Code').value.trim();
     const name = document.getElementById('Name').value.trim();
     const phone = document.getElementById('Phone-Number').value.trim();
@@ -282,7 +282,7 @@ function stripeMakePayment (card, secret) {
 
     var address = document.getElementById('Address').value.trim();
     var city = document.getElementById('City').value.trim();
-    var state = document.getElementById('State').value.trim();
+    var state =  $('#State').val()
     var zip = document.getElementById('Zip-Code').value.trim();
     var name = document.getElementById('Name').value.trim();
     var email = document.getElementById('Email').value.trim();
@@ -762,7 +762,9 @@ function init(){
                 uri = uri.split("#")[0]
                 _this.slideActive = nS
                 history.pushState({}, null, uri + "#"+ slidesT[nS]);
-
+            });
+            $('#State').on('select2:select', function (e) { 
+                _this.customer.state = e.target.value
             });
         },
         setStudio : function(event){
@@ -970,7 +972,7 @@ function init(){
             try {
                 var address = document.getElementById('Address').value.trim();
                 var city = document.getElementById('City').value.trim();
-                var state = document.getElementById('State').value.trim();
+                var state =  this.customer.state
 
                 const modelName = getModelName(window.location.pathname)
                 const pricePerMile = lookup[modelName]["price-per-mile"]
@@ -1212,3 +1214,19 @@ function init(){
         }
     }
 }
+$(document).ready(() => {
+    var states = [{country: "United States", items : {"AL" : "Alabama","AK" : "Alaska","AZ" : "Arizona","AR" : "Arkansas","CA" : "California","CO" : "Colorado","CT" : "Connecticut","DE" : "Delaware","FL" : "Florida","GA" : "Georgia","HI" : "Hawaii","ID" : "Idaho","IL" : "Illinois","IN" : "Indiana","IA" : "Iowa","KS" : "Kansas","KY" : "Kentucky","LA" : "Louisiana","ME" : "Maine","MD" : "Maryland","MA" : "Massachusetts","MI" : "Michigan","MN" : "Minnesota","MS" : "Mississippi","MO" : "Missouri","MT" : "Montana","NE" : "Nebraska","NV" : "Nevada","NH" : "New Hampshire","NJ" : "New Jersey","NM" : "New Mexico","NY" : "New York","NC" : "North Carolina","ND" : "North Dakota", "OH" : "Ohio","OK" : "Oklahoma","OR" : "Oregon","PA" : "Pennsylvania","RI" : "Rhode Island","SC" : "South Carolina","SD" : "South Dakota","TN" : "Tennessee","TX" : "Texas","UT" : "Utah","VT" : "Vermont","VA" : "Virginia","WA" : "Washington","WV" : "West Virginia","WI" : "Wisconsin","WY" : "Wyoming"}}, {country: "Canada", items: {"AB" : "Alberta","BC" : "British Columbia","MB" : "Manitoba","NB" : "New Brunswick","NL" : "Newfoundland and Labrador","NT" : "Northwest Territories","NS" : "Nova Scotia","NU" : "Nunavut","ON" : "Ontario","PE" : "Prince Edward Island","QC" : "Quebec","SK" : "Saskatchewan","YT" : "Yukon"}}]
+    for(let i in states){
+        var items = []
+      for(let key in states[i].items){
+        items.push(`<option value="${key}">${states[i].items[key]}</option>` );
+      }
+      $("#State").append(`<optgroup label="${states[i].country}">
+        ${items.join()}
+        </optgroup>`)
+    }
+    $('#State').select2({
+    	placeholder : "Select One"
+    });
+    
+})
