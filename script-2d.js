@@ -119,15 +119,16 @@ function getBuilder () {
 }
 
 function isTakeRate() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const take = urlParams.get('take');
+    return false
+    //const urlParams = new URLSearchParams(window.location.search);
+    //const take = urlParams.get('take');
 
-    if (take === "true") {
-        return true
-    }
+    //if (take === "true") {
+    //    return true
+    //}
 
-    const builder = getBuilder()
-    return (builder !== "drop-structures" && builder !== "honomobo" && builder !== "honomobo-cad" && builder !== "live-modal" && builder !== "auxbox")
+    //const builder = getBuilder()
+    //return (builder !== "drop-structures" && builder !== "honomobo" && builder !== "honomobo-cad" && builder !== "live-modal" && builder !== "auxbox")
 }
 
 function takeRatePercent() {
