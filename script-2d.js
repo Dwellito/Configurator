@@ -1216,10 +1216,11 @@ function init(){
 }
 $(document).ready(() => {
     var states = [{country: "United States", items : {"AL" : "Alabama","AK" : "Alaska","AZ" : "Arizona","AR" : "Arkansas","CA" : "California","CO" : "Colorado","CT" : "Connecticut","DE" : "Delaware","FL" : "Florida","GA" : "Georgia","HI" : "Hawaii","ID" : "Idaho","IL" : "Illinois","IN" : "Indiana","IA" : "Iowa","KS" : "Kansas","KY" : "Kentucky","LA" : "Louisiana","ME" : "Maine","MD" : "Maryland","MA" : "Massachusetts","MI" : "Michigan","MN" : "Minnesota","MS" : "Mississippi","MO" : "Missouri","MT" : "Montana","NE" : "Nebraska","NV" : "Nevada","NH" : "New Hampshire","NJ" : "New Jersey","NM" : "New Mexico","NY" : "New York","NC" : "North Carolina","ND" : "North Dakota", "OH" : "Ohio","OK" : "Oklahoma","OR" : "Oregon","PA" : "Pennsylvania","RI" : "Rhode Island","SC" : "South Carolina","SD" : "South Dakota","TN" : "Tennessee","TX" : "Texas","UT" : "Utah","VT" : "Vermont","VA" : "Virginia","WA" : "Washington","WV" : "West Virginia","WI" : "Wisconsin","WY" : "Wyoming"}}, {country: "Canada", items: {"AB" : "Alberta","BC" : "British Columbia","MB" : "Manitoba","NB" : "New Brunswick","NL" : "Newfoundland and Labrador","NT" : "Northwest Territories","NS" : "Nova Scotia","NU" : "Nunavut","ON" : "Ontario","PE" : "Prince Edward Island","QC" : "Quebec","SK" : "Saskatchewan","YT" : "Yukon"}}]
+    var complete = typeof complete_states !== 'undefined' ? true : false
     for(let i in states){
         var items = []
       for(let key in states[i].items){
-        items.push(`<option value="${key}">${states[i].items[key]}</option>` );
+        items.push(`<option value="${complete ? states[i].items[key] : key}">${states[i].items[key]}</option>` );
       }
       $("#State").append(`<optgroup label="${states[i].country}">
         ${items.join()}
