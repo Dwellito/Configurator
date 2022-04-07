@@ -49,6 +49,7 @@ const lookup = {
         "builder" : "auxbox",
     },
     "the-240" : {
+        "vectary-id": "716b27f5-8097-472f-a827-558ef50e0416",
         "builder" : "auxbox",
     },
     "full" : {
@@ -62,32 +63,27 @@ const lookup = {
         "vectary-id": "575b517f-0802-4332-aa37-92e5eec78716",
         "builder": "bunkie",
     },
-    "ho2-one-wall-of-glass" : {
+    "monarch" : {
+        "vectary-id": "331a0d53-c5b5-473a-921d-423cd1004d31",
+        "builder": "bunkie"
+    },
+    "ho2" : {
         "builder": "honomobo",
     },
-    "ho2-two-walls-of-glass" : {
+    "ho3" : {
         "builder": "honomobo",
     },
-    "ho3-one-wall-of-glass" : {
+    "ho4" : {
         "builder": "honomobo",
     },
-    "ho3-two-walls-of-glass" : {
-        "builder": "honomobo",
-    },
-    "ho4-one-wall-of-glass" : {
-        "builder": "honomobo",
-    },
-    "ho4-two-walls-of-glass" : {
-        "builder": "honomobo",
-    },
-    "ho5-one-wall-of-glass" : {
-        "builder": "honomobo",
-    },
-    "ho5-two-walls-of-glass" : {
+    "ho5" : {
         "builder": "honomobo",
     },
     "modal-01" : {
         "builder" : "live-modal",
+    },
+    "navajo-960" : {
+        "builder": "meka-modular"
     },
 }
 
@@ -110,9 +106,34 @@ function getBuilder () {
     return lookup[model].builder;
 }
 
-function isTakeRateModel () {
+function isTakeRate() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const take = urlParams.get('take');
+
+    if (take === "true") {
+        return true
+    }
+
     const builder = getBuilder()
     return (builder !== "drop-structures" && builder !== "honomobo")
+}
+
+function takeRatePercent() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const take = urlParams.get('take');
+
+    if (take === "true") {
+        return 0.035
+    } else {
+        return 0.015
+    }
+}
+
+function referralSource() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const source = urlParams.get('source');
+
+    return source
 }
 
 function modelIsMinio() {
@@ -164,9 +185,11 @@ async function createOrUpdatePaymentIntent () {
     const name = document.getElementById('Name').value.trim();
     const phone = document.getElementById('Phone-Number').value.trim();
     const address = document.getElementById('Address').value.trim();
+    const creditScore = document.getElementById('Credit-Score').value.trim();
+    const householdIncome = document.getElementById('Household-Income').value.trim();
 
     const amount = shippingCost ? totalPrice - shippingCost : totalPrice;
-    const depositAmount = Math.floor(amount * 0.015)
+    const depositAmount = Math.floor(amount * takeRatePercent())
 
     document.getElementById("deposit-price").innerHTML = formatter.format(depositAmount)
     document.getElementById("checkout-button-price").disabled = true;
@@ -189,12 +212,17 @@ async function createOrUpdatePaymentIntent () {
             city: city,
             "postal-code": zip,
             state: state,
-            phone: phone
+            phone: phone,
+            "credit-score": creditScore,
+            "household-income": householdIncome,
+            "take-rate": isTakeRate(),
+            source: referralSource()
         })
     })
     const responseJson = await response.json()
 
-    if (response.status === 200) {
+    // take rate
+    if (response.status === 200 && responseJson.secret && responseJson.id) {
 
         document.getElementById("stripe-embed").setAttribute("style", "width: inherit; margin: 32px 8px")
 
@@ -226,6 +254,14 @@ async function createOrUpdatePaymentIntent () {
                 document.getElementById("checkout-button-price").removeAttribute("style")
             }
         });
+        // Non take rate
+    } else if (response.status === 200) {
+        // Right now this is only Drop Structure for Holo. 1k deposit.
+        // TODO: Deposit for honomobo
+        document.getElementById("deposit-price").innerHTML = formatter.format(1000)
+        document.getElementById("checkout-button-price").value = "Submit"
+        document.getElementById("checkout-button-price").disabled = false;
+        document.getElementById("checkout-button-price").removeAttribute("style")
     }
 }
 
@@ -239,7 +275,7 @@ function stripeMakePayment (card, secret) {
     var email = document.getElementById('Email').value.trim();
     var phone = document.getElementById('Phone-Number').value.trim();
 
-    stripeObj.confirmCardPayment(secret, {
+    let stripeArgs = {
         payment_method: {
             card: card,
             billing_details: {
@@ -251,10 +287,15 @@ function stripeMakePayment (card, secret) {
                 },
                 name: name,
                 email: email,
-                phone: phone
             }
         }
-    }).then(function(result) {
+    }
+
+    if (phone) {
+        stripeArgs["payment_method"]["billing_details"]["phone"] = phone
+    }
+
+    stripeObj.confirmCardPayment(secret, stripeArgs).then(function(result) {
         if (result.error) {
             // Show error to your customer (e.g., insufficient funds)
             // console.log(result.error.message);
@@ -371,7 +412,7 @@ $(() => {
     }
     loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyDnH-26A_sEu0vzOa94U5Tfgukhf89ARCE&libraries=&v=weekly", redirectToStripe)
     loadScript("https://js.stripe.com/v3", redirectToStripe)
-    loadIntercom()
+    // loadIntercom()
     $slide.slick({dots: true,infinite: false,arrows: false,speed: 500,fade: true,cssEase: 'linear',swipe: false,swipeToSlide: false});
     $(".btn-slides").scroll(() => { var l = $(this).scrollLeft(); $(".btn-slides").scrollLeft();})
     $("#open-3d-modal").click(() => {
@@ -441,6 +482,12 @@ function init(){
         itt.childs = []
         itt.activeLevel = []
         sections[type].push(itt)
+    })
+
+    $(".installation").each(function(){
+        var data = $(this).find(".Services").data()
+        $(this).addClass("parent")
+        $(this).attr("id", data.id).attr("data-type", data.type).attr("data-selection", data.selection)
     })
 
     var childHtml = {
@@ -539,21 +586,23 @@ function init(){
                 }
             })
 
-            subtypes.map(async function(st){
+            subtypes.map(async function(st) {
                 activeLevel[st.value] = []
 
-                for(var l in levels[st.items[0].selection]){
-                    var itemsChilds = []
-                    if(l == 0){
-                        itemsChilds = (st.items[0].active == true) ? st.items[0].childs : []
-                    }else{
-                        var prveLevel = activeLevel[st.value][l - 1]
-                        if(prveLevel && prveLevel.items.length > 0){
-                            itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                if (st.items[0]) {
+                    for (var l in levels[st.items[0].selection]) {
+                        var itemsChilds = []
+                        if (l == 0) {
+                            itemsChilds = (st.items[0].active == true) ? st.items[0].childs : []
+                        } else {
+                            var prveLevel = activeLevel[st.value][l - 1]
+                            if (prveLevel && prveLevel.items.length > 0) {
+                                itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                            }
                         }
-                    }
 
-                    activeLevel[st.value].push({level : l, items : itemsChilds})
+                        activeLevel[st.value].push({level: l, items: itemsChilds})
+                    }
                 }
 
                 var $parentHTML = $(parentHTML)
@@ -704,7 +753,9 @@ function init(){
             });
         },
         setStudio : function(event){
+
             if(!this.runScript){
+
                 this.runScript = true
                 var target = event.target
                 var $target = $(target).closest(".parent")
@@ -750,31 +801,34 @@ function init(){
                         })
                     }
 
-                    for(var l = 0; l < levels[item.selection].length; l++){
-                        this.activeLevel[item.subtype][l].items = []
+                    if(this.activeLevel[item.subtype]){
+                        for(var l = 0; l < levels[item.selection].length; l++){
+                            this.activeLevel[item.subtype][l].items = []
+                        }
                     }
 
                     if(item.childs.length > 0 && item.active == true && item.selection == "simple"){
                         item.childs[0].active = true
 
                     }
-
-                    for(var l in levels[item.selection]){
-                        var itemsChilds = []
-                        if(l == 0){
-                            itemsChilds = (item.active == true) ? item.childs : []
-                        }else{
-                            var prveLevel = activeLevel[item.subtype][l - 1]
-                            if(prveLevel && prveLevel.items.length > 0){
-                                itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                    if(this.activeLevel[item.subtype]){
+                        for(var l in levels[item.selection]){
+                            var itemsChilds = []
+                            if(l == 0){
+                                itemsChilds = (item.active == true) ? item.childs : []
+                            }else{
+                                var prveLevel = activeLevel[item.subtype][l - 1]
+                                if(prveLevel && prveLevel.items.length > 0){
+                                    itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                                }
                             }
-                        }
 
-                        if(itemsChilds.length > 0 && item.selection == "simple"){
-                            var li = getLevel(itemsChilds[0], 0, type)
-                            itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
+                            if(itemsChilds.length > 0 && item.selection == "simple"){
+                                var li = getLevel(itemsChilds[0], 0, type)
+                                itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
+                            }
+                            this.activeLevel[item.subtype][l].items = itemsChilds
                         }
-                        this.activeLevel[item.subtype][l].items = itemsChilds
                     }
 
                     this.activeOptionLevel = {
@@ -855,7 +909,7 @@ function init(){
                 var _this = this
                 setTimeout(function(){
                     _this.runScript = false
-                }, 120)
+                }, 300)
 
             }
         },
@@ -915,7 +969,7 @@ function init(){
                     dest += address + "," + city + "," + state
 
                     service.getDistanceMatrix({
-                        origins: ["9424 W Walton, Blanchard, MI", "5617 104th Pl NE, Marysville, WA"],
+                        origins: ["Chattanooga, TN", "5617 104th Pl NE, Marysville, WA"],
                         destinations: [dest],
                         unitSystem: google.maps.UnitSystem.IMPERIAL,
                         travelMode: google.maps.TravelMode.DRIVING,
@@ -1015,14 +1069,7 @@ function init(){
                     this.valid = true
                     this.setPrice()
 
-                    if (isTakeRateModel()) {
-                        createOrUpdatePaymentIntent()
-                    } else {
-                        // Right now this is only Drop Structure for Holo. 1k deposit.
-                        // TODO: Deposit for honomobo
-                        document.getElementById("deposit-price").innerHTML = formatter.format(1000)
-                        document.getElementById("checkout-button-price").value = "Submit"
-                    }
+                    createOrUpdatePaymentIntent()
                 }
             }
             if (this.valid) { $("#slick-slide-control0"+slide).click() }
@@ -1109,7 +1156,7 @@ function init(){
 
             const model = getModelName(window.location.pathname)
 
-            if (isTakeRateModel()) {
+            if (isTakeRate()) {
                 if (isProd()) {
                     gtag("event", "clicked_make_purchase", {
                         model_name: model,
