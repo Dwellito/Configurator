@@ -751,6 +751,7 @@ function init(){
             slug : "",
             levels : [],
         },
+        detailOrder: "",
         init : function(){
             history.pushState(null, "", "#size");
             this.renderSelection()
@@ -860,9 +861,9 @@ function init(){
 
                     this.studio[type].active = item
                     setTimeout(function(){
-                        _this.renderSelection()
-                        _this.setPrice()
-                    }, 300)
+                        this.renderSelection()
+                        this.setPrice()
+                    }.bind(this), 300)
 
                 }else if($child && $child.length > 0){
                     var slug = $child.attr("id")
@@ -916,15 +917,14 @@ function init(){
                     }
 
                     setTimeout(function(){
-                        _this.renderSelection()
-                        _this.setPrice()
-                    }, 200)
+                        this.renderSelection()
+                        this.setPrice()
+                    }.bind(this), 200)
                 }
 
-                var _this = this
                 setTimeout(function(){
-                    _this.runScript = false
-                }, 300)
+                    this.runScript = false
+                }.bind(this), 300)
 
             }
         },
@@ -1092,6 +1092,11 @@ function init(){
         },
         renderSelection(){
             this.studioItems = []
+            var detailOrder = [{type: "Logo", image: $("#configurator-logo").attr("src")}, {type: "Currency", name: $("#order-currency").text()},
+                {type: "crane", image: $("#crane-img").attr("src"), name: $("#crane-name").text(), price: $("#crane-price").text()},
+                {type: "installation", image: $("#installation-img").attr("src"), name: $("#installation-name").text(), price: $("#installation-price").text()},
+                {type: "price", price: studio.price}
+            ]
             var b = sB
             var c = sC
             for (const i in this.studio) {
@@ -1104,6 +1109,9 @@ function init(){
                             value.push(items[j].name)
                             let renderitem = { type: items[j].type, name : items[j].namesubtype + " - " + items[j].name, slug : items[j].slug, price : items[j].price, image : (items[j].image) ? items[j].image : null, thumbnail : (items[j].thumbnail) ? items[j].thumbnail : null}
                             this.studioItems.push(renderitem)
+                            var name = items[j].namesubtype ? items[j].namesubtype + " - " : ""
+                            let renderitemShort = { type: items[j].type, name : name  + items[j].name, price : items[j].price, image : (items[j].thumbnail) ? items[j].thumbnail : (items[j].image) ? items[j].image : null}
+                            detailOrder.push(renderitemShort)
                         }
                         this[i+"V"] = value.join(", ")
                     }
@@ -1115,8 +1123,14 @@ function init(){
             var shipText = shippingCost ? "Shipping cost: " + formatter.format(localizedCost) : defaultShipText
             if (shipText !== defaultShipText) {
                 this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})
+                detailOrder.push({type : "shipping", name : shipText, price : this.shipping,  image : imgshipping})
+            }else{
+                detailOrder.push({type : "shipping", name : shipText, price : $("#shipping-cost").text(),  image : imgshipping})
             }
             this.studioItems.push(modelSelected)
+            
+            detailOrder = window.btoa(JSON.stringify(detailOrder))
+            this.detailOrder = detailOrder
         },
         formatMoney : function(price, show = true){
             if(show) return formatter.format(price)
