@@ -1102,7 +1102,6 @@ function init(){
             var c = sC
             for (const i in this.studio) {
                 var item = this.studio[i]
-                console.log(item, i)
                 var value = []
                 if( !c.includes(i) && item != undefined){
                     if(b.includes(i) ){
@@ -1130,10 +1129,10 @@ function init(){
                 detailOrder.push({type : "shipping", name : shipText, price : $("#shipping-cost").text(),  image : imgshipping})
             }
             this.studioItems.push(modelSelected)
-            
-            detailOrder = window.btoa(JSON.stringify(detailOrder))
+            detailOrder = JSON.stringify(detailOrder)
+            detailOrder = detailOrder.replace(/–/g, "")
+            detailOrder = window.btoa(unescape(encodeURIComponent( detailOrder )));
             this.detailOrder = detailOrder
-            console.log(detailOrder)
         },
         formatMoney : function(price, show = true){
             if(show) return formatter.format(price)
