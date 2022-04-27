@@ -1133,7 +1133,6 @@ function init(){
             
             detailOrder = window.btoa(JSON.stringify(detailOrder))
             this.detailOrder = detailOrder
-            console.log(detailOrder)
         },
         formatMoney : function(price, show = true){
             if(show) return formatter.format(price)
