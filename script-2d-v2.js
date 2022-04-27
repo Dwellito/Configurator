@@ -1091,17 +1091,18 @@ function init(){
             if (slide == this.installationSlide  && inputs.length > 0) this.valid = false
         },
         renderSelection(){
-            console.log("Render")
             this.studioItems = []
             var detailOrder = [{type: "Logo", image: $("#configurator-logo").attr("src")}, {type: "Currency", name: $("#order-currency").text()},
                 {type: "crane", image: $("#crane-img").attr("src"), name: $("#crane-name").text(), price: $("#crane-price").text()},
                 {type: "installation", image: $("#installation-img").attr("src"), name: $("#installation-name").text(), price: $("#installation-price").text()},
-                {type: "price", price: studio.price}
+                {type: "price", price: studio.price},
+                {type: "model", image: this.studio['model'].image, name: this.studio['model'].name, price: this.formatMoney(this.studio['model'].price)},
             ]
             var b = sB
             var c = sC
             for (const i in this.studio) {
                 var item = this.studio[i]
+                console.log(item, i)
                 var value = []
                 if( !c.includes(i) && item != undefined){
                     if(b.includes(i) ){
@@ -1131,8 +1132,8 @@ function init(){
             this.studioItems.push(modelSelected)
             
             detailOrder = window.btoa(JSON.stringify(detailOrder))
-            console.log(detailOrder)
             this.detailOrder = detailOrder
+            console.log(detailOrder)
         },
         formatMoney : function(price, show = true){
             if(show) return formatter.format(price)
