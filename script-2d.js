@@ -1102,7 +1102,6 @@ function init(){
             var c = sC
             for (const i in this.studio) {
                 var item = this.studio[i]
-                console.log(item, i)
                 var value = []
                 if( !c.includes(i) && item != undefined){
                     if(b.includes(i) ){
