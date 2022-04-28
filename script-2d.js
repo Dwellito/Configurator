@@ -1130,8 +1130,9 @@ function init(){
                 detailOrder.push({type : "shipping", name : shipText, price : $("#shipping-cost").text(),  image : imgshipping})
             }
             this.studioItems.push(modelSelected)
-            
-            detailOrder = window.btoa(JSON.stringify(detailOrder))
+            detailOrder = JSON.stringify(detailOrder)
+            detailOrder = detailOrder.replace(/–/g, "")
+            detailOrder = window.btoa(unescape(encodeURIComponent( detailOrder )));
             this.detailOrder = detailOrder
         },
         formatMoney : function(price, show = true){
