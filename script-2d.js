@@ -1084,7 +1084,7 @@ function init(){
                     this.valid = true
                     this.setPrice()
 
-                    createOrUpdatePaymentIntent()
+                    //createOrUpdatePaymentIntent()
                 }
             }
             if (this.valid) { $("#slick-slide-control0"+slide).click() }
