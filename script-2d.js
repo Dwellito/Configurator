@@ -96,7 +96,7 @@ const lookup = {
     },
     "navajo-960" : {
         "builder": "meka-modular"
-    },
+    }
 }
 
 var levels = {
@@ -115,6 +115,11 @@ const getModelName = thePath => thePath.substring(thePath.lastIndexOf('/') + 1)
 
 function getBuilder () {
     const model = getModelName(window.location.pathname)
+
+    if (!lookup[model]) {
+        lookup[model] = { builder: modelBuilder }
+    }
+
     return lookup[model].builder;
 }
 
@@ -468,33 +473,58 @@ function init(){
         slug : "",
         levels : [],
     }
+    let slides = []
+    $("[data-view='exterior']").find(".div-block-359").html("")
+    $("[data-view='interior']").find(".div-block-359").html("")
+    let views = $(".views").map( (_, v) => {
+        let view = $(v).data()
 
+        $("[data-view='"+view.type.toLowerCase()+"']").find(".div-block-359").append(`
+            <div x-show="getShowBtnView('${view.type}', 'view-${view.slug}')" class="view-item"><button class="view-name view-${view.slug}" @click="setView(event, '${view.type}', 'view-${view.slug}')" type="button">${view.name}</button></div>
+        `)
+        
+        return view
+    })
+
+    views = views.sort((a, b) => {
+        return a.order - b.order
+    })
+    
     setTimeout(() => { $(".div-block-257").removeClass("hidden") }, 300)
     $(".models").each(function(){
-        sections.m.push({type : $(this).data("type"), name : $(this).data("name"), slug : $(this).data("slug"), price : $(this).data("price"), image : $(this).data("image")})
+        sections.m.push($(this).data())
     })
+
     $('.rendered-sections').each(function(){
         var data = $(this).data()
-        var type = data.type.toLowerCase()
-        var description = $(this).closest(".w-dyn-item").find('.longer-description-html').html()
-        var st = data.subtype
-        var exist_subtype = sections[type].find(function(item){
-            return item.subtype == st && item.active == true
-        })
-        var selection = data.selection.toLowerCase()
-        selection = (selection.includes("simple") ? "simple" : "multiple")
-        var active = !exist_subtype && selection == "simple" && data.parent == ""
-        var labelLevels = []
+        var types = data.type.toLowerCase()
+        types = types.split("/")
 
-        //var itt = {type : data.type, subtype : data.subtype, namesubtype : data.namesubtype, name : data.name, slug : data.slug, price : data.price,  image : data.image, thumbnail : data.thumbnail, description, active, show : false, order : data.order, selection : selection, object : data.object, group : data.group, material : data.material, function : data.function, parent : data.parent, childs : [], activeLevel : [] }
-        var itt = data
-        itt.description = description
-        itt.active = active
-        itt.show = false,
-            itt.selection = selection
-        itt.childs = []
-        itt.activeLevel = []
-        sections[type].push(itt)
+        if(types.length > 0){
+            for (var type of types) {
+                var description = $(this).closest(".w-dyn-item").find('.longer-description-html').html()
+                var st = data.subtype
+
+                var exist_subtype = sections[type].find(function(item){
+                    return item.subtype == st && item.active == true
+                })
+                
+                var selection = data.selection.toLowerCase()
+                selection = (selection.includes("simple") ? "simple" : "multiple")
+                var active = !exist_subtype && selection == "simple" && data.parent == ""
+
+                //var itt = {type : data.type, subtype : data.subtype, namesubtype : data.namesubtype, name : data.name, slug : data.slug, price : data.price,  image : data.image, thumbnail : data.thumbnail, description, active, show : false, order : data.order, selection : selection, object : data.object, group : data.group, material : data.material, function : data.function, parent : data.parent, childs : [], activeLevel : [] }
+                var itt = {...data}
+                itt.description = description
+                itt.active = active
+                itt.show = false,
+                    itt.selection = selection
+                itt.childs = []
+                itt.activeLevel = []
+                itt.myType = type
+                sections[type].push(itt)
+            }
+        }
     })
 
     $(".installation").each(function(){
@@ -557,6 +587,7 @@ function init(){
     $(".btn-slides").each(function(i){
         $(this).find(".nav-bar-click-link").each(function(j){
             $(this).attr('x-bind:class', "{'selected' : slideActive == '"+j+"', 'not-selective-link' : slideActive < '"+j+"'}")
+            slides.push({  id : j, name : $(this).text().toLowerCase() })
         })
     })
 
@@ -627,6 +658,7 @@ function init(){
                     var $item = (it.selection == "simple") ? $(item) : $(itemM)
                     $item.removeAttr("id")
                     $item.find('.parent').attr("id", it.slug)
+                    $item.find('.parent').addClass(it.slug)
                     $item.find('.parent').attr("data-type", it.type)
                     var vectary_function = it.function.toLowerCase().replace(" ", "-")
                     $item.find('.parent').attr("data-object", it.object).attr("data-group", it.group).attr("data-material", it.material).attr("data-function", it.function).addClass(vectary_function)
@@ -733,7 +765,8 @@ function init(){
     var studio = {
         model : modelSelected,
         price :  formatter.format(modelSelected.price),
-        load : 0
+        load : 0,
+
     }
     for(sec in sections){
         if(sec != 'm'){
@@ -742,6 +775,20 @@ function init(){
                 selected: sections[sec]
             }}
     }
+    let baseViews = ['interior', 'exterior']
+    for (let view of baseViews) {
+        studio[view].img_view = ""
+        studio[view].view = ""
+        if(studio.model[view+"View"]){
+            let typeView = ("view-"+studio.model[view+"View"]).split("-").map(str => str.charAt(0).toUpperCase() + str.slice(1)).join("")
+            typeView = typeView.charAt(0).toLowerCase() + typeView.slice(1)
+            studio[view].view = typeView
+            studio[view].img_view = studio.model[typeView]
+            studio[view].base_image = studio.model[typeView]
+            $(".view-name.view-"+studio.model[view+"View"]).addClass("is-active")
+        }
+    }
+
     return {
         sections : sections, studio : studio, studioItems : [], active : true,  shipping : 0, customer : customer, upgradesV : "", servicesV : "", interiorV : "", layoutV : "", exteriorV : "", valid : true, currency : "USD", slideActive : 0, summarySlide : slidesT.length - 1, installationSlide : slidesT.length - 2, show_furniture : true,
         await : true,
@@ -767,6 +814,7 @@ function init(){
             $('#State').on('select2:select', function (e) { 
                 _this.customer.state = e.target.value
             });
+
         },
         setStudio : function(event){
 
@@ -783,143 +831,158 @@ function init(){
 
                 if($target.length > 0 && !$(event.target).hasClass("text-details")){
                     var slug = $target.attr("id")
-                    var type = $target.data("type").toLowerCase()
-                    var tag = sections[type]
-                    var item = tag.find(function(i){ return i.slug == slug })
+                    var types = $target.data("type").toLowerCase()
+                    types = types.split("/")
 
-                    $target.find(".section-3d").addClass("active")
+                    for(var type of types){
+                        var tag = sections[type]
+                        var item = tag.find(function(i){ return i.slug == slug })
 
-                    if(item.selection == "multiple"){
-                        if(item.active && this.activeOptionLevel.slug == item.slug || !item.active || item.childs.length == 0){
-                            $target.toggleClass("selected")
-                            this.studio[type].selected.map(function(i){
-                                if(i.slug == slug) i.active = !i.active
-                                return i
-                            })
-                            if(item.childs.length > 0 && item.active === false){
-                                if(item.childs.length > 0){
-                                    for(c in item.childs){
-                                        item.childs[c].active = false
+                        if(item.defaultView)
+                            this.setView(event, type, 'view-'+item.defaultView)
+
+                        $target.find(".section-3d").addClass("active")
+
+                        if(item.selection == "multiple"){
+                            if(item.active && this.activeOptionLevel.slug == item.slug || !item.active || item.childs.length == 0){
+                                $("."+slug).toggleClass("selected")
+                                this.studio[type].selected.map(function(i){
+                                    if(i.slug == slug) i.active = !i.active
+                                    return i
+                                })
+                                if(item.childs.length > 0 && item.active === false){
+                                    if(item.childs.length > 0){
+                                        for(c in item.childs){
+                                            item.childs[c].active = false
+                                        }
                                     }
                                 }
                             }
+
+                        }else if(item.selection == "simple"){
+                            // $target.closest(".collection-list").find(".collection-item").removeClass("selected")
+                            // $target.parent().addClass("selected")
+
+                            $("."+slug).closest(".collection-list").find(".collection-item").removeClass("selected")
+                            $("."+slug).parent().addClass("selected")
+
+                            var subtype = item.subtype
+                            this.studio[type].selected.map(function(i){
+                                if(i.subtype == subtype) i.active = false
+                                if(i.slug == slug) i.active = !i.active
+
+                                return i
+                            })
                         }
 
-                    }else if(item.selection == "simple"){
-                        $target.closest(".collection-list").find(".collection-item").removeClass("selected")
-                        $target.parent().addClass("selected")
-                        var subtype = item.subtype
-                        this.studio[type].selected.map(function(i){
-                            if(i.subtype == subtype) i.active = false
-                            if(i.slug == slug) i.active = !i.active
-
-                            return i
-                        })
-                    }
-
-                    if(this.activeLevel[item.subtype]){
-                        for(var l = 0; l < levels[item.selection].length; l++){
-                            this.activeLevel[item.subtype][l].items = []
+                        if(this.activeLevel[item.subtype]){
+                            for(var l = 0; l < levels[item.selection].length; l++){
+                                this.activeLevel[item.subtype][l].items = []
+                            }
                         }
-                    }
 
-                    if(item.childs.length > 0 && item.active == true && item.selection == "simple"){
-                        item.childs[0].active = true
+                        if(item.childs.length > 0 && item.active == true && item.selection == "simple"){
+                            item.childs[0].active = true
 
-                    }
-                    if(this.activeLevel[item.subtype]){
-                        for(var l in levels[item.selection]){
-                            var itemsChilds = []
-                            if(l == 0){
-                                itemsChilds = (item.active == true) ? item.childs : []
-                            }else{
-                                var prveLevel = activeLevel[item.subtype][l - 1]
-                                if(prveLevel && prveLevel.items.length > 0){
-                                    itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                        }
+                        if(this.activeLevel[item.subtype]){
+                            for(var l in levels[item.selection]){
+                                var itemsChilds = []
+                                if(l == 0){
+                                    itemsChilds = (item.active == true) ? item.childs : []
+                                }else{
+                                    var prveLevel = activeLevel[item.subtype][l - 1]
+                                    if(prveLevel && prveLevel.items.length > 0){
+                                        itemsChilds = (prveLevel.items[0].active == true) ? prveLevel.items[0].childs : []
+                                    }
                                 }
-                            }
 
-                            if(itemsChilds.length > 0 && item.selection == "simple"){
-                                var li = getLevel(itemsChilds[0], 0, type)
-                                itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
+                                if(itemsChilds.length > 0 && item.selection == "simple"){
+                                    var li = getLevel(itemsChilds[0], 0, type)
+                                    itemsChilds[0].active = (item[ll[li]].toLowerCase() == "simple")//true
+                                }
+                                this.activeLevel[item.subtype][l].items = itemsChilds
                             }
-                            this.activeLevel[item.subtype][l].items = itemsChilds
                         }
-                    }
 
-                    this.activeOptionLevel = {
-                        slug : "",
-                        levels : []
-                    }
-
-                    if(item.childs.length > 0 && item.active){
                         this.activeOptionLevel = {
-                            slug : item.slug,
-                            levels : [levels[item.selection ][0]]
+                            slug : "",
+                            levels : []
                         }
+
+                        if(item.childs.length > 0 && item.active){
+                            this.activeOptionLevel = {
+                                slug : item.slug,
+                                levels : [levels[item.selection ][0]]
+                            }
+                        }
+
+                        this.studio[type].active = item
+                        setTimeout(function(){
+                            this.renderSelection()
+                            this.setPrice()
+                        }.bind(this), 300)
                     }
-
-                    this.studio[type].active = item
-                    setTimeout(function(){
-                        this.renderSelection()
-                        this.setPrice()
-                    }.bind(this), 300)
-
                 }else if($child && $child.length > 0){
                     var slug = $child.attr("id")
-                    var type = $child.data("type").toLowerCase()
-                    var level = $child.data("level").toLowerCase()
-                    var tag = sections[type]
-                    var item = tag.find(function(i){ return i.slug == slug })
+                    var types = $child.data("type").toLowerCase()
+                    types = types.split("/")
 
-                    var subtype = item.subtype
-                    var _this = this
-                    
-                    this.studio[type].selected.map(function(i){
-                        if(i.subtype == item.subtype && item["selectionlevel"+level].toLowerCase() == "simple") //
-                            i.active = false
-                        return i
-                    })
-                    this.studio[type].selected.map(function(i){
-                        if(i.slug == slug) {
-                            i.active = !i.active
+                    for(var type of types){
 
-                            var parent = i.parent
-                            if(parent != "" && i.active)
-                                _this.setParent(parent, type)
+                        var level = $child.data("level").toLowerCase()
+                        var tag = sections[type]
+                        var item = tag.find(function(i){ return i.slug == slug })
+                        var subtype = item.subtype
+                        var _this = this
+                        
+                        this.studio[type].selected.map(function(i){
+                            if(i.subtype == item.subtype && item["selectionlevel"+level].toLowerCase() == "simple") //
+                                i.active = false
+                            return i
+                        })
+
+                        this.studio[type].selected.map(function(i){
+                            if(i.slug == slug) {
+                                i.active = !i.active
+
+                                var parent = i.parent
+                                if(parent != "" && i.active)
+                                    _this.setParent(parent, type)
+                            }
+                            return i
+                        })
+
+                        var l_index = levels[item.selection ].findIndex(function(l){
+                            return l == level
+                        })
+
+                        l_index++
+                        var next_level = levels[item.selection ][l_index]
+                        this.activeOptionLevel.levels.splice(l_index);
+
+                        for(var l = l_index; l < levels[item.selection ].length; l++){
+                            this.activeLevel[item.subtype][l].items = []
                         }
-                        return i
-                    })
 
-                    var l_index = levels[item.selection ].findIndex(function(l){
-                        return l == level
-                    })
+                        if(item.childs.length > 0 && item.active === false){
+                            for(c in item.childs){
+                                item.childs[c].active = false
+                            }
+                        }else if(item.childs.length > 0 && item.active === true && item["selectionlevel"+level].toLowerCase() == "simple"){
+                            this.activeLevel[item.subtype][l_index].items = item.childs
+                            this.activeOptionLevel.levels.push(next_level)
+                            var li = getLevel(item.childs[0], 0, type)
+                            if(item.selection == "simple"){
+                                item.childs[0].active = (item[ll[li]].toLowerCase() == "simple")//true
+                            }
+                        }
 
-                    l_index++
-                    var next_level = levels[item.selection ][l_index]
-                    this.activeOptionLevel.levels.splice(l_index);
-
-                    for(var l = l_index; l < levels[item.selection ].length; l++){
-                        this.activeLevel[item.subtype][l].items = []
+                        setTimeout(function(){
+                            this.renderSelection()
+                            this.setPrice()
+                        }.bind(this), 200)
                     }
-
-                    if(item.childs.length > 0 && item.active === false){
-                        for(c in item.childs){
-                            item.childs[c].active = false
-                        }
-                    }else if(item.childs.length > 0 && item.active === true && item["selectionlevel"+level].toLowerCase() == "simple"){
-                        this.activeLevel[item.subtype][l_index].items = item.childs
-                        this.activeOptionLevel.levels.push(next_level)
-                        var li = getLevel(item.childs[0], 0, type)
-                        if(item.selection == "simple"){
-                            item.childs[0].active = (item[ll[li]].toLowerCase() == "simple")//true
-                        }
-                    }
-
-                    setTimeout(function(){
-                        this.renderSelection()
-                        this.setPrice()
-                    }.bind(this), 200)
                 }
 
                 setTimeout(function(){
@@ -953,21 +1016,26 @@ function init(){
         },
         setPrice : function(){
             var total = modelSelected.price
+            let selectedIncludes = [modelSelected]
             for (const i in this.studio) {
                 var item = this.studio[i]
                 if(i != "model"){
                     if(item.price != undefined){
                         total = parseFloat(total) + parseFloat(item.price)
+                        selectedIncludes.push({...item})
                     }else{
                         for (const j in this.studio[i].selected) {
                             var itemJ = this.studio[i].selected[j]
-                            if(itemJ.active === true)
+                            let exist = selectedIncludes.find(function(i){ return i.slug == itemJ.slug })
+
+                            if(itemJ.active === true && !exist){
                                 total = parseFloat(total) + parseFloat(itemJ.price)
+                                selectedIncludes.push({...itemJ})
+                            }
                         }
                     }
                 }
             }
-
 
             try {
                 var address = document.getElementById('Address').value.trim();
@@ -1109,10 +1177,14 @@ function init(){
                         for (const j in items) {
                             value.push(items[j].name)
                             let renderitem = { type: items[j].type, name : items[j].namesubtype + " - " + items[j].name, slug : items[j].slug, price : items[j].price, image : (items[j].image) ? items[j].image : null, thumbnail : (items[j].thumbnail) ? items[j].thumbnail : null}
-                            this.studioItems.push(renderitem)
-                            var name = items[j].namesubtype ? items[j].namesubtype + " - " : ""
-                            let renderitemShort = { type: items[j].type, name : name  + items[j].name, price : items[j].price, image : (items[j].thumbnail) ? items[j].thumbnail : (items[j].image) ? items[j].image : null}
-                            detailOrder.push(renderitemShort)
+                            
+                            let exist = this.studioItems.find(function(i){ return i.slug == renderitem.slug })
+                            if(!exist){
+                                this.studioItems.push(renderitem)
+                                var name = items[j].namesubtype ? items[j].namesubtype + " - " : ""
+                                let renderitemShort = { type: items[j].type, name : name  + items[j].name, price : items[j].price, image : (items[j].thumbnail) ? items[j].thumbnail : (items[j].image) ? items[j].image : null}
+                                detailOrder.push(renderitemShort)
+                            }
                         }
                         this[i+"V"] = value.join(", ")
                     }
@@ -1203,9 +1275,19 @@ function init(){
                         builder: getBuilder()
                     })
                 }
-                setTimeout(() => {
-                    window.location.href = "https://" + window.location.hostname + "/thank-you"
-                }, 2000)
+
+                const formId = $("[data-form-track]").attr("id")
+                $(document).ajaxComplete(function(ev, request, settings) {       
+                    var el = ev.currentTarget[formId]
+                    if(request.status == 200){
+                        if($(el).attr("id") == formId){
+                            setTimeout(() => {
+                                window.location.href = "https://" + window.location.hostname + "/thank-you"
+                            }, 2000)
+                        }
+                    }
+                });
+
             }
         },
         changeCurrency : function(c){
@@ -1227,9 +1309,91 @@ function init(){
                     _this.await = true
                 }, 120)
             }
+        },
+        setView : function(ev, t, s = null){
+            let btn = s ? $("."+s) : $(".btn-view-"+t.toLowerCase())
+            $("[data-view='"+t.toLowerCase()+"'] .view-name").removeClass("is-active")
+            btn.addClass("is-active")
+            if(!s){
+                this.studio[t.toLowerCase()].view = ""
+                this.studio[t.toLowerCase()].img_view = ""
+                this.studio[t.toLowerCase()].image = this.studio[t.toLowerCase()].base_image ? this.studio[t.toLowerCase()].base_image : this.studio[t.toLowerCase()].image
+                return;
+            }
+
+            var activeType = slides.find((s) => s.id == this.slideActive)
+
+            let activeView = views.filter((_, view) => {
+                return "view-"+view.slug == s
+            })
+
+            if(activeView.length > 0 && activeView[0].type.toLowerCase() == activeType.name && t.toLowerCase() == activeType.name){
+                let typeView = s.split("-").map(str => str.charAt(0).toUpperCase() + str.slice(1)).join("")
+                typeView = typeView.charAt(0).toLowerCase() + typeView.slice(1)
+
+                if(this.studio.model[typeView]){
+                    this.studio[t.toLowerCase()].img_view = this.studio.model[typeView]
+                    this.studio[t.toLowerCase()].base_image = this.studio[t.toLowerCase()].image
+                    this.studio[t.toLowerCase()].image = this.studio[t.toLowerCase()]    
+                }else{
+                    this.studio[t.toLowerCase()].img_view = ""
+                    this.studio[t.toLowerCase()].image = this.studio[t.toLowerCase()].base_image ? this.studio[t.toLowerCase()].base_image : this.studio[t.toLowerCase()].image
+                }
+
+                this.studio[t.toLowerCase()].view = typeView
+            }
+        },
+        getSrc(type, item){
+            let img = null
+            if (this.studio[type].view && item[this.studio[type].view]) {
+                img = item[this.studio[type].view]
+            } else if( !this.studio[type].view ){
+                img = item.image
+            }
+            return img
+        },
+        getShowBtnView(type, slug){
+            let t = type.toLowerCase()
+            if(this.studio.model[t+"View"] === "" ){
+                return false;
+            }
+
+            let exist = []
+            if(!slug){
+                let vs = views.filter( (_, v) => {
+                    return v.type.toLowerCase() == type
+                }) 
+
+                vs.map((_, v) => {
+                    let vSlug = "view-"+v.slug 
+                    
+                    let typeView = vSlug.split("-").map(str => str.charAt(0).toUpperCase() + str.slice(1)).join("")
+                    typeView = typeView.charAt(0).toLowerCase() + typeView.slice(1)
+
+                    // let inExist = this.studio[t].selected.filter((i) => {
+                    //     return i[typeView] !== undefined && i[typeView] !== ""
+                    // })
+
+                    v.show = this.studio.model[typeView] !== ""  //inExist.length > 0
+                })
+
+                return vs.filter((_, v) => v.show).length > 1
+            }
+
+            
+
+            let typeView = slug.split("-").map(str => str.charAt(0).toUpperCase() + str.slice(1)).join("")
+            typeView = typeView.charAt(0).toLowerCase() + typeView.slice(1)
+
+            // exist = this.studio[type.toLowerCase()].selected.filter((i) => {
+            //     return i[typeView]
+            // })
+
+            return this.studio.model[typeView] !== "" //exist.length > 0
         }
     }
 }
+
 $(document).ready(() => {
     var states = [{country: "United States", items : {"AL" : "Alabama","AK" : "Alaska","AZ" : "Arizona","AR" : "Arkansas","CA" : "California","CO" : "Colorado","CT" : "Connecticut","DE" : "Delaware","FL" : "Florida","GA" : "Georgia","HI" : "Hawaii","ID" : "Idaho","IL" : "Illinois","IN" : "Indiana","IA" : "Iowa","KS" : "Kansas","KY" : "Kentucky","LA" : "Louisiana","ME" : "Maine","MD" : "Maryland","MA" : "Massachusetts","MI" : "Michigan","MN" : "Minnesota","MS" : "Mississippi","MO" : "Missouri","MT" : "Montana","NE" : "Nebraska","NV" : "Nevada","NH" : "New Hampshire","NJ" : "New Jersey","NM" : "New Mexico","NY" : "New York","NC" : "North Carolina","ND" : "North Dakota", "OH" : "Ohio","OK" : "Oklahoma","OR" : "Oregon","PA" : "Pennsylvania","RI" : "Rhode Island","SC" : "South Carolina","SD" : "South Dakota","TN" : "Tennessee","TX" : "Texas","UT" : "Utah","VT" : "Vermont","VA" : "Virginia","WA" : "Washington","WV" : "West Virginia","WI" : "Wisconsin","WY" : "Wyoming"}}, {country: "Canada", items: {"AB" : "Alberta","BC" : "British Columbia","MB" : "Manitoba","NB" : "New Brunswick","NL" : "Newfoundland and Labrador","NT" : "Northwest Territories","NS" : "Nova Scotia","NU" : "Nunavut","ON" : "Ontario","PE" : "Prince Edward Island","QC" : "Quebec","SK" : "Saskatchewan","YT" : "Yukon"}}]
     var complete = typeof complete_states !== 'undefined' ? true : false
