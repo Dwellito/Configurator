@@ -800,9 +800,6 @@ function init(){
         },
         detailOrder: "",
         init : function(){
-            
-            console.log("Init")
-
             history.pushState(null, "", "#size");
             this.renderSelection()
             this.studio.price = formatter.format(this.setCurrencyPrice(modelSelected.price))
