@@ -476,13 +476,11 @@ function init(){
     let slides = []
     $("[data-view='exterior']").find(".div-block-359").html("")
     $("[data-view='interior']").find(".div-block-359").html("")
-    let views = $(".views").map( (_, v) => {
+    let views = $(".views").map( (ii, v) => {
         let view = $(v).data()
-
         $("[data-view='"+view.type.toLowerCase()+"']").find(".div-block-359").append(`
             <div x-show="getShowBtnView('${view.type}', 'view-${view.slug}')" class="view-item" style="order: ${view.order}"><button class="view-name view-${view.slug}" @click="setView(event, '${view.type}', 'view-${view.slug}')" type="button">${view.name}</button></div>
         `)
-        
         return view
     })
 
