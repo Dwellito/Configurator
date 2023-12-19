@@ -1393,6 +1393,10 @@ function init(){
             // })
 
             return this.studio.model[typeView] !== "" //exist.length > 0
+        },
+        showMessagesError(message){
+            console.log(message)
+            let msg = JSON.parse(message)
         }
     }
 }
