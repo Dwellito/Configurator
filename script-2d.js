@@ -480,7 +480,7 @@ function init(){
         let view = $(v).data()
 
         $("[data-view='"+view.type.toLowerCase()+"']").find(".div-block-359").append(`
-            <div x-show="getShowBtnView('${view.type}', 'view-${view.slug}')" class="view-item"><button class="view-name view-${view.slug}" @click="setView(event, '${view.type}', 'view-${view.slug}')" type="button">${view.name}</button></div>
+            <div x-show="getShowBtnView('${view.type}', 'view-${view.slug}')" class="view-item" style="order: ${view.order}"><button class="view-name view-${view.slug}" @click="setView(event, '${view.type}', 'view-${view.slug}')" type="button">${view.name}</button></div>
         `)
         
         return view
@@ -522,6 +522,7 @@ function init(){
                 itt.childs = []
                 itt.activeLevel = []
                 itt.myType = type
+                itt.price = itt.price || 0
                 sections[type].push(itt)
             }
         }
@@ -1297,7 +1298,9 @@ function init(){
                 $(el).triggerHandler('w-close.w-dropdown');
             });
         },
-        setCurrencyPrice: function(p, symbol = ""){return symbol + " " + (p / currencys[this.currency]).toFixed(0) },
+        setCurrencyPrice: function(p, symbol = ""){
+            return symbol + " " + (p / currencys[this.currency]).toFixed(0) 
+        },
         showPop: function(s, i){ this.studio[s].selected[i].show = true },
         hidePop: function(s, i){ this.studio[s].selected[i].show = false },
         showFurniture : function(){
