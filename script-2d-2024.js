@@ -1,5 +1,5 @@
 var show_zero_price = "";
-var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = "22EP8BJUJKCW2YGUN8RS", hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
+var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = zipKey, hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
 var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 2});
 const lookup = {
     "the-twelve": {
@@ -799,6 +799,7 @@ function init(){
             slug : "",
             levels : [],
         },
+        zipSending: false,
         detailOrder: "",
         init : function(){
             history.pushState(null, "", "#size");
@@ -1215,25 +1216,29 @@ function init(){
             else return (price == 0) ? show_zero_price : formatter.format(price)
         },
         changeZip : function(event){
-            var zip_init = $("#zip-init").text();
-            var zip_price = $("#zip-price").text();
-            var zip = event.target.value
-            var _this = this
-            if(zip != ""){
-                $.get("https://api.zip-codes.com/ZipCodesAPI.svc/1.0/CalculateDistance/ByZip?fromzipcode="+zip_init+"&tozipcode="+zip+"&key="+zz)
-                    .done(function(res){
-                        if(res.DistanceInMiles || res.DistanceInMiles == 0.0){
-                            _this.shipping = parseFloat(res.DistanceInMiles) * parseFloat(zip_price)
-                            _this.setPrice()
-                            _this.renderSelection()
-                        }else{
-                            _this.shipping = 0
-                            _this.renderSelection()
-                        }
-                    })
-            }else{
-                _this.shipping = 0
-                _this.renderSelection()
+            if(!this.zipSending){
+                this.zipSending = true
+                var zip_init = $("#zip-init").text();
+                var zip_price = $("#zip-price").text();
+                var zip = event.target.value
+                var _this = this
+                if(zip != ""){
+                    $.get("https://api.zip-codes.com/ZipCodesAPI.svc/1.0/CalculateDistance/ByZip?fromzipcode="+zip_init+"&tozipcode="+zip+"&key="+zz)
+                        .done(function(res){
+                            if(res.DistanceInMiles || res.DistanceInMiles == 0.0){
+                                _this.shipping = parseFloat(res.DistanceInMiles) * parseFloat(zip_price)
+                                _this.setPrice()
+                                _this.renderSelection()
+                            }else{
+                                _this.shipping = 0
+                                _this.renderSelection()
+                            }
+                            _this.zipSending = false
+                        })
+                }else{
+                    _this.shipping = 0
+                    _this.renderSelection()
+                }
             }
         },
         validate : function(){
