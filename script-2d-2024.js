@@ -1,5 +1,5 @@
 var show_zero_price = "";
-var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = "22EP8BJUJKCW2YGUN8RS", hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
+var slidesT = ["size", 'exterior', 'interior', 'layout', "installation", "summary"], $slide = $(".configuration-slide"), zz = zipKey, hc = "w-condition-invisible", sB = ['upgrades', 'interior', 'services', 'exterior' , 'layout'], sC = [ "price" , "model" , "load"], ccI = ".collection-item", ccW = ".collection-selection-wrapper", ccF = "#model-item-selection", ccFM = "#model-item-selection-multiple", ccM = ".title-section", ccS = ".summary-studio"
 var formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits : 2});
 const lookup = {
     "the-twelve": {
@@ -750,7 +750,7 @@ function init(){
     var $itemOrder = $(itemOrder)
     var templateCustomOrder = ''
     templateCustomOrder += '<template role="listitem" class="'+classitemOrder+'" x-for="item in studioItems" :key="item">'
-    $itemOrder.find('.div-block-295').attr('x-bind:class', `{'hidden' : item.type == 'model'}`)
+    $itemOrder.find('.div-block-295').attr('x-bind:class', `{'model-item' : item.type == 'model'}`)
     $itemOrder.find('img').attr('x-show', "item.thumbnail").attr('x-bind:src', "item.thumbnail").attr("x-bind:srcset", "item.thumbnail")
     $itemOrder.find('.price-text').attr("x-text", "formatMoney(setCurrencyPrice(item.price), false)").removeClass(hc)
     $itemOrder.find('.title-tag').attr("x-text","item.name")
@@ -799,6 +799,7 @@ function init(){
             slug : "",
             levels : [],
         },
+        zipSending: false,
         detailOrder: "",
         init : function(){
             history.pushState(null, "", "#size");
@@ -817,7 +818,10 @@ function init(){
             });
 
         },
-        setStudio : function(event){
+        sleep: function (ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        },        
+        setStudio : async function(event){
 
             if(!this.runScript){
 
@@ -830,6 +834,13 @@ function init(){
                     $child = $(event.target).closest(".collection-item-5")
                 }
 
+                // $(".bind-image").css("opacity", "0")
+                // setTimeout(function(){
+                //     $(".bind-image").css("opacity", "1")
+                // }, 600);
+
+                // await this.sleep(300)
+                
                 if($target.length > 0 && !$(event.target).hasClass("text-details")){
                     var slug = $target.attr("id")
                     var types = $target.data("type").toLowerCase()
@@ -1041,77 +1052,11 @@ function init(){
                 }
             }
 
-            try {
-                var address = document.getElementById('Address').value.trim();
-                var city = document.getElementById('City').value.trim();
-                var state =  this.customer.state
+            total = parseFloat(total) + parseFloat(this.shipping)
+            this.studio.price = formatter.format(this.setCurrencyPrice(total))
+            this.setLoan(total)
+            totalPrice = total
 
-                const modelName = getModelName(window.location.pathname)
-                const pricePerMile = lookup[modelName]["price-per-mile"]
-
-                const service = new google.maps.DistanceMatrixService();
-
-                if (address !== "" && city !== "" && state !== "" && (modelName === "the-twelve" || modelName === "the-sixteen")) {
-                    var dest = "";
-                    dest += address + "," + city + "," + state
-
-                    service.getDistanceMatrix({
-                        origins: ["Chattanooga, TN", "5617 104th Pl NE, Marysville, WA"],
-                        destinations: [dest],
-                        unitSystem: google.maps.UnitSystem.IMPERIAL,
-                        travelMode: google.maps.TravelMode.DRIVING,
-                        avoidHighways: false,
-                        avoidTolls: false,
-                    }, (response, status) => {
-                        if (status == "OK") {
-
-                            const michiganResult = pricePerMile * parseMiles(response.rows[0].elements[0].distance.text)
-                            const washingtonResult = pricePerMile * parseMiles(response.rows[1].elements[0].distance.text)
-
-                            var price = michiganResult < washingtonResult ? michiganResult : washingtonResult;
-
-                            if (modelName === "the-twelve") {
-                                if (price < 600) {
-                                    price = 600
-                                }
-                                else if (price > 3600) {
-                                    price = 3600
-                                }
-
-                            }
-                            else if (modelName === "the-sixteen") {
-                                if (price < 800) {
-                                    price = 800
-                                }
-                                else if (price > 4250) {
-                                    price = 4250
-                                }
-                            }
-
-                            if (this.currency === "CAD") {
-                                price += 250
-                            }
-
-                            shippingCost = price
-                            total = parseFloat(total) + price
-                            this.studio.price = formatter.format(this.setCurrencyPrice(total))
-                            this.setLoan(total)
-                            totalPrice = total;
-                            this.renderSelection()
-                        }
-                    })
-                } else {
-                    total = parseFloat(total) + parseFloat(this.shipping)
-                    this.studio.price = formatter.format(this.setCurrencyPrice(total))
-                    this.setLoan(total)
-                    totalPrice = total
-                }
-            } catch (error) {
-                total = parseFloat(total) + parseFloat(this.shipping)
-                this.studio.price = formatter.format(this.setCurrencyPrice(total))
-                this.setLoan(total)
-                totalPrice = total
-            }
         },
         setLoan : function(total){
             var tax = (parseFloat(8) + parseFloat(2.9) + parseFloat(2)) / 100;
@@ -1198,12 +1143,13 @@ function init(){
             var localizedCost = this.currency === "CAD" ? shippingCost / currencys["CAD"] : shippingCost
             const defaultShipText = "Estimated shipping"
             var shipText = shippingCost ? "Shipping cost: " + formatter.format(localizedCost) : defaultShipText
-            if (shipText !== defaultShipText) {
+            if (this.shipping) {
                 this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})
                 detailOrder.push({type : "shipping", name : shipText, price : this.shipping,  image : imgshipping})
             }else{
                 detailOrder.push({type : "shipping", name : shipText, price : $("#shipping-cost").text(),  image : imgshipping})
             }
+
             this.studioItems.push(modelSelected)
             detailOrder = JSON.stringify(detailOrder)
             detailOrder = detailOrder.replace(/–/g, "")
@@ -1215,25 +1161,29 @@ function init(){
             else return (price == 0) ? show_zero_price : formatter.format(price)
         },
         changeZip : function(event){
-            var zip_init = $("#zip-init").text();
-            var zip_price = $("#zip-price").text();
-            var zip = event.target.value
-            var _this = this
-            if(zip != ""){
-                $.get("https://api.zip-codes.com/ZipCodesAPI.svc/1.0/CalculateDistance/ByZip?fromzipcode="+zip_init+"&tozipcode="+zip+"&key="+zz)
-                    .done(function(res){
-                        if(res.DistanceInMiles || res.DistanceInMiles == 0.0){
-                            _this.shipping = parseFloat(res.DistanceInMiles) * parseFloat(zip_price)
-                            _this.setPrice()
-                            _this.renderSelection()
-                        }else{
-                            _this.shipping = 0
-                            _this.renderSelection()
-                        }
-                    })
-            }else{
-                _this.shipping = 0
-                _this.renderSelection()
+            if(!this.zipSending){
+                this.zipSending = true
+                var zip_init = $("#zip-init").text();
+                var zip_price = $("#zip-price").text();
+                var zip = event.target.value
+                var _this = this
+                if(zip != "" && zip_price != "" && zip_init != ""){
+                    $.get("https://api.zip-codes.com/ZipCodesAPI.svc/1.0/CalculateDistance/ByZip?fromzipcode="+zip_init+"&tozipcode="+zip+"&key="+zz)
+                        .done(function(res){
+                            if(res.DistanceInMiles || res.DistanceInMiles == 0.0){
+                                _this.shipping = parseFloat(res.DistanceInMiles) * parseFloat(zip_price)
+                                _this.setPrice()
+                                _this.renderSelection()
+                            }else{
+                                _this.shipping = 0
+                                _this.renderSelection()
+                            }
+                            _this.zipSending = false
+                        })
+                }else{
+                    _this.shipping = 0
+                    _this.renderSelection()
+                }
             }
         },
         validate : function(){
@@ -1285,13 +1235,15 @@ function init(){
                     var el = ev.currentTarget[formId]
                     if(request.status == 200){
                         if($(el).attr("id") == formId){
+                            $("[data-form-track]").find('[data-btn-submit]').attr("disabled", true)
+                            $("[data-form-track]").find('[data-btn-submit]').attr("value", "Please wait...")
                             setTimeout(() => {
                                 if(paymentLink !== ""){
                                     window.location.href = paymentLink
                                 }else{
                                     window.location.href = "https://" + window.location.hostname + "/thank-you"
                                 }
-                            }, 2000)
+                            }, 1000)
                         }
                     }
                 });
@@ -1320,10 +1272,18 @@ function init(){
                 }, 120)
             }
         },
-        setView : function(ev, t, s = null){
+        setView : async function(ev, t, s = null){
             let btn = s ? $("."+s) : $(".btn-view-"+t.toLowerCase())
             $("[data-view='"+t.toLowerCase()+"'] .view-name").removeClass("is-active")
             btn.addClass("is-active")
+
+            // $(".bind-image").css("opacity", "0")
+            // setTimeout(function(){
+            //     $(".bind-image").css("opacity", "1")
+            // }, 600);
+
+            // await this.sleep(300)
+
             if(!s){
                 this.studio[t.toLowerCase()].view = ""
                 this.studio[t.toLowerCase()].img_view = ""
