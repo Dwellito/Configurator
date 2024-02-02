@@ -1428,12 +1428,13 @@ function init(){
                                     let addressget = [] 
                                     if(el.properties.name)
                                         addressget.push(el.properties.name)
-                                    else if(el.properties.address_line1)
-                                        addressget.push(el.properties.address_line1)
                                     if(el.properties.housenumber)
                                         addressget.push(el.properties.housenumber)
                                     if(el.properties.street)
                                         addressget.push(el.properties.street)
+
+                                    if(addressget.length == 0 && el.properties.address_line1)
+                                        addressget.push(el.properties.address_line1)
                                     
                                     addressget = addressget.filter(Boolean).join(", ")
                                     this.currentAddress.push(addressget)
