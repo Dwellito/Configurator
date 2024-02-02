@@ -531,7 +531,10 @@ function init(){
     $(".installation").each(function(){
         var data = $(this).find(".Services").data()
         $(this).addClass("parent")
-        $(this).attr("id", data.id).attr("data-type", data.type).attr("data-selection", data.selection)
+        if(data){
+            $(this).attr("id", data.id).attr("data-type", data.type).attr("data-selection", data.selection)
+            $(this).addClass(data.id)
+        }
     })
 
     var childHtml = {
@@ -665,6 +668,7 @@ function init(){
                     $item.find('.parent').attr("data-object", it.object).attr("data-group", it.group).attr("data-material", it.material).attr("data-function", it.function).addClass(vectary_function)
                     $item.find('img.image').attr('src', it.thumbnail).attr('srcset', it.thumbnail)
                     $item.find('.text-block').text(it.name)
+                    $item.find('.text-block-subheading').text(it.subhead)
                     $item.find('.long_description').html(it.description)
                     $item.find('.btn-details').attr('x-on:click', `showPop('${s}', ${j})`)
                     $item.find('.details').attr('x-bind:class' , '{"show" : studio.'+s+'.selected['+j+'].show}').attr('x-on:click', `hidePop('${s}', ${j})`)
@@ -674,7 +678,7 @@ function init(){
                     if(h_price){
                         h_price = h_price.replace("{price}", it.price)
                         $p.html(h_price)
-                        $item.find('.text-price span').attr("x-text", "setCurrencyPrice("+it.price+", '+ $')")
+                        $item.find('.text-price span').attr("x-text","formatMoney(setCurrencyPrice("+it.price+"), false, '+ ')")
                     }
                     if(it.price === 0)
                         $p.addClass(hc)
@@ -704,8 +708,9 @@ function init(){
                     var $itemChild = $(el.htmlchild)
                     $itemChild.find('img').attr('x-bind:src', "option.thumbnail").attr("x-bind:srcset", "option.thumbnail")
                     $itemChild.find('.text-name').attr('x-text', "option.name")
+                    $itemChild.find('.text-subhead').attr('x-text', "option.subhead")
                     $itemChild.find('.text-description').attr('x-text', "option.description")
-                    $itemChild.find('.text-price').attr('x-text', "setCurrencyPrice(option.price, '+ $')")
+                    $itemChild.find('.text-price').attr('x-text', "formatMoney(setCurrencyPrice(option.price), false, '+ ')")
                     $itemChild.attr("x-bind:id", "option.slug").attr("x-bind:data-type", "option.type").attr("x-bind:data-level", "'"+el.level+"'").attr("x-bind:class", "{'selected' : option.active}")
                     var childTemplate = `<div class="${classList}"><template role="listitem" x-for="option in activeLevel['${st.value}'][${m}].items" :key="option">
                     ${$itemChild[0].outerHTML}
@@ -748,12 +753,14 @@ function init(){
     var classitemOrder = ($(ccS).length > 0) ? $(ccS).children(':first-child').attr("class") : 'summary-studio w-dyn-items'
     var itemOrder = ($(ccS).children().length > 0) ? $(ccS).children(':first-child')[0].outerHTML : $(itemSummaryDefault)[0].outerHTML
     var $itemOrder = $(itemOrder)
+    
     var templateCustomOrder = ''
     templateCustomOrder += '<template role="listitem" class="'+classitemOrder+'" x-for="item in studioItems" :key="item">'
-    $itemOrder.find('.div-block-295').attr('x-bind:class', `{'hidden' : item.type == 'model'}`)
+    $itemOrder.find('.div-block-295').attr('x-bind:class', `{'model-item' : item.type == 'model'}`)
     $itemOrder.find('img').attr('x-show', "item.thumbnail").attr('x-bind:src', "item.thumbnail").attr("x-bind:srcset", "item.thumbnail")
     $itemOrder.find('.price-text').attr("x-text", "formatMoney(setCurrencyPrice(item.price), false)").removeClass(hc)
     $itemOrder.find('.title-tag').attr("x-text","item.name")
+    $itemOrder.find('.dimensions-tag').attr("x-text","item.dimensions")
     $itemOrder.find('.div-block-295').append(summaryHTML)
     templateCustomOrder += $itemOrder.html() + "</template>"
 
@@ -776,6 +783,14 @@ function init(){
                 selected: sections[sec]
             }}
     }
+    try{
+        studio['services'].selected.filter(st => st.active).map(function(it){
+            $("#"+it.slug).addClass("selected")
+        })
+    }catch(e){
+        console.log(e)
+    }
+    
     let baseViews = ['interior', 'exterior']
     for (let view of baseViews) {
         studio[view].img_view = ""
@@ -790,6 +805,12 @@ function init(){
         }
     }
 
+    $("[data-autocomplete]").attr("x-on:keyup.debounce.500ms", "getAddress")
+    $("[data-autocomplete]").attr("x-on:focus.debounce.500ms", "openAddress")
+    var formatTextAutocomplete = $("[data-autocomplete-results]").find("li")[0].outerHTML
+    let shippingTextSub = $("[shipping-text-sub]").text()
+    $("[shipping-text-sub]").remove()
+
     return {
         sections : sections, studio : studio, studioItems : [], active : true,  shipping : 0, customer : customer, upgradesV : "", servicesV : "", interiorV : "", layoutV : "", exteriorV : "", valid : true, currency : "USD", slideActive : 0, summarySlide : slidesT.length - 1, installationSlide : slidesT.length - 2, show_furniture : true,
         await : true,
@@ -801,6 +822,9 @@ function init(){
         },
         zipSending: false,
         detailOrder: "",
+        canSearch: true,
+        currentAddress: [],
+        addressBgInitial: "",
         init : function(){
             history.pushState(null, "", "#size");
             this.renderSelection()
@@ -817,9 +841,16 @@ function init(){
                 _this.customer.state = e.target.value
             });
 
-        },
-        setStudio : function(event){
+            function getBgrColor(elem) {
+                return $(elem).css("background-color");
+            }
+            this.addressBgInitial = getBgrColor($('#Address')[0]);
 
+        },
+        sleep: function (ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        },        
+        setStudio : async function(event){
             if(!this.runScript){
 
                 this.runScript = true
@@ -831,6 +862,13 @@ function init(){
                     $child = $(event.target).closest(".collection-item-5")
                 }
 
+                // $(".bind-image").css("opacity", "0")
+                // setTimeout(function(){
+                //     $(".bind-image").css("opacity", "1")
+                // }, 600);
+
+                // await this.sleep(300)
+                
                 if($target.length > 0 && !$(event.target).hasClass("text-details")){
                     var slug = $target.attr("id")
                     var types = $target.data("type").toLowerCase()
@@ -847,7 +885,9 @@ function init(){
 
                         if(item.selection == "multiple"){
                             if(item.active && this.activeOptionLevel.slug == item.slug || !item.active || item.childs.length == 0){
-                                $("."+slug).toggleClass("selected")
+                                if($("."+slug).length > 0)
+                                    $("."+slug).toggleClass("selected")
+
                                 this.studio[type].selected.map(function(i){
                                     if(i.slug == slug) i.active = !i.active
                                     return i
@@ -866,7 +906,10 @@ function init(){
                             // $target.parent().addClass("selected")
 
                             $("."+slug).closest(".collection-list").find(".collection-item").removeClass("selected")
-                            $("."+slug).parent().addClass("selected")
+                            if($('.'+slug).hasClass("collection-item"))
+                                $('.'+slug).addClass("selected")
+                            else
+                                $("."+slug).parent().addClass("selected")
 
                             var subtype = item.subtype
                             this.studio[type].selected.map(function(i){
@@ -875,6 +918,7 @@ function init(){
 
                                 return i
                             })
+                            
                         }
 
                         if(this.activeLevel[item.subtype]){
@@ -1042,77 +1086,11 @@ function init(){
                 }
             }
 
-            try {
-                var address = document.getElementById('Address').value.trim();
-                var city = document.getElementById('City').value.trim();
-                var state =  this.customer.state
+            total = parseFloat(total) + parseFloat(this.shipping)
+            this.studio.price = formatter.format(this.setCurrencyPrice(total))
+            this.setLoan(total)
+            totalPrice = total
 
-                const modelName = getModelName(window.location.pathname)
-                const pricePerMile = lookup[modelName]["price-per-mile"]
-
-                const service = new google.maps.DistanceMatrixService();
-
-                if (address !== "" && city !== "" && state !== "" && (modelName === "the-twelve" || modelName === "the-sixteen")) {
-                    var dest = "";
-                    dest += address + "," + city + "," + state
-
-                    service.getDistanceMatrix({
-                        origins: ["Chattanooga, TN", "5617 104th Pl NE, Marysville, WA"],
-                        destinations: [dest],
-                        unitSystem: google.maps.UnitSystem.IMPERIAL,
-                        travelMode: google.maps.TravelMode.DRIVING,
-                        avoidHighways: false,
-                        avoidTolls: false,
-                    }, (response, status) => {
-                        if (status == "OK") {
-
-                            const michiganResult = pricePerMile * parseMiles(response.rows[0].elements[0].distance.text)
-                            const washingtonResult = pricePerMile * parseMiles(response.rows[1].elements[0].distance.text)
-
-                            var price = michiganResult < washingtonResult ? michiganResult : washingtonResult;
-
-                            if (modelName === "the-twelve") {
-                                if (price < 600) {
-                                    price = 600
-                                }
-                                else if (price > 3600) {
-                                    price = 3600
-                                }
-
-                            }
-                            else if (modelName === "the-sixteen") {
-                                if (price < 800) {
-                                    price = 800
-                                }
-                                else if (price > 4250) {
-                                    price = 4250
-                                }
-                            }
-
-                            if (this.currency === "CAD") {
-                                price += 250
-                            }
-
-                            shippingCost = price
-                            total = parseFloat(total) + price
-                            this.studio.price = formatter.format(this.setCurrencyPrice(total))
-                            this.setLoan(total)
-                            totalPrice = total;
-                            this.renderSelection()
-                        }
-                    })
-                } else {
-                    total = parseFloat(total) + parseFloat(this.shipping)
-                    this.studio.price = formatter.format(this.setCurrencyPrice(total))
-                    this.setLoan(total)
-                    totalPrice = total
-                }
-            } catch (error) {
-                total = parseFloat(total) + parseFloat(this.shipping)
-                this.studio.price = formatter.format(this.setCurrencyPrice(total))
-                this.setLoan(total)
-                totalPrice = total
-            }
         },
         setLoan : function(total){
             var tax = (parseFloat(8) + parseFloat(2.9) + parseFloat(2)) / 100;
@@ -1199,21 +1177,22 @@ function init(){
             var localizedCost = this.currency === "CAD" ? shippingCost / currencys["CAD"] : shippingCost
             const defaultShipText = "Estimated shipping"
             var shipText = shippingCost ? "Shipping cost: " + formatter.format(localizedCost) : defaultShipText
-            if (shipText !== defaultShipText) {
-                this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping})
-                detailOrder.push({type : "shipping", name : shipText, price : this.shipping,  image : imgshipping})
+            if (this.shipping) {
+                this.studioItems.push({type : "shipping", name : shipText, price : this.shipping,  image : "", thumbnail : imgshipping, 'dimensions': shippingTextSub})
+                detailOrder.push({type : "shipping", name : shipText, price : this.shipping,  image : imgshipping, 'dimensions': 'Shipping Sub'})
             }else{
-                detailOrder.push({type : "shipping", name : shipText, price : $("#shipping-cost").text(),  image : imgshipping})
+                detailOrder.push({type : "shipping", name : shipText, price : $("#shipping-cost").text(),  image : imgshipping, 'dimensions': 'Shipping Sub'})
             }
+
             this.studioItems.push(modelSelected)
             detailOrder = JSON.stringify(detailOrder)
             detailOrder = detailOrder.replace(/–/g, "")
             detailOrder = window.btoa(unescape(encodeURIComponent( detailOrder )));
             this.detailOrder = detailOrder
         },
-        formatMoney : function(price, show = true){
+        formatMoney : function(price, show = true, pre = ""){
             if(show) return formatter.format(price)
-            else return (price == 0) ? show_zero_price : formatter.format(price)
+            else return (price == 0) ? show_zero_price : pre + formatter.format(price)
         },
         changeZip : function(event){
             if(!this.zipSending){
@@ -1222,7 +1201,7 @@ function init(){
                 var zip_price = $("#zip-price").text();
                 var zip = event.target.value
                 var _this = this
-                if(zip != ""){
+                if(zip != "" && zip_price != "" && zip_init != ""){
                     $.get("https://api.zip-codes.com/ZipCodesAPI.svc/1.0/CalculateDistance/ByZip?fromzipcode="+zip_init+"&tozipcode="+zip+"&key="+zz)
                         .done(function(res){
                             if(res.DistanceInMiles || res.DistanceInMiles == 0.0){
@@ -1238,6 +1217,7 @@ function init(){
                 }else{
                     _this.shipping = 0
                     _this.renderSelection()
+                    _this.zipSending = false
                 }
             }
         },
@@ -1290,13 +1270,15 @@ function init(){
                     var el = ev.currentTarget[formId]
                     if(request.status == 200){
                         if($(el).attr("id") == formId){
+                            $("[data-form-track]").find('[data-btn-submit]').attr("disabled", true)
+                            $("[data-form-track]").find('[data-btn-submit]').attr("value", "Please wait...")
                             setTimeout(() => {
                                 if(paymentLink !== ""){
                                     window.location.href = paymentLink
                                 }else{
                                     window.location.href = "https://" + window.location.hostname + "/thank-you"
                                 }
-                            }, 2000)
+                            }, 1000)
                         }
                     }
                 });
@@ -1311,7 +1293,7 @@ function init(){
             });
         },
         setCurrencyPrice: function(p, symbol = ""){
-            return symbol + " " + (p / currencys[this.currency]).toFixed(0) 
+            return symbol + (p / currencys[this.currency]).toFixed(0) 
         },
         showPop: function(s, i){ this.studio[s].selected[i].show = true },
         hidePop: function(s, i){ this.studio[s].selected[i].show = false },
@@ -1325,10 +1307,18 @@ function init(){
                 }, 120)
             }
         },
-        setView : function(ev, t, s = null){
+        setView : async function(ev, t, s = null){
             let btn = s ? $("."+s) : $(".btn-view-"+t.toLowerCase())
             $("[data-view='"+t.toLowerCase()+"'] .view-name").removeClass("is-active")
             btn.addClass("is-active")
+
+            // $(".bind-image").css("opacity", "0")
+            // setTimeout(function(){
+            //     $(".bind-image").css("opacity", "1")
+            // }, 600);
+
+            // await this.sleep(300)
+
             if(!s){
                 this.studio[t.toLowerCase()].view = ""
                 this.studio[t.toLowerCase()].img_view = ""
@@ -1409,6 +1399,134 @@ function init(){
         showMessagesError(message){
             console.log(message)
             let msg = JSON.parse(message)
+        },
+        getAddress(ev){
+            var val = $(ev.target).val()
+
+            if(this.canSearch){
+                if(val.length > 3){
+                    $("[data-autocomplete-results] ul").html("")
+                    $("[data-autocomplete-results] ul").addClass("active");
+                    var $itemD = $(formatTextAutocomplete)
+                    $itemD.text("Loading...")
+                    $("[data-autocomplete-results] ul").append($itemD)
+
+                    this.canSearch = false
+                    this.resetAddress()
+                    fetch("https://api.geoapify.com/v1/geocode/autocomplete?text="+val+"&apiKey=9b2e3ec0cbf94f37bcc74ce018e101d3", {
+                        method: 'GET',
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        setTimeout(function() {this.canSearch = true}.bind(this), 500)
+                        if(result.features.length > 0){
+                            $("[data-autocomplete-results] ul").html("")
+                            
+                            result.features.forEach(el => {
+                                if(el && el.properties && el.properties.formatted){
+                                    var $item = $(formatTextAutocomplete)
+                                    let addressget = [] 
+                                    if(el.properties.name)
+                                        addressget.push(el.properties.name)
+                                    if(el.properties.housenumber)
+                                        addressget.push(el.properties.housenumber)
+                                    if(el.properties.street)
+                                        addressget.push(el.properties.street)
+                                    
+                                    addressget = addressget.filter(Boolean).join(", ")
+                                    this.currentAddress.push(addressget)
+                                    $item.text(el.properties.formatted)
+                                    $item.attr("data-address", addressget)
+                                    $item.attr("data-state", el.properties.state)
+                                    $item.attr("data-city", el.properties.city)
+                                    $item.attr("data-county", el.properties.county)
+                                    $item.attr("data-postcode", el.properties.postcode)
+                                    $("[data-autocomplete-results] ul").append($item)
+                                }
+                            });
+                        }else{
+                            $("[data-autocomplete-results] ul").html("")
+                            $itemD.text("Not found results")
+                            $("[data-autocomplete-results] ul").append($itemD)
+
+                            setTimeout(function() {
+                                this.canSearch = true;
+                                $("[data-autocomplete-results] ul").html("")
+                                $("[data-autocomplete-results] ul").removeClass("active");
+                            }.bind(this), 1200)
+
+                        }
+                    })
+                    .catch(error => {
+                        console.log('error', error); 
+                        setTimeout(() => {this.canSearch = true}, 500)
+                    });
+                }else{
+                    $("[data-autocomplete-results]").removeClass("active");
+                    this.resetAddress()
+                }
+            }
+        },
+        resetAddress(){
+            if(this.customer.address !== $("[data-autocomplete]").val()){
+                this.customer.address = ""
+                this.customer.state = ""
+                this.customer.city = ""
+                this.customer.zip = ""
+
+                $("#State").val(this.customer.state);
+                $("#State").trigger("change");
+
+                this.changeZip({
+                    target: { value: this.customer.zip }
+                })
+            }
+        },
+        openAddress(){
+            if(this.currentAddress.length > 0){
+                $("[data-autocomplete-results] ul").addClass("active");
+            }
+        },
+        closeAddress(){
+            $("[data-autocomplete-results] ul").removeClass("active");
+            setTimeout(() => {
+                var bgr = $("[data-autocomplete]").css("background-color");
+                var autoFill = bgr != this.addressBgInitial
+
+                if(!autoFill && !this.currentAddress.includes(this.customer.address)){
+                    this.customer.address = ""
+                    this.customer.state = ""
+                    this.customer.city = ""
+                    this.customer.zip = ""
+
+                    $("#State").val(this.customer.state);
+                    $("#State").trigger("change");
+
+                    this.changeZip({
+                        target: { value: this.customer.zip }
+                    })
+                }
+            }, 60)
+
+        },
+        setAddress(ev){
+            var $address = $(ev.target)
+ 
+            this.customer.address = $address.data("address")
+            this.customer.state = $address.data("state")
+            this.customer.city = $address.data("city")
+            this.customer.zip = $address.data("postcode")
+
+            $("#State").val(this.customer.state);
+            $("#State").trigger("change");
+
+
+            this.changeZip({
+                target: { value: this.customer.zip }
+            })
+            
+
+            this.closeAddress()
         }
     }
 }
