@@ -805,8 +805,8 @@ function init(){
         }
     }
 
-    $("[data-autocomplete]").attr("x-on:keyup.debounce.500ms", "getAddress")
-    $("[data-autocomplete]").attr("x-on:focus.debounce.500ms", "openAddress")
+    $("[data-autocomplete]").attr("x-on:keyup.debounce.250ms", "getAddress")
+    $("[data-autocomplete]").attr("x-on:focus.debounce.250ms", "openAddress")
     var formatTextAutocomplete = $("[data-autocomplete-results]").find("li")[0].outerHTML
     let shippingTextSub = $("[shipping-text-sub]").text()
     $("[shipping-text-sub]").remove()
