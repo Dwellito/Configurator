@@ -672,6 +672,7 @@ function init(){
                     $item.find('.long_description').html(it.description)
                     $item.find('.btn-details').attr('x-on:click', `showPop('${s}', ${j})`)
                     $item.find('.details').attr('x-bind:class' , '{"show" : studio.'+s+'.selected['+j+'].show}').attr('x-on:click', `hidePop('${s}', ${j})`)
+                    
                     j++
                     var $p = $item.find('.text-price')
                     var h_price = $p.html()
@@ -684,6 +685,7 @@ function init(){
                         $p.addClass(hc)
                     if(it.description == ""){
                         $item.find('.btn-details').css({'display' : 'none'})
+                        $item.find('.label-with-more-info').css({'display' : 'none'})
                     }
 
                     if(it.active){
@@ -845,6 +847,14 @@ function init(){
                 return $(elem).css("background-color");
             }
             this.addressBgInitial = getBgrColor($('#Address')[0]);
+
+            $("body").on("mouseenter", ".label-with-more-info", function(){
+                $(this).find(".more-info-popup").addClass("show")
+            })
+
+            $("body").on("mouseleave", ".label-with-more-info", function(){
+                $(this).find(".more-info-popup").removeClass("show")
+            })
 
         },
         sleep: function (ms) {
